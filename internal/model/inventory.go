@@ -1,4 +1,4 @@
-package domain
+package model
 
 type Inventory struct {
 	UserID     int `db:"user_id" json:"user_id"`

@@ -1,4 +1,4 @@
-package domain
+package model
 
 type Material struct {
 	MaterialID         int    `db:"material_id" json:"material_id"`

@@ -1,4 +1,4 @@
-package domain
+package model
 
 type User struct {
 	UserID   int    `db:"user_id" json:"user_id"`

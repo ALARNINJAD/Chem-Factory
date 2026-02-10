@@ -1,0 +1,8 @@
+/login
+/register
+/admin
+/home
+/store
+/bazar
+/bazer/sell
+/bazar/buy
