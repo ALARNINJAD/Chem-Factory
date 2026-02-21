@@ -1,8 +1,15 @@
 package main
 
-import "net/http"
+import (
+	"chem-factory/internal/repository"
+	"chem-factory/internal/routes"
+
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/register", register)
+	repository.Init()
+	server := gin.Default()
+	routes.Register(server)
+	server.Run(":8090")
 }
