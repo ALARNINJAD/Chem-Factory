@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"chem-factory/internal/model"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -18,9 +21,10 @@ func Init() {
 	dbPath := filepath.Join(rootPath, "database", "database.db")
 	db, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
-		panic("Could not open to database.")
+		panic("Could not open database.")
 	}
 	creatTables()
+	createMaterials()
 }
 
 func creatTables() {
@@ -67,6 +71,35 @@ func creatTables() {
 	)`
 	if _, err := db.Exec(inventoryQuery); err != nil {
 		panic("Could not create inventory table.")
+	}
+}
+
+func createMaterials() {
+
+	var materials []model.Material
+
+	rootPath, err := os.Getwd()
+	if err != nil {
+		panic("Could not find materials file.")
+	}
+	materialsPath := filepath.Join(rootPath, "configs", "materials.json")
+
+	data, err := os.ReadFile(materialsPath)
+	if err != nil {
+		panic("Could not open materials file.")
+	}
+
+	json.Unmarshal(data, &materials)
+
+	for _, material := range materials {
+		var rm repoMaterial
+		rm.name = material.Name
+		rm.sellPrice = material.SellPrice
+		rm.buyPrice = material.BuyPrice
+		rm.mixTime = material.MixTime
+		if err = rm.new(material.FirstIngredientName, material.SecondIngredientName); err != nil {
+			panic(fmt.Sprintf("Could not add the %s material to database.", rm.name))
+		}
 	}
 }
 

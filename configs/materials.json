@@ -1,0 +1,74 @@
+[
+    {
+        "name" : "water",
+        "sell_price" : 4,
+        "buy_price" : 5,
+        "first_ingredient_name" : "water",
+        "second_ingredient_name" : "water",
+        "mix_time" : 0
+    },
+    {
+        "name" : "dirt",
+        "sell_price" : 12,
+        "buy_price" : 15,
+        "first_ingredient_name" : "dirt",
+        "second_ingredient_name" : "dirt",
+        "mix_time" : 0
+    },
+    {
+        "name" : "weed_seed",
+        "sell_price" : 80,
+        "buy_price" : 100,
+        "first_ingredient_name" : "weed_seed",
+        "second_ingredient_name" : "weed_seed",
+        "mix_time" : 0
+    },
+    {
+        "name" : "planted_weed",
+        "sell_price" : 96,
+        "buy_price" : 120,
+        "first_ingredient_name" : "dirt",
+        "second_ingredient_name" : "weed_seed",
+        "mix_time" : 5
+    },
+    {
+        "name" : "weed",
+        "sell_price" : 124,
+        "buy_price" : 155,
+        "first_ingredient_name" : "planted_weed",
+        "second_ingredient_name" : "water",
+        "mix_time" : 30
+    },
+    {
+        "name" : "warm_air",
+        "sell_price" : 4,
+        "buy_price" : 5,
+        "first_ingredient_name" : "warm_air",
+        "second_ingredient_name" : "warm_air",
+        "mix_time" : 0
+    },
+    {
+        "name" : "dried_weed",
+        "sell_price" : 136,
+        "buy_price" : 170,
+        "first_ingredient_name" : "weed",
+        "second_ingredient_name" : "warm_air",
+        "mix_time" : 10
+    },
+    {
+        "name" : "paper",
+        "sell_price" : 4,
+        "buy_price" : 5,
+        "first_ingredient_name" : "paper",
+        "second_ingredient_name" : "paper",
+        "mix_time" : 0
+    },
+    {
+        "name" : "weed_cigarette",
+        "sell_price" : 144,
+        "buy_price" : 180,
+        "first_ingredient_name" : "dried_weed",
+        "second_ingredient_name" : "paper",
+        "mix_time" : 5
+    }
+]
