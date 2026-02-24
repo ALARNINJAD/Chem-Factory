@@ -1,23 +1,12 @@
 package repository
 
+import "chem-factory/internal/model"
+
 type user struct {
-	id       int
-	username string
-	password string
-	balance  int
-	xp       int
-	level    int
+	model.User
 }
 
-func (usr *user) new() error {
-	query := `
-		INSERT INTO user(username, password)
-		VALUES (?, ?)`
-
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return err
-	}
-	stmt.Exec(usr.username, usr.password)
-	return nil
+func (u *user) new() error {
+	_, err := db.Exec("INSERT INTO user(username, password) VALUES (?, ?)", u.Username, u.Password)
+	return err
 }

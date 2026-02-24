@@ -3,11 +3,19 @@ package routes
 import "github.com/gin-gonic/gin"
 
 func Register(server *gin.Engine) {
-	server.POST("/", route)
-	// server.POST("/login")
-	// server.POST("/register")
+	server.POST("/", root)
+	server.POST("/login", login)
+	server.POST("/register", login)
 }
 
-func route(context *gin.Context) {
+func root(context *gin.Context) {
+
+}
+
+func login(context *gin.Context) {
+
+}
+
+func register(context *gin.Context) {
 
 }

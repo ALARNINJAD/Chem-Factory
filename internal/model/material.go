@@ -1,11 +1,13 @@
 package model
 
 type Material struct {
-	ID                   int    `json:"id"`
-	Name                 string `json:"name"`
-	SellPrice            int    `json:"sell_price"`
-	BuyPrice             int    `json:"buy_price"`
+	ID                   int    `db:"id" json:"id,omitempty"`
+	Name                 string `db:"name" json:"name"`
+	SellPrice            int    `db:"sell_price" json:"sell_price"`
+	BuyPrice             int    `db:"buy_price" json:"buy_price"`
+	MixTime              int    `db:"mix_time" json:"mix_time"`
 	FirstIngredientName  string `json:"first_ingredient_name"`
 	SecondIngredientName string `json:"second_ingredient_name"`
-	MixTime              int    `json:"mix_time"`
+	FirstIngredientID    int    `db:"first_ingredient_id,omitempty"`
+	SecondIngredientID   int    `db:"second_ingredient_id,omitempty"`
 }

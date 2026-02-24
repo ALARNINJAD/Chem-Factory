@@ -76,7 +76,7 @@ func creatTables() {
 
 func createMaterials() {
 
-	var materials []model.Material
+	var materials []material
 
 	rootPath, err := os.Getwd()
 	if err != nil {
@@ -91,22 +91,14 @@ func createMaterials() {
 
 	json.Unmarshal(data, &materials)
 
-	for _, material := range materials {
-		var rm repoMaterial
-		rm.name = material.Name
-		rm.sellPrice = material.SellPrice
-		rm.buyPrice = material.BuyPrice
-		rm.mixTime = material.MixTime
-		if err = rm.new(material.FirstIngredientName, material.SecondIngredientName); err != nil {
-			panic(fmt.Sprintf("Could not add the %s material to database.", rm.name))
+	for _, m := range materials {
+		if err = m.new(); err != nil {
+			panic(fmt.Sprintf("Could not add the %s material to database.", m.Name))
 		}
 	}
 }
 
-func NewUser(username string, password string) error {
-	usr := user{username: username, password: password}
-	if err := usr.new(); err != nil {
-		return err
-	}
-	return nil
+func SaveUser(usr model.User) error {
+	u := user{User: usr}
+	return u.new()
 }

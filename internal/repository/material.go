@@ -1,32 +1,26 @@
 package repository
 
-type repoMaterial struct {
-	id                 int    `db:"id"`
-	name               string `db:"name"`
-	sellPrice          int    `db:"sell_price"`
-	buyPrice           int    `db:"buy_price"`
-	firstIngredientID  int    `db:"first_ingredient_id"`
-	secondIngredientID int    `db:"second_ingredient_id"`
-	mixTime            int    `db:"mix_time"`
+import "chem-factory/internal/model"
+
+type material struct {
+	model.Material
 }
 
-func (rm *repoMaterial) new(firstIngredientName string, secondIngredientName string) error {
+func (m *material) new() error {
 
-	query := `
-		INSERT INTO material(name,sell_price,buy_price,mix_time)
-		VALUES (?, ?, ?, ?)`
+	query := `INSERT OR IGNORE INTO material(name,sell_price,buy_price,mix_time) VALUES (?, ?, ?, ?)`
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return err
 	}
-	stmt.Exec(rm.name, rm.sellPrice, rm.buyPrice, rm.mixTime)
+	stmt.Exec(m.Name, m.SellPrice, m.BuyPrice, m.MixTime)
 
-	db.QueryRow("SELECT id FROM material WHERE name = ?", rm.name).Scan(&rm.id)
-	db.QueryRow("SELECT id FROM material WHERE name = ?", firstIngredientName).Scan(&rm.firstIngredientID)
-	db.QueryRow("SELECT id FROM material WHERE name = ?", secondIngredientName).Scan(&rm.secondIngredientID)
+	db.QueryRow("SELECT id FROM material WHERE name = ?", m.Name).Scan(&m.ID)
+	db.QueryRow("SELECT id FROM material WHERE name = ?", m.FirstIngredientName).Scan(&m.FirstIngredientID)
+	db.QueryRow("SELECT id FROM material WHERE name = ?", m.SecondIngredientName).Scan(&m.SecondIngredientID)
 
-	db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", rm.firstIngredientID, rm.id)
-	db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", rm.secondIngredientID, rm.id)
+	db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", m.FirstIngredientID, m.ID)
+	db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", m.SecondIngredientID, m.ID)
 
 	return nil
 }
