@@ -25,13 +25,21 @@ func login(context *gin.Context) {
 
 	if err := context.ShouldBindJSON(&user); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{})
+		return
 	}
 
-	if !auth.CheckPassword(user) {
+	if !auth.CheckPassword(&user) {
 		context.JSON(http.StatusUnauthorized, gin.H{})
+		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{})
+	token, err := auth.GenerateJWT(user)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func register(context *gin.Context) {
