@@ -27,7 +27,7 @@ func login(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{})
 	}
 
-	if !auth.CheckUserPassword(user) {
+	if !auth.CheckPassword(user) {
 		context.JSON(http.StatusUnauthorized, gin.H{})
 	}
 
@@ -42,7 +42,11 @@ func register(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{})
 	}
 
-	if err := repository.SaveUser(user); err != nil {
+	if err := auth.HashPassword(&user); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{})
+	}
+
+	if err := repository.Save(user); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{})
 	}
 

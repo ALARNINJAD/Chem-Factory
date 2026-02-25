@@ -98,12 +98,12 @@ func createMaterials() {
 	}
 }
 
-func ExportUserPassword(usr model.User) (string, error) {
+func ExportPassword(usr model.User) (string, error) {
 	u := user{User: usr}
 	return u.password()
 }
 
-func SaveUser(usr model.User) error {
+func Save(usr model.User) error {
 	u := user{User: usr}
 	return u.save()
 }
