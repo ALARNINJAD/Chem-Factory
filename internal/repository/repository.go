@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"chem-factory/internal/model"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -96,14 +95,4 @@ func createMaterials() {
 			panic(fmt.Sprintf("Could not add the %s material to database.", m.Name))
 		}
 	}
-}
-
-func ExportPassword(usr model.User) (string, error) {
-	u := user{User: usr}
-	return u.password()
-}
-
-func Save(usr model.User) error {
-	u := user{User: usr}
-	return u.save()
 }

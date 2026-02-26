@@ -8,12 +8,11 @@ import (
 )
 
 func CheckPassword(user *model.User) bool {
-	savedHashedPassword, err := repository.ExportPassword(*user)
-	if err != nil {
+	password := user.Password
+	if err := repository.Export(user); err != nil {
 		return false
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(savedHashedPassword), []byte(user.Password))
-	user.Password = savedHashedPassword
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	return err == nil
 }
 
