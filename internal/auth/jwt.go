@@ -1,30 +1,27 @@
 package auth
 
 import (
-	"chem-factory/internal/model"
 	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const holyMolySuperSecretKey = "JAVID_SHAH"
-
-func GenerateJWT(user model.User) (string, error) {
+func (auth *authManager) GenerateJWT(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": user.Username,
+		"username": username,
 		"exp":      time.Now().Add(time.Hour).Unix(),
 	})
-	return token.SignedString([]byte(holyMolySuperSecretKey))
+	return token.SignedString([]byte(auth.secretKey))
 }
 
-func VerifyJWT(token string) (string, error) {
+func (auth *authManager) VerifyJWT(token string) (string, error) {
 
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("Invalid JWT.")
 		}
-		return []byte(holyMolySuperSecretKey), nil
+		return []byte(auth.secretKey), nil
 	})
 	if err != nil {
 		return "", err

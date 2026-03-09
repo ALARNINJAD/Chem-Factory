@@ -1,19 +1,48 @@
 package routes
 
 import (
-	"chem-factory/internal/auth"
-	"chem-factory/internal/model"
-	"chem-factory/internal/repository"
-	"net/http"
+	"chem-factory/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Register(server *gin.Engine) {
-	server.POST("/", root)
-	server.POST("/login", login)
-	server.POST("/register", register)
-	server.GET("/user", getUserData)
+var route *routesManager
+
+type RoutesManager interface {
+	Route()
+}
+
+type routesManager struct {
+	port    string
+	server  *gin.Engine
+	service service.ServiceManager
+}
+
+func Init(svr *gin.Engine, svc service.ServiceManager) *routesManager {
+	// data, err := os.ReadFile(filepath.Join(".", "configs", "route.json"))
+	// if err != nil {
+	// 	panic("Could not access route config file")
+	// }
+	// var rt []*routesManager
+	// err = json.Unmarshal(data, &rt)
+	// if err != nil {
+	// 	panic("Could not access route config")
+	// }
+	// log.Println(rt[0].port)
+	return &routesManager{server: svr, service: svc}
+}
+
+func (r *routesManager) Start() {
+	route = r
+	registerRoutes()
+	route.server.Run(":8090")
+}
+
+func registerRoutes() {
+	route.server.POST("/", root)
+	route.server.POST("/login", login)
+	route.server.POST("/register", register)
+	route.server.GET("/user", getUserData)
 	// get inventory
 	// get all products on sell
 	// buy product
@@ -23,74 +52,4 @@ func Register(server *gin.Engine) {
 
 func root(context *gin.Context) {
 
-}
-
-func getUserData(context *gin.Context) {
-
-	var user model.User
-
-	token := context.Request.Header.Get("Authorization")
-	if token == "" {
-		context.JSON(http.StatusUnauthorized, gin.H{})
-		return
-	}
-
-	var err error
-	if user.Username, err = auth.VerifyJWT(token); err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{})
-		return
-	}
-
-	if err = repository.Export(&user); err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
-	user.ID, user.Password = 0, ""
-	context.JSON(http.StatusOK, gin.H{"user": user})
-}
-
-func login(context *gin.Context) {
-
-	var user model.User
-
-	if err := context.ShouldBindJSON(&user); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{})
-		return
-	}
-
-	if !auth.CheckPassword(&user) {
-		context.JSON(http.StatusUnauthorized, gin.H{})
-		return
-	}
-
-	token, err := auth.GenerateJWT(user)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
-	context.JSON(http.StatusOK, gin.H{"token": token})
-}
-
-func register(context *gin.Context) {
-
-	var user model.User
-
-	if err := context.ShouldBindJSON(&user); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{})
-		return
-	}
-
-	if err := auth.HashPassword(&user); err != nil {
-		context.JSON(http.StatusForbidden, gin.H{})
-		return
-	}
-
-	if err := repository.Save(&user); err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
-	context.JSON(http.StatusCreated, gin.H{})
 }

@@ -1,15 +1,17 @@
 package main
 
 import (
+	"chem-factory/internal/auth"
 	"chem-factory/internal/repository"
 	"chem-factory/internal/routes"
+	"chem-factory/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	repository.Init()
-	server := gin.Default()
-	routes.Register(server)
-	server.Run(":8090")
+
+	routes.Init(
+		gin.Default(), service.Init(
+			auth.Init(), repository.Init())).Start()
 }
