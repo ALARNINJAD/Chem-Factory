@@ -1,38 +1,44 @@
 package service
 
 import (
-	"chem-factory/internal/model"
+	u "chem-factory/internal/dto/user"
 	"errors"
 )
 
-func (service *serviceManager) UserData(token string) (model.User, error) {
+func (service *serviceManager) UserData(token string) (u.UserDataResponse, error) {
 
-	var user model.User
-	var err error
-
-	if user.Username, err = service.auth.VerifyJWT(token); err != nil {
-		return model.User{}, err
+	username, err := service.auth.VerifyJWT(token)
+	if err != nil {
+		return u.UserDataResponse{}, err
 	}
 
-	if err = service.repository.ExportUserByUsername(&user); err != nil {
-		return model.User{}, err
+	user, err := service.repository.ExportUserByUsername(username)
+	if err != nil {
+		return u.UserDataResponse{}, err
 	}
 
-	return user, nil
+	userData := u.UserDataResponse{
+		Username: user.Username,
+		Balance:  user.Balance,
+		XP:       user.XP,
+		Level:    user.Level,
+	}
+
+	return userData, nil
 }
 
-func (service *serviceManager) Login(username string, password string) (string, error) {
+func (service *serviceManager) Login(userLR u.UserLoginRequest) (string, error) {
 
-	savedHashedPassword, err := service.repository.ExportPasswordByUsername(username)
+	savedHashedPassword, err := service.repository.ExportPasswordByUsername(userLR.Username)
 	if err != nil {
 		return "", err
 	}
 
-	if !service.auth.CheckPassword(password, savedHashedPassword) {
+	if !service.auth.CheckPassword(userLR.Password, savedHashedPassword) {
 		return "", errors.New("Password is wrong.")
 	}
 
-	token, err := service.auth.GenerateJWT(username)
+	token, err := service.auth.GenerateJWT(userLR.Username)
 	if err != nil {
 		return "", err
 	}
@@ -40,18 +46,19 @@ func (service *serviceManager) Login(username string, password string) (string, 
 	return token, nil
 }
 
-func (service *serviceManager) Register(username string, password string) error {
+func (service *serviceManager) Register(userRR u.UserRegisterRequest) error {
 
-	if _, err := service.repository.ExportIDbyUsername(username); err == nil {
+	// it's better to not use a functino like this
+	if _, err := service.repository.ExportIDbyUsername(userRR.Username); err == nil {
 		return errors.New("Username already exists.")
 	}
 
-	hashedPassword, err := service.auth.HashPassword(password)
+	hashedPassword, err := service.auth.HashPassword(userRR.Password)
 	if err != nil {
 		return err
 	}
 
-	err = service.repository.SaveNewUser(model.User{Username: username, Password: hashedPassword})
+	err = service.repository.SaveNewUser(userRR.Username, hashedPassword)
 	if err != nil {
 		return err
 	}

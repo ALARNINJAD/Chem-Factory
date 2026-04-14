@@ -1,7 +1,8 @@
 package routes
 
 import (
-	"chem-factory/internal/model"
+	e "chem-factory/internal/dto/error"
+	u "chem-factory/internal/dto/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,50 +10,51 @@ import (
 
 func getUserData(context *gin.Context) {
 
-	token := context.Request.Header.Get("Authorization")
-	if token == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Could not bind jwt."})
+	request := u.UserDataRequest{Token: context.Request.Header.Get("Authorization")}
+
+	if request.Token == "" {
+		context.JSON(http.StatusBadRequest, e.ErrorResponse{Error: "Could not bind jwt."})
 		return
 	}
 
-	user, err := route.service.UserData(token)
+	response, err := route.service.UserData(request.Token)
 	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Token is invalid."})
+		context.JSON(http.StatusUnauthorized, e.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"user": user})
+	context.JSON(http.StatusOK, response)
 }
 
 func login(context *gin.Context) {
 
-	var user model.User
-	if err := context.ShouldBindJSON(&user); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Could not bind json."})
+	var request u.UserLoginRequest
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, e.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	token, err := route.service.Login(user.Username, user.Password)
+	t, err := route.service.Login(request)
 	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Could not login."})
+		context.JSON(http.StatusUnauthorized, e.ErrorResponse{Error: err.Error()})
 		return
 	}
-
-	context.JSON(http.StatusOK, gin.H{"token": token})
+	response := u.UserLoginResponse{Token: t}
+	context.JSON(http.StatusOK, response)
 }
 
 func register(context *gin.Context) {
 
-	var user model.User
-	if err := context.ShouldBindJSON(&user); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Could not bind json."})
+	var request u.UserRegisterRequest
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, e.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	if err := route.service.Register(user.Username, user.Password); err != nil {
-		context.JSON(http.StatusForbidden, gin.H{"error": "Could not register user."})
+	if err := route.service.Register(request); err != nil {
+		context.JSON(http.StatusForbidden, e.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"massage": "Done."})
+	context.JSON(http.StatusCreated, u.UserRegisterResponse{Massage: "Done."})
 }

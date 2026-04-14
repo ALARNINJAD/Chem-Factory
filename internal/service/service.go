@@ -2,15 +2,15 @@ package service
 
 import (
 	"chem-factory/internal/auth"
-	"chem-factory/internal/model"
+	u "chem-factory/internal/dto/user"
 	"chem-factory/internal/repository"
 )
 
 type ServiceManager interface {
 	// user
-	Login(username string, password string) (string, error)
-	Register(username string, password string) error
-	UserData(token string) (model.User, error)
+	Login(userLR u.UserLoginRequest) (string, error)
+	Register(userRR u.UserRegisterRequest) error
+	UserData(token string) (u.UserDataResponse, error)
 }
 
 type serviceManager struct {

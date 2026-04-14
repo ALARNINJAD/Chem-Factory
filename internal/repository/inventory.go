@@ -1,19 +1,17 @@
 package repository
 
-func createShopTable(r *repositoryManager) {
+func createInventoryTable(r *repositoryManager) {
 	query := `
-	CREATE TABLE IF NOT EXISTS shop (
+	CREATE TABLE IF NOT EXISTS inventory (
 		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
 		user_id	INTEGER NOT NULL,
 		material_id	INTEGER NOT NULL,
-		number INTEGER NOT NULL DEFAULT 0 CHECK(10 >= "number" >= 1),
-		sell_price INTEGER NOT NULL CHECK("sell_price" >= 0),
-		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		number INTEGER NOT NULL DEFAULT 0 CHECK("number" >= 1),
 		UNIQUE("user_id","material_id"),
 		FOREIGN KEY("material_id") REFERENCES "material"("id"),
 		FOREIGN KEY("user_id") REFERENCES "user"("id")
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic("Could not create shop table.")
+		panic("Could not create inventory table.")
 	}
 }

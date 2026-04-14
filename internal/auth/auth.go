@@ -21,7 +21,6 @@ type authManager struct {
 }
 
 func Init() *authManager {
-
 	data, err := os.ReadFile(filepath.Join(".", "configs", "auth.json"))
 	if err != nil {
 		panic("Could not access auth config file")

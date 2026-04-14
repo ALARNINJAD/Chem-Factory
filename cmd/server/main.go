@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	routes.Init(
 		gin.Default(), service.Init(
 			auth.Init(), repository.Init())).Start()

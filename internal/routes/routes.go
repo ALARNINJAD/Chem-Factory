@@ -2,6 +2,7 @@ package routes
 
 import (
 	"chem-factory/internal/service"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,6 +34,7 @@ func Init(svr *gin.Engine, svc service.ServiceManager) *routesManager {
 }
 
 func (r *routesManager) Start() {
+	fmt.Println("Server Is Started")
 	route = r
 	registerRoutes()
 	route.server.Run(":8090")
