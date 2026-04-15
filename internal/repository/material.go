@@ -41,23 +41,6 @@ func createMaterialTable(r *repositoryManager) {
 	}
 }
 
-func (r *repositoryManager) SaveMaterial(m material) error {
-
-	// this is not the right way for inserting
-
-	r.db.Exec("INSERT OR IGNORE INTO material(name,sell_price,buy_price,mix_time) VALUES (?, ?, ?, ?)",
-		m.Name, m.SellPrice, m.BuyPrice, m.MixTime)
-
-	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.Name).Scan(&m.ID)
-	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.FirstIngredientName).Scan(&m.FirstIngredientID)
-	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.SecondIngredientName).Scan(&m.SecondIngredientID)
-
-	r.db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", m.FirstIngredientID, m.ID)
-	r.db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", m.SecondIngredientID, m.ID)
-
-	return nil
-}
-
 func (r *repositoryManager) createMaterials() {
 
 	var materials []material
@@ -74,4 +57,22 @@ func (r *repositoryManager) createMaterials() {
 			panic(fmt.Sprintf("Could not add the %s material to database.", m.Name))
 		}
 	}
+}
+
+func (r *repositoryManager) SaveMaterial(m material) error {
+
+	_, err := r.db.Exec("INSERT OR IGNORE INTO material(name,first_ingredient_name,second_ingredient_name,sell_price,buy_price,mix_time) VALUES (?, ?, ?, ?, ?, ?)",
+		m.Name, m.FirstIngredientName, m.SecondIngredientName, m.SellPrice, m.BuyPrice, m.MixTime)
+	if err != nil {
+		return err
+	}
+
+	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.FirstIngredientName).Scan(&m.FirstIngredientID)
+	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.SecondIngredientName).Scan(&m.SecondIngredientID)
+
+	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.Name).Scan(&m.ID)
+	r.db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", m.FirstIngredientID, m.ID)
+	r.db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", m.SecondIngredientID, m.ID)
+
+	return nil
 }

@@ -19,8 +19,7 @@ type RepositoryManager interface {
 	// Material
 	SaveMaterial(m material) error
 	// shop
-	// NewItemsForSell(shop model.Shop) error
-	// SellItems()
+
 	// inventory
 }
 
