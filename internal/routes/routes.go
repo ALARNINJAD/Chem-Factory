@@ -20,16 +20,6 @@ type routesManager struct {
 }
 
 func Init(svr *gin.Engine, svc service.ServiceManager) *routesManager {
-	// data, err := os.ReadFile(filepath.Join(".", "configs", "route.json"))
-	// if err != nil {
-	// 	panic("Could not access route config file")
-	// }
-	// var rt []*routesManager
-	// err = json.Unmarshal(data, &rt)
-	// if err != nil {
-	// 	panic("Could not access route config")
-	// }
-	// log.Println(rt[0].port)
 	return &routesManager{server: svr, service: svc}
 }
 
@@ -45,6 +35,9 @@ func registerRoutes() {
 	route.server.POST("/login", login)
 	route.server.POST("/register", register)
 	route.server.GET("/user", getUserData)
+	// route.server.POST("/inventory", postInventoryItems)
+	// route.server.DELETE("/inventory", deleteInventoryItems)
+
 	// get inventory
 	// get all products on sell
 	// buy product

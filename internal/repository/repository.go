@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"chem-factory/internal/model"
 	"database/sql"
 	"path/filepath"
 
@@ -18,9 +19,12 @@ type RepositoryManager interface {
 	ExportUsernameByID(id int) (string, error)
 	// Material
 	SaveMaterial(m material) error
+	ExportIDbyMaterialName(name string) (int, error)
 	// shop
 
 	// inventory
+	AddToInventory(i model.Inventory) error
+	RemoveFromInventory(i model.Inventory) error
 }
 
 type repositoryManager struct {
@@ -44,5 +48,5 @@ func (r *repositoryManager) creatTables() {
 	createUserTable(r)
 	createMaterialTable(r)
 	createShopTable(r)
-	createShopTable(r)
+	createInventoryTable(r)
 }

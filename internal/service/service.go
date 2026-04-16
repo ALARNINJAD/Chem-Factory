@@ -2,6 +2,7 @@ package service
 
 import (
 	"chem-factory/internal/auth"
+	i "chem-factory/internal/dto/inventory"
 	u "chem-factory/internal/dto/user"
 	"chem-factory/internal/repository"
 )
@@ -11,6 +12,9 @@ type ServiceManager interface {
 	Login(userLR u.UserLoginRequest) (string, error)
 	Register(userRR u.UserRegisterRequest) error
 	UserData(token string) (u.UserDataResponse, error)
+	// inventory
+	AddToInventory(inv i.InventoryAddRequest) (i.InventoryAddResponse, error)
+	RemoveFromInventory(inv i.InventoryAddRequest) (i.InventoryRemoveResponse, error)
 }
 
 type serviceManager struct {

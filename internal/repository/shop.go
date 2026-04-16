@@ -2,15 +2,15 @@ package repository
 
 import "time"
 
-type Shop struct {
-	ID           int
-	UserID       int
-	MaterialID   int
-	Username     string
-	MaterialName string
-	Number       int
-	SellPrice    int
-	DateTime     time.Time
+type shop struct {
+	ID           int       `json:"id"`
+	UserID       int       `json:"user_id"`
+	MaterialID   int       `json:"material_id"`
+	Username     string    `json:"username"`
+	MaterialName string    `json:"material_name"`
+	Number       int       `json:"number"`
+	SellPrice    int       `json:"sell_price"`
+	DateTime     time.Time `json:"date_time"`
 }
 
 func createShopTable(r *repositoryManager) {
@@ -25,6 +25,7 @@ func createShopTable(r *repositoryManager) {
 		sell_price INTEGER NOT NULL CHECK("sell_price" >= 0),
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE("user_id","material_id"),
+		UNIQUE("username","material_name"),
 		FOREIGN KEY("material_id") REFERENCES "material"("id"),
 		FOREIGN KEY("user_id") REFERENCES "user"("id")
 	)`

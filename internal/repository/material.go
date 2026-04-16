@@ -71,8 +71,20 @@ func (r *repositoryManager) SaveMaterial(m material) error {
 	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.SecondIngredientName).Scan(&m.SecondIngredientID)
 
 	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.Name).Scan(&m.ID)
-	r.db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", m.FirstIngredientID, m.ID)
-	r.db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", m.SecondIngredientID, m.ID)
+	_, err = r.db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", m.FirstIngredientID, m.ID)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", m.SecondIngredientID, m.ID)
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (r *repositoryManager) ExportIDbyMaterialName(name string) (int, error) {
+	var id int
+	err := r.db.QueryRow("SELECT id FROM material WHERE name = ?", name).Scan(&id)
+	return id, err
 }

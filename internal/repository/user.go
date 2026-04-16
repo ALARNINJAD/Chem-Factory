@@ -1,12 +1,12 @@
 package repository
 
 type user struct {
-	ID       int
-	Username string
-	Password string
-	Balance  int
-	XP       int
-	Level    int
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Balance  int    `json:"balance"`
+	XP       int    `json:"xp"`
+	Level    int    `json:"level"`
 }
 
 func createUserTable(r *repositoryManager) {

@@ -1,8 +1,7 @@
 package model
 
-// type Inventory struct {
-// 	ID         int `json:"id"`
-// 	UserID     int `json:"user_id"`
-// 	MaterialID int `json:"material_id"`
-// 	Number     int `json:"number"`
-// }
+type Inventory struct {
+	Username     string `json:"username"`
+	MaterialName string `json:"material_name"`
+	Number       int    `json:"number"`
+}

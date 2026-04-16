@@ -39,8 +39,8 @@ func login(context *gin.Context) {
 		context.JSON(http.StatusUnauthorized, e.ErrorResponse{Error: err.Error()})
 		return
 	}
-	response := u.UserLoginResponse{Token: t}
-	context.JSON(http.StatusOK, response)
+
+	context.JSON(http.StatusOK, u.UserLoginResponse{Token: t})
 }
 
 func register(context *gin.Context) {

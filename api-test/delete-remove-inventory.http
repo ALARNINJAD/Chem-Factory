@@ -1,0 +1,7 @@
+DELETE http://localhost:8090/inventory
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYzNTEwNjMsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.gy6b55q6IBzwln1sxuXOHEYdQ4HrY0F-zTufHdJpoac
+
+{
+    "name":"water",
+    "number":3
+}
