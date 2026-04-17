@@ -3,6 +3,7 @@ package service
 import (
 	"chem-factory/internal/auth"
 	i "chem-factory/internal/dto/inventory"
+	"chem-factory/internal/dto/shop"
 	u "chem-factory/internal/dto/user"
 	"chem-factory/internal/repository"
 )
@@ -15,6 +16,9 @@ type ServiceManager interface {
 	// inventory
 	AddToInventory(inv i.InventoryAddRequest) (i.InventoryAddResponse, error)
 	RemoveFromInventory(inv i.InventoryAddRequest) (i.InventoryRemoveResponse, error)
+	ExportUserInventory(inv i.InventoryExportRequest) (i.InventoryExportResponse, error)
+	// shop
+	ItemsForSell() (shop.ShopItemsResponse, error)
 }
 
 type serviceManager struct {
@@ -23,5 +27,8 @@ type serviceManager struct {
 }
 
 func Init(a auth.AuthManager, r repository.RepositoryManager) *serviceManager {
-	return &serviceManager{auth: a, repository: r}
+	s := serviceManager{auth: a, repository: r}
+	s.createAdminUser()
+	s.createAdminMaterials()
+	return &s
 }

@@ -1,0 +1,2 @@
+GET http://localhost:8090/inventory
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYzNjY1NjYsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.lRlS0420th2R3hSjEkLFMxRBSug2cXLClB6egX71Yfg

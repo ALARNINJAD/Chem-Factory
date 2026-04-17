@@ -39,7 +39,14 @@ func createInventoryTable(r *repositoryManager) {
 func (r *repositoryManager) AddToInventory(i model.Inventory) error {
 
 	userID, err := r.ExportIDbyUsername(i.Username)
+	if err != nil {
+		return err
+	}
+
 	materialID, err := r.ExportIDbyMaterialName(i.MaterialName)
+	if err != nil {
+		return err
+	}
 
 	inv := inventory{
 		UserID:       userID,
@@ -105,4 +112,44 @@ func (r *repositoryManager) RemoveFromInventory(i model.Inventory) error {
 	}
 
 	return nil
+}
+
+func (r *repositoryManager) ExportInventory(username string) ([]inventory, error) {
+
+	rows, err := r.db.Query(`
+        SELECT id, user_id, material_id, username, material_name, number, date_time
+        FROM inventory 
+        WHERE username = ?`, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []inventory
+
+	for rows.Next() {
+		var i inventory
+
+		err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.MaterialID,
+			&i.Username,
+			&i.MaterialName,
+			&i.Number,
+			&i.DateTime,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, i)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }

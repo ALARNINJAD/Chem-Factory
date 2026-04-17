@@ -1,16 +1,13 @@
 package repository
 
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"path/filepath"
-)
+import "chem-factory/internal/model"
 
 type material struct {
 	ID                   int    `json:"id,omitempty"`
+	UserID               int    `json:"user_id,omitempty"`
 	FirstIngredientID    int    `json:"first_ingredient_id,omitempty"`
 	SecondIngredientID   int    `json:"second_ingredient_id,omitempty"`
+	Username             string `json:"username"`
 	FirstIngredientName  string `json:"first_ingredient_name"`
 	SecondIngredientName string `json:"second_ingredient_name"`
 	Name                 string `json:"name"`
@@ -19,12 +16,21 @@ type material struct {
 	MixTime              int    `json:"mix_time"`
 }
 
+type baseMaterial struct {
+	Username  string `json:"username"`
+	Name      string `json:"name"`
+	SellPrice int    `json:"sell_price"`
+	BuyPrice  int    `json:"buy_price"`
+}
+
 func createMaterialTable(r *repositoryManager) {
 	query := `
 	CREATE TABLE IF NOT EXISTS material (
 		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		first_ingredient_id INTEGER,
 		second_ingredient_id INTEGER,
+		username TEXT NOT NULL,
 		name TEXT NOT NULL UNIQUE,
 		first_ingredient_name TEXT NOT NULL,
 		second_ingredient_name TEXT NOT NULL,
@@ -33,6 +39,7 @@ func createMaterialTable(r *repositoryManager) {
 		mix_time INTEGER NOT NULL CHECK("mix_time" >= 0),
 		UNIQUE("first_ingredient_id","second_ingredient_id"),
 		UNIQUE("first_ingredient_name","second_ingredient_name"),
+		FOREIGN KEY("user_id") REFERENCES "user"("id")
 		FOREIGN KEY("first_ingredient_id") REFERENCES "material"("id"),
 		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
 	)`
@@ -41,28 +48,28 @@ func createMaterialTable(r *repositoryManager) {
 	}
 }
 
-func (r *repositoryManager) createMaterials() {
+func (r *repositoryManager) SaveMaterial(mtrl model.Material) error {
 
-	var materials []material
+	m := material{
+		Username:             mtrl.Username,
+		Name:                 mtrl.Name,
+		FirstIngredientName:  mtrl.FirstIngredientName,
+		SecondIngredientName: mtrl.SecondIngredientName,
+		SellPrice:            mtrl.SellPrice,
+		BuyPrice:             mtrl.BuyPrice,
+		MixTime:              mtrl.MixTime,
+	}
 
-	data, err := os.ReadFile(filepath.Join(".", "configs", "materials.json"))
+	var err error
+	m.UserID, err = r.ExportIDbyUsername(m.Username)
 	if err != nil {
-		panic("Could not open materials file.")
+		return err
 	}
 
-	json.Unmarshal(data, &materials)
-
-	for _, m := range materials {
-		if err = r.SaveMaterial(m); err != nil {
-			panic(fmt.Sprintf("Could not add the %s material to database.", m.Name))
-		}
-	}
-}
-
-func (r *repositoryManager) SaveMaterial(m material) error {
-
-	_, err := r.db.Exec("INSERT OR IGNORE INTO material(name,first_ingredient_name,second_ingredient_name,sell_price,buy_price,mix_time) VALUES (?, ?, ?, ?, ?, ?)",
-		m.Name, m.FirstIngredientName, m.SecondIngredientName, m.SellPrice, m.BuyPrice, m.MixTime)
+	_, err = r.db.Exec(`INSERT OR IGNORE INTO
+		material(name,user_id,username,first_ingredient_name,second_ingredient_name,sell_price,buy_price,mix_time)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		m.Name, m.UserID, m.Username, m.FirstIngredientName, m.SecondIngredientName, m.SellPrice, m.BuyPrice, m.MixTime)
 	if err != nil {
 		return err
 	}
@@ -87,4 +94,41 @@ func (r *repositoryManager) ExportIDbyMaterialName(name string) (int, error) {
 	var id int
 	err := r.db.QueryRow("SELECT id FROM material WHERE name = ?", name).Scan(&id)
 	return id, err
+}
+
+func (r *repositoryManager) ExportBaseMaterials() ([]baseMaterial, error) {
+
+	rows, err := r.db.Query(`
+        SELECT username, name, sell_price, buy_price
+        FROM material 
+        WHERE second_ingredient_id = first_ingredient_id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []baseMaterial
+
+	for rows.Next() {
+		var m baseMaterial
+
+		err := rows.Scan(
+			&m.Username,
+			&m.Name,
+			&m.SellPrice,
+			&m.BuyPrice,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, m)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }

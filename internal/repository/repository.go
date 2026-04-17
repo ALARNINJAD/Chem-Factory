@@ -18,13 +18,15 @@ type RepositoryManager interface {
 	ExportIDbyUsername(username string) (int, error)
 	ExportUsernameByID(id int) (string, error)
 	// Material
-	SaveMaterial(m material) error
+	SaveMaterial(mtrl model.Material) error
 	ExportIDbyMaterialName(name string) (int, error)
+	ExportBaseMaterials() ([]baseMaterial, error)
 	// shop
-
+	ExportShop() ([]shop, error)
 	// inventory
 	AddToInventory(i model.Inventory) error
 	RemoveFromInventory(i model.Inventory) error
+	ExportInventory(username string) ([]inventory, error)
 }
 
 type repositoryManager struct {
@@ -39,7 +41,6 @@ func Init() *repositoryManager {
 		panic("Could not open database.")
 	}
 	r.creatTables()
-	r.createMaterials()
 	return &r
 }
 

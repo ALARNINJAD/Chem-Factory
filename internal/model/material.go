@@ -1,7 +1,8 @@
 package model
 
-type material struct {
+type Material struct {
 	Name                 string `json:"name"`
+	Username             string `json:"username"`
 	FirstIngredientName  string `json:"first_ingredient_name"`
 	SecondIngredientName string `json:"second_ingredient_name"`
 	SellPrice            int    `json:"sell_price"`

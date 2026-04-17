@@ -9,7 +9,7 @@ type shop struct {
 	Username     string    `json:"username"`
 	MaterialName string    `json:"material_name"`
 	Number       int       `json:"number"`
-	SellPrice    int       `json:"sell_price"`
+	Price        int       `json:"price"`
 	DateTime     time.Time `json:"date_time"`
 }
 
@@ -22,7 +22,7 @@ func createShopTable(r *repositoryManager) {
 		username TEXT NOT NULL,
 		material_name TEXT NOT NULL,
 		number INTEGER NOT NULL DEFAULT 0 CHECK(10 >= "number" >= 1),
-		sell_price INTEGER NOT NULL CHECK("sell_price" >= 0),
+		price INTEGER NOT NULL CHECK("price" >= 0),
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE("user_id","material_id"),
 		UNIQUE("username","material_name"),
@@ -34,8 +34,40 @@ func createShopTable(r *repositoryManager) {
 	}
 }
 
-func NewItemsForSell() error {
-	return nil
-}
+func (r *repositoryManager) ExportShop() ([]shop, error) {
 
-// SellItems()
+	rows, err := r.db.Query("SELECT * FROM shop")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []shop
+
+	for rows.Next() {
+		var s shop
+
+		err := rows.Scan(
+			&s.ID,
+			&s.UserID,
+			&s.MaterialID,
+			&s.Username,
+			&s.MaterialName,
+			&s.Number,
+			&s.Price,
+			&s.DateTime,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, s)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}

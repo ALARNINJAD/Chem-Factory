@@ -36,3 +36,25 @@ func (s *serviceManager) RemoveFromInventory(inv i.InventoryAddRequest) (i.Inven
 
 	return i.InventoryRemoveResponse{Massage: "Done."}, nil
 }
+
+func (s *serviceManager) ExportUserInventory(inv i.InventoryExportRequest) (i.InventoryExportResponse, error) {
+
+	username, err := s.auth.VerifyJWT(inv.Token)
+	if err != nil {
+		return i.InventoryExportResponse{}, err
+	}
+
+	list, err := s.repository.ExportInventory(username)
+	if err != nil {
+		return i.InventoryExportResponse{}, err
+	}
+
+	var ier i.InventoryExportResponse
+
+	for _, l := range list {
+		ier.InventoryList = append(ier.InventoryList, model.Inventory{
+			Username: l.Username, MaterialName: l.MaterialName, Number: l.Number})
+	}
+
+	return ier, nil
+}

@@ -51,5 +51,22 @@ func deleteInventoryItems(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusBadRequest, response)
+	context.JSON(http.StatusOK, response)
+}
+
+func getInventory(context *gin.Context) {
+
+	request := i.InventoryExportRequest{Token: context.Request.Header.Get("Authorization")}
+
+	if request.Token == "" {
+		context.JSON(http.StatusBadRequest, e.ErrorResponse{Error: "Could not bind jwt."})
+		return
+	}
+
+	response, err := route.service.ExportUserInventory(request)
+	if err != nil {
+		context.JSON(http.StatusForbidden, e.ErrorResponse{Error: err.Error()})
+	}
+
+	context.JSON(http.StatusOK, response)
 }
