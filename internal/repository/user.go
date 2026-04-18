@@ -72,3 +72,23 @@ func (r *repositoryManager) SaveNewUser(username string, password string) error 
 	_, err := r.db.Exec("INSERT INTO user(username, password) VALUES (?, ?)", username, password)
 	return err
 }
+
+func (r *repositoryManager) IncreaseBalance(username string, amount int) error {
+
+	_, err := r.db.Exec("UPDATE user SET balance = balance + ? WHERE username = ?", amount, username)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *repositoryManager) ReduceBalance(username string, amount int) error {
+
+	_, err := r.db.Exec("UPDATE user SET balance = balance - ? WHERE username = ?", amount, username)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

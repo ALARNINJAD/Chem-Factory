@@ -17,12 +17,16 @@ type RepositoryManager interface {
 	ExportPasswordByUsername(username string) (string, error)
 	ExportIDbyUsername(username string) (int, error)
 	ExportUsernameByID(id int) (string, error)
+	IncreaseBalance(username string, amount int) error
+	ReduceBalance(username string, amount int) error
 	// Material
 	SaveMaterial(mtrl model.Material) error
 	ExportIDbyMaterialName(name string) (int, error)
 	ExportBaseMaterials() ([]baseMaterial, error)
 	// shop
 	ExportShop() ([]shop, error)
+	AddToShop(s model.Shop) error
+	RemoveFromShop(s model.Shop) error
 	// inventory
 	AddToInventory(i model.Inventory) error
 	RemoveFromInventory(i model.Inventory) error

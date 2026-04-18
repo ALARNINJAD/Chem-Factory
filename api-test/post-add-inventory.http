@@ -1,5 +1,5 @@
 POST http://localhost:8090/inventory
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYzNjY1NjYsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.lRlS0420th2R3hSjEkLFMxRBSug2cXLClB6egX71Yfg
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY0OTgyODksInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.wO-OLxEgRz1eCyGI-seiuGIE5is7tIM6f20EBNr1KBw
 
 {
     "name":"wead",

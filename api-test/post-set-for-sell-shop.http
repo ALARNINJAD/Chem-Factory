@@ -1,0 +1,8 @@
+POST http://localhost:8090/shop
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY1MDI1MTksInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9._FlFFsbJM50eQhD1anFNmD5PdM4k0NrlEpIFbw7mMWc
+
+{
+    "material_name": "water",
+    "number": 1,
+    "price": 6
+}

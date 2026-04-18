@@ -56,7 +56,7 @@ func (r *repositoryManager) AddToInventory(i model.Inventory) error {
 		Number:       i.Number,
 	}
 
-	r.db.QueryRow("SELECT id FROM inventory WHERE username = ? AND material_name = ?", inv.Username, inv.MaterialName).Scan(&inv.ID)
+	r.db.QueryRow("SELECT id FROM inventory WHERE user_id = ? AND material_id = ?", inv.UserID, inv.MaterialID).Scan(&inv.ID)
 
 	if inv.ID != 0 {
 		_, err := r.db.Exec("UPDATE inventory SET number = number + ? WHERE id = ?", inv.Number, inv.ID)
@@ -108,6 +108,9 @@ func (r *repositoryManager) RemoveFromInventory(i model.Inventory) error {
 	} else {
 
 		_, err = r.db.Exec("UPDATE inventory SET number = number - ? WHERE id = ?", inv.Number, inv.ID)
+		if err != nil {
+			return err
+		}
 
 	}
 

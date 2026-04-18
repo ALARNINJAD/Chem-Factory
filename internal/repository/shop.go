@@ -1,6 +1,10 @@
 package repository
 
-import "time"
+import (
+	"chem-factory/internal/model"
+	"errors"
+	"time"
+)
 
 type shop struct {
 	ID           int       `json:"id"`
@@ -24,8 +28,8 @@ func createShopTable(r *repositoryManager) {
 		number INTEGER NOT NULL DEFAULT 0 CHECK(10 >= "number" >= 1),
 		price INTEGER NOT NULL CHECK("price" >= 0),
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		UNIQUE("user_id","material_id"),
-		UNIQUE("username","material_name"),
+		UNIQUE("user_id","material_id","price"),
+		UNIQUE("username","material_name","price"),
 		FOREIGN KEY("material_id") REFERENCES "material"("id"),
 		FOREIGN KEY("user_id") REFERENCES "user"("id")
 	)`
@@ -70,4 +74,89 @@ func (r *repositoryManager) ExportShop() ([]shop, error) {
 	}
 
 	return list, nil
+}
+
+func (r *repositoryManager) AddToShop(s model.Shop) error {
+
+	userID, err := r.ExportIDbyUsername(s.Username)
+	if err != nil {
+		return err
+	}
+
+	materialID, err := r.ExportIDbyMaterialName(s.MaterialName)
+	if err != nil {
+		return err
+	}
+
+	shp := shop{
+		UserID:       userID,
+		MaterialID:   materialID,
+		Username:     s.Username,
+		MaterialName: s.MaterialName,
+		Number:       s.Number,
+		Price:        s.Price,
+	}
+
+	r.db.QueryRow("SELECT id FROM shop WHERE user_id = ? AND material_id = ? AND price = ?",
+		shp.UserID, shp.MaterialID, shp.Price).Scan(&shp.ID)
+
+	if shp.ID != 0 {
+		_, err := r.db.Exec("UPDATE shop SET number = number + ? WHERE id = ?", shp.Number, shp.ID)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	_, err = r.db.Exec("INSERT INTO shop(user_id,material_id,username,material_name,number,price) VALUES(?,?,?,?,?,?)",
+		shp.UserID, shp.MaterialID, shp.Username, shp.MaterialName, shp.Number, shp.Price)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *repositoryManager) RemoveFromShop(s model.Shop) error {
+
+	shp := shop{
+		Username:     s.Username,
+		MaterialName: s.MaterialName,
+		Number:       s.Number,
+		Price:        s.Price,
+	}
+
+	err := r.db.QueryRow("SELECT id FROM shop WHERE username = ? AND material_name = ? AND price = ?",
+		shp.Username, shp.MaterialName, shp.Price).Scan(&shp.ID)
+	if err != nil {
+		return err
+	}
+
+	var number int
+	err = r.db.QueryRow("SELECT number FROM shop WHERE id = ?", shp.ID).Scan(&number)
+	if err != nil {
+		return err
+	}
+
+	if number < shp.Number {
+
+		return errors.New("Could not remove items from shop.")
+
+	} else if number == shp.Number {
+
+		_, err = r.db.Exec("DELETE FROM shop WHERE id = ?", shp.ID)
+		if err != nil {
+			return err
+		}
+
+	} else {
+
+		_, err = r.db.Exec("UPDATE shop SET number = number - ? WHERE id = ?", shp.Number, shp.ID)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }

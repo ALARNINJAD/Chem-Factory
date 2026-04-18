@@ -19,6 +19,8 @@ type ServiceManager interface {
 	ExportUserInventory(inv i.InventoryExportRequest) (i.InventoryExportResponse, error)
 	// shop
 	ItemsForSell() (shop.ShopItemsResponse, error)
+	Buy(shp shop.ShopBuyRequest) error
+	SetForSell(shp shop.ShopSetForSellRequest) error
 }
 
 type serviceManager struct {

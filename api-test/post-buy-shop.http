@@ -1,0 +1,9 @@
+POST http://localhost:8090/shop/buy
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY1MDI5ODYsInVzZXJuYW1lIjoibWFtYWQifQ.ribnIRyQ-JA7xQxT-EXOFkjsBVKxBFepVVO-mGSu41o
+
+{
+    "seller_username": "alarninjad",
+    "material_name": "water",
+    "number": 2,
+    "price": 6
+}

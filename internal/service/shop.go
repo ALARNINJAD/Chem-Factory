@@ -3,6 +3,7 @@ package service
 import (
 	"chem-factory/internal/dto/shop"
 	"chem-factory/internal/model"
+	"errors"
 )
 
 func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
@@ -39,4 +40,79 @@ func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
 	}
 
 	return shopItems, nil
+}
+
+func (s *serviceManager) Buy(shp shop.ShopBuyRequest) error {
+
+	username, err := s.auth.VerifyJWT(shp.Token)
+	if err != nil {
+		return err
+	}
+	if username == shp.SellerUsername {
+		return errors.New("Unacceptable request.")
+	}
+
+	ms := model.Shop{
+		Username:     shp.SellerUsername,
+		MaterialName: shp.MaterialName,
+		Number:       shp.Number,
+		Price:        shp.Price,
+	}
+
+	if err = s.repository.IncreaseBalance(ms.Username, ms.Number*ms.Price); err != nil {
+		return err
+	}
+
+	if ms.Username != "admin" {
+		if err = s.repository.RemoveFromShop(ms); err != nil {
+			return err
+		}
+	}
+
+	mi := model.Inventory{
+		Username:     username,
+		MaterialName: shp.MaterialName,
+		Number:       shp.Number,
+	}
+
+	if err = s.repository.AddToInventory(mi); err != nil {
+		return err
+	}
+
+	if err = s.repository.ReduceBalance(username, ms.Price*ms.Number); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *serviceManager) SetForSell(shp shop.ShopSetForSellRequest) error {
+
+	username, err := s.auth.VerifyJWT(shp.Token)
+	if err != nil {
+		return err
+	}
+
+	ms := model.Shop{
+		Username:     username,
+		MaterialName: shp.MaterialName,
+		Number:       shp.Number,
+		Price:        shp.Price,
+	}
+
+	if err = s.repository.AddToShop(ms); err != nil {
+		return err
+	}
+
+	mi := model.Inventory{
+		Username:     username,
+		MaterialName: shp.MaterialName,
+		Number:       shp.Number,
+	}
+
+	if err = s.repository.RemoveFromInventory(mi); err != nil {
+		return err
+	}
+
+	return nil
 }

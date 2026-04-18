@@ -39,6 +39,8 @@ func registerRoutes() {
 	route.server.DELETE("/inventory", deleteInventoryItems)
 	route.server.GET("/inventory", getInventory)
 	route.server.GET("/shop", getShopItems)
+	route.server.POST("/shop/buy", getBuyShopItems)
+	route.server.POST("/shop", postSetForSell)
 
 	// get inventory
 	// get all products on sell

@@ -14,7 +14,12 @@ func (s *serviceManager) createAdminUser() {
 		return
 	}
 
-	if err := s.repository.SaveNewUser("admin", "admin"); err != nil {
+	hashedPassword, err := s.auth.HashPassword("admin")
+	if err != nil {
+		panic(fmt.Sprintf("Could not register admin. %s", err.Error()))
+	}
+
+	if err := s.repository.SaveNewUser("admin", hashedPassword); err != nil {
 		panic(fmt.Sprintf("Could not register admin. %s", err.Error()))
 	}
 }
