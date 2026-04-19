@@ -132,3 +132,41 @@ func (r *repositoryManager) ExportBaseMaterials() ([]baseMaterial, error) {
 
 	return list, nil
 }
+
+func (r *repositoryManager) ExportMaterialByID(id int) (material, error) {
+
+	var m material
+
+	err := r.db.QueryRow(`
+		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
+		username, name, first_ingredient_name, second_ingredient_name,
+		sell_price, buy_price, mix_time
+		FROM material WHERE id = ? `, id,
+	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
+		&m.Username, &m.Name, &m.FirstIngredientName, &m.SecondIngredientName,
+		&m.SellPrice, &m.BuyPrice, &m.MixTime)
+	if err != nil {
+		return material{}, err
+	}
+
+	return m, nil
+}
+
+func (r *repositoryManager) ExportMaterialByIngrID(firstID int, secondID int) (material, error) {
+
+	var m material
+
+	err := r.db.QueryRow(`
+		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
+		username, name, first_ingredient_name, second_ingredient_name,
+		sell_price, buy_price, mix_time
+		FROM material  WHERE first_ingredient_id = ? AND second_ingredient_id = ?`, firstID, secondID,
+	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
+		&m.Username, &m.Name, &m.FirstIngredientName, &m.SecondIngredientName,
+		&m.SellPrice, &m.BuyPrice, &m.MixTime)
+	if err != nil {
+		return material{}, err
+	}
+
+	return m, nil
+}

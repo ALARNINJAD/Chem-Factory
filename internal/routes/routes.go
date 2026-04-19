@@ -31,7 +31,7 @@ func (r *routesManager) Start() {
 }
 
 func registerRoutes() {
-	route.server.POST("/", root)
+	// route.server.POST("/", root)
 	route.server.POST("/login", login)
 	route.server.POST("/register", register)
 	route.server.GET("/user", getUserData)
@@ -41,14 +41,11 @@ func registerRoutes() {
 	route.server.GET("/shop", getShopItems)
 	route.server.POST("/shop/buy", getBuyShopItems)
 	route.server.POST("/shop", postSetForSell)
+	route.server.POST("/mixer", postAddToMixer)
 
 	// get inventory
 	// get all products on sell
 	// buy product
 	// get mixing recipie
 	// post new product
-}
-
-func root(context *gin.Context) {
-
 }

@@ -23,6 +23,8 @@ type RepositoryManager interface {
 	SaveMaterial(mtrl model.Material) error
 	ExportIDbyMaterialName(name string) (int, error)
 	ExportBaseMaterials() ([]baseMaterial, error)
+	ExportMaterialByID(id int) (material, error)
+	ExportMaterialByIngrID(firstID int, secondID int) (material, error)
 	// shop
 	ExportShop() ([]shop, error)
 	AddToShop(s model.Shop) error
@@ -31,6 +33,9 @@ type RepositoryManager interface {
 	AddToInventory(i model.Inventory) error
 	RemoveFromInventory(i model.Inventory) error
 	ExportInventory(username string) ([]inventory, error)
+	// mixer
+	AddToMixer(m model.Mixer) (int, error)
+	ExportMixRowByID(id int) (mixer, error)
 }
 
 type repositoryManager struct {
@@ -54,4 +59,5 @@ func (r *repositoryManager) creatTables() {
 	createMaterialTable(r)
 	createShopTable(r)
 	createInventoryTable(r)
+	createMixerTable(r)
 }

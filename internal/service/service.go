@@ -3,6 +3,7 @@ package service
 import (
 	"chem-factory/internal/auth"
 	i "chem-factory/internal/dto/inventory"
+	"chem-factory/internal/dto/mixer"
 	"chem-factory/internal/dto/shop"
 	u "chem-factory/internal/dto/user"
 	"chem-factory/internal/repository"
@@ -21,6 +22,8 @@ type ServiceManager interface {
 	ItemsForSell() (shop.ShopItemsResponse, error)
 	Buy(shp shop.ShopBuyRequest) error
 	SetForSell(shp shop.ShopSetForSellRequest) error
+	// mixer
+	AddToMixer(m mixer.MixerAddRequest) (int, error)
 }
 
 type serviceManager struct {

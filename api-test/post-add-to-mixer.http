@@ -1,9 +1,8 @@
-POST http://localhost:8090/shop/buy
+POST http://localhost:8090/mixer
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY1MjM4MDUsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.LeB0EXiFBWnZu6PH3DNBWpOzM6-IXP7kDhajKgti6WQ
 
 {
-    "seller_username": "admin",
-    "material_name": "dirt",
-    "number": 2,
-    "price": 5
+    "first_ingredient_name": "water",
+    "second_ingredient_name": "dirt",
+    "number": 2
 }
