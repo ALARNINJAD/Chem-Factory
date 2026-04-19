@@ -1,6 +1,8 @@
 package repository
 
-import "chem-factory/internal/model"
+import (
+	"chem-factory/internal/model"
+)
 
 type material struct {
 	ID                   int    `json:"id,omitempty"`
@@ -169,4 +171,15 @@ func (r *repositoryManager) ExportMaterialByIngrID(firstID int, secondID int) (m
 	}
 
 	return m, nil
+}
+
+func (r *repositoryManager) ExportMatMixTimeByID(id int) (int, error) {
+
+	var mixTime int
+
+	if err := r.db.QueryRow(`SELECT mix_time FROM material WHERE id = ?`, id).Scan(&mixTime); err != nil {
+		return 0, err
+	}
+
+	return mixTime, nil
 }

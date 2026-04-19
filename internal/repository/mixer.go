@@ -1,17 +1,20 @@
 package repository
 
-import "chem-factory/internal/model"
+import (
+	"chem-factory/internal/model"
+	"time"
+)
 
 type mixer struct {
-	ID                   int    `json:"id,omitempty"`
-	UserID               int    `json:"user_id,omitempty"`
-	FirstIngredientID    int    `json:"first_ingredient_id,omitempty"`
-	SecondIngredientID   int    `json:"second_ingredient_id,omitempty"`
-	Username             string `json:"username"`
-	FirstIngredientName  string `json:"first_ingredient_name"`
-	SecondIngredientName string `json:"second_ingredient_name"`
-	Number               int    `json:"number"`
-	DateTime             int    `json:"date_time"`
+	ID                   int       `json:"id,omitempty"`
+	UserID               int       `json:"user_id,omitempty"`
+	FirstIngredientID    int       `json:"first_ingredient_id,omitempty"`
+	SecondIngredientID   int       `json:"second_ingredient_id,omitempty"`
+	Username             string    `json:"username"`
+	FirstIngredientName  string    `json:"first_ingredient_name"`
+	SecondIngredientName string    `json:"second_ingredient_name"`
+	Number               int       `json:"number"`
+	DateTime             time.Time `json:"date_time"`
 }
 
 func createMixerTable(r *repositoryManager) {

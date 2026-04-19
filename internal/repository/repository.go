@@ -25,6 +25,7 @@ type RepositoryManager interface {
 	ExportBaseMaterials() ([]baseMaterial, error)
 	ExportMaterialByID(id int) (material, error)
 	ExportMaterialByIngrID(firstID int, secondID int) (material, error)
+	ExportMatMixTimeByID(id int) (int, error)
 	// shop
 	ExportShop() ([]shop, error)
 	AddToShop(s model.Shop) error

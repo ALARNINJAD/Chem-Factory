@@ -42,6 +42,7 @@ func registerRoutes() {
 	route.server.POST("/shop/buy", getBuyShopItems)
 	route.server.POST("/shop", postSetForSell)
 	route.server.POST("/mixer", postAddToMixer)
+	route.server.GET("/mixer", getCkeckMix)
 
 	// get inventory
 	// get all products on sell

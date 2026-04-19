@@ -3,6 +3,8 @@ package service
 import (
 	"chem-factory/internal/dto/mixer"
 	"chem-factory/internal/model"
+	"errors"
+	"time"
 )
 
 func (s *serviceManager) AddToMixer(m mixer.MixerAddRequest) (int, error) {
@@ -42,16 +44,45 @@ func (s *serviceManager) AddToMixer(m mixer.MixerAddRequest) (int, error) {
 	return id, nil
 }
 
-// func (s *serviceManager) CkeckMix(id int) error {
+func (s *serviceManager) CkeckMix(mr mixer.MixerCheckMixRequest) error {
 
-// 	mix, err := s.repository.ExportMixRowByID(id)
-// 	if err != nil {
-// 		return err
-// 	}
+	username, err := s.auth.VerifyJWT(mr.Token)
+	if err != nil {
+		return err
+	}
 
-// 	mat, err := s.repository.ExportMaterialByIngrID(mix.FirstIngredientID, mix.SecondIngredientID)
-// 	if err != nil {
+	mix, err := s.repository.ExportMixRowByID(mr.ID)
+	if err != nil {
+		return err
+	}
 
-// 	}
+	if mix.Username != username {
+		return errors.New("Not accessable.")
+	}
 
-// }
+	mat, err := s.repository.ExportMaterialByIngrID(mix.FirstIngredientID, mix.SecondIngredientID)
+	if err != nil {
+
+		var fTime, sTime int
+		fTime, err = s.repository.ExportMatMixTimeByID(mix.FirstIngredientID)
+		if err != nil {
+			return err
+		}
+		sTime, err = s.repository.ExportMatMixTimeByID(mix.SecondIngredientID)
+		if err != nil {
+			return err
+		}
+
+		if (fTime+sTime)*3/4 < mat.MixTime {
+			return errors.New("Not accessable.")
+		} else {
+			return nil
+		}
+	}
+
+	if int(time.Until(mix.DateTime).Seconds()) < mat.MixTime {
+		return errors.New("Not accessable.")
+	} else {
+		return nil
+	}
+}
