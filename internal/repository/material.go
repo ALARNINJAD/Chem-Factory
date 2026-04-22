@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"chem-factory/internal/model"
+	"fmt"
 )
 
 type material struct {
@@ -16,13 +16,6 @@ type material struct {
 	SellPrice            int    `json:"sell_price"`
 	BuyPrice             int    `json:"buy_price"`
 	MixTime              int    `json:"mix_time"`
-}
-
-type baseMaterial struct {
-	Username  string `json:"username"`
-	Name      string `json:"name"`
-	SellPrice int    `json:"sell_price"`
-	BuyPrice  int    `json:"buy_price"`
 }
 
 func createMaterialTable(r *repositoryManager) {
@@ -46,96 +39,79 @@ func createMaterialTable(r *repositoryManager) {
 		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic("Could not create material table.")
+		panic(fmt.Errorf("Repository material, crate material table: %w", err))
 	}
 }
 
-func (r *repositoryManager) SaveMaterial(mtrl model.Material) error {
+func (r *repositoryManager) SaveMaterial(m material) error {
 
-	m := material{
-		Username:             mtrl.Username,
-		Name:                 mtrl.Name,
-		FirstIngredientName:  mtrl.FirstIngredientName,
-		SecondIngredientName: mtrl.SecondIngredientName,
-		SellPrice:            mtrl.SellPrice,
-		BuyPrice:             mtrl.BuyPrice,
-		MixTime:              mtrl.MixTime,
-	}
-
-	var err error
-	m.UserID, err = r.ExportIDbyUsername(m.Username)
-	if err != nil {
-		return err
-	}
-
-	_, err = r.db.Exec(`INSERT OR IGNORE INTO
-		material(name,user_id,username,first_ingredient_name,second_ingredient_name,sell_price,buy_price,mix_time)
+	_, err := r.db.Exec(`
+		INSERT material(user_id, first_ingredient_id, second_ingredient_id,
+		username, name, first_ingredient_name, second_ingredient_name,
+		sell_price, buy_price, mix_time)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		m.Name, m.UserID, m.Username, m.FirstIngredientName, m.SecondIngredientName, m.SellPrice, m.BuyPrice, m.MixTime)
+		m.UserID, m.FirstIngredientID, m.SecondIngredientID,
+		m.Username, m.Name, m.FirstIngredientName, m.SecondIngredientName,
+		m.SellPrice, m.BuyPrice, m.MixTime)
 	if err != nil {
-		return err
-	}
-
-	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.FirstIngredientName).Scan(&m.FirstIngredientID)
-	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.SecondIngredientName).Scan(&m.SecondIngredientID)
-
-	r.db.QueryRow("SELECT id FROM material WHERE name = ?", m.Name).Scan(&m.ID)
-	_, err = r.db.Exec("UPDATE material SET first_ingredient_id = ? WHERE id = ?", m.FirstIngredientID, m.ID)
-	if err != nil {
-		return err
-	}
-	_, err = r.db.Exec("UPDATE material SET second_ingredient_id = ? WHERE id = ?", m.SecondIngredientID, m.ID)
-	if err != nil {
-		return err
+		return fmt.Errorf("Repository material, save material: %w", err)
 	}
 
 	return nil
 }
 
-func (r *repositoryManager) ExportIDbyMaterialName(name string) (int, error) {
+func (r *repositoryManager) FindIDbyMaterialName(name string) (int, error) {
+
 	var id int
 	err := r.db.QueryRow("SELECT id FROM material WHERE name = ?", name).Scan(&id)
-	return id, err
+	return id, fmt.Errorf("Repository material, find id by material name: %w", err)
 }
 
-func (r *repositoryManager) ExportBaseMaterials() ([]baseMaterial, error) {
+func (r *repositoryManager) FindBaseMaterials() ([]material, error) {
 
 	rows, err := r.db.Query(`
-        SELECT username, name, sell_price, buy_price
-        FROM material 
+        SELECT id, user_id, first_ingredient_id, second_ingredient_id,
+		username, name, first_ingredient_name, second_ingredient_name,
+		sell_price, buy_price, mix_time FROM material 
         WHERE second_ingredient_id = first_ingredient_id`)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Repository material, export base materials query: %w", err)
 	}
 	defer rows.Close()
 
-	var list []baseMaterial
+	var list []material
 
 	for rows.Next() {
-		var m baseMaterial
 
+		var m material
 		err := rows.Scan(
+			&m.ID,
+			&m.UserID,
+			&m.FirstIngredientID,
+			&m.SecondIngredientID,
 			&m.Username,
 			&m.Name,
+			&m.FirstIngredientName,
+			&m.SecondIngredientName,
 			&m.SellPrice,
 			&m.BuyPrice,
+			&m.MixTime,
 		)
-
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Repository material, export base materials scan: %w", err)
 		}
 
 		list = append(list, m)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Repository material, export base materials rows: %w", err)
 	}
 
 	return list, nil
 }
 
-func (r *repositoryManager) ExportMaterialByID(id int) (material, error) {
+func (r *repositoryManager) FindMaterialByID(id int) (*material, error) {
 
 	var m material
 
@@ -148,13 +124,13 @@ func (r *repositoryManager) ExportMaterialByID(id int) (material, error) {
 		&m.Username, &m.Name, &m.FirstIngredientName, &m.SecondIngredientName,
 		&m.SellPrice, &m.BuyPrice, &m.MixTime)
 	if err != nil {
-		return material{}, err
+		return nil, fmt.Errorf("Repository material, find material by id: %w", err)
 	}
 
-	return m, nil
+	return &m, nil
 }
 
-func (r *repositoryManager) ExportMaterialByIngrID(firstID int, secondID int) (material, error) {
+func (r *repositoryManager) FindMaterialByIngrID(firstID int, secondID int) (*material, error) {
 
 	var m material
 
@@ -167,19 +143,32 @@ func (r *repositoryManager) ExportMaterialByIngrID(firstID int, secondID int) (m
 		&m.Username, &m.Name, &m.FirstIngredientName, &m.SecondIngredientName,
 		&m.SellPrice, &m.BuyPrice, &m.MixTime)
 	if err != nil {
-		return material{}, err
+		return nil, fmt.Errorf("Repository material, find material by ingredient id: %w", err)
 	}
 
-	return m, nil
+	return &m, nil
 }
 
-func (r *repositoryManager) ExportMatMixTimeByID(id int) (int, error) {
+func (r *repositoryManager) FindMaterialIDByIngrID(firstID int, secondID int) (int, error) {
 
-	var mixTime int
+	var id int
 
-	if err := r.db.QueryRow(`SELECT mix_time FROM material WHERE id = ?`, id).Scan(&mixTime); err != nil {
-		return 0, err
+	err := r.db.QueryRow(`
+		SELECT id FROM material WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
+		firstID, secondID,
+	).Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("Repository material, find material id by ingredient id: %w", err)
 	}
 
-	return mixTime, nil
+	return id, nil
+}
+
+func (r *repositoryManager) FindMatMixTimeByID(id int) (int, error) {
+
+	var time int
+	if err := r.db.QueryRow(`SELECT mix_time FROM material WHERE id = ?`, id).Scan(&time); err != nil {
+		return 0, fmt.Errorf("Repository material, find material mix time by id: %w", err)
+	}
+	return time, nil
 }

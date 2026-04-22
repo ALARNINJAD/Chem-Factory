@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"chem-factory/internal/model"
+	"fmt"
 	"time"
 )
 
@@ -36,74 +36,40 @@ func createMixerTable(r *repositoryManager) {
 		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic("Could not create mixer table.")
+		panic(fmt.Errorf("Repository mixer, create mixer table: %w", err))
 	}
 }
 
-func (r *repositoryManager) AddToMixer(m model.Mixer) (int, error) {
+func (r *repositoryManager) FindMixIDByUserIDIngrID(userID, firstID, secID int) (int, error) {
 
-	userID, err := r.ExportIDbyUsername(m.Username)
-	if err != nil {
-		return 0, err
-	}
-
-	firstIngredientID, err := r.ExportIDbyMaterialName(m.FirstIngredientName)
-	if err != nil {
-		return 0, err
-	}
-
-	secondIngredientID, err := r.ExportIDbyMaterialName(m.SecondIngredientName)
-	if err != nil {
-		return 0, err
-	}
-
-	mxr := mixer{
-		UserID:               userID,
-		FirstIngredientID:    firstIngredientID,
-		SecondIngredientID:   secondIngredientID,
-		Username:             m.Username,
-		FirstIngredientName:  m.FirstIngredientName,
-		SecondIngredientName: m.SecondIngredientName,
-		Number:               m.Number,
-	}
-
-	err = r.db.QueryRow(`
+	var id int
+	err := r.db.QueryRow(`
 		SELECT id FROM mixer
 		WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
-		mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID).Scan(&mxr.ID)
+		userID, firstID, secID).Scan(&id)
 	if err != nil {
-		err = r.db.QueryRow(`
-			SELECT id FROM mixer
-			WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
-			mxr.UserID, mxr.SecondIngredientID, mxr.FirstIngredientID).Scan(&mxr.ID)
-		if err != nil {
-			_, err = r.db.Exec(`
-				INSERT INTO mixer(
-					user_id,
-					first_ingredient_id,
-					second_ingredient_id,
-					username,
-					first_ingredient_name,
-					second_ingredient_name,
-					number)
-				VALUES(?,?,?,?,?,?,?)`,
-				mxr.UserID,
-				mxr.FirstIngredientID,
-				mxr.SecondIngredientID,
-				mxr.Username,
-				mxr.FirstIngredientName,
-				mxr.SecondIngredientName,
-				mxr.Number)
-			if err != nil {
-				return 0, err
-			}
-		}
+		return 0, fmt.Errorf("Repository mixer, find mix id by user&ingr id: %w", err)
 	}
-
-	return mxr.ID, nil
+	return id, nil
 }
 
-func (r *repositoryManager) ExportMixRowByID(id int) (mixer, error) {
+func (r *repositoryManager) AddToMixer(m mixer) error {
+
+	_, err := r.db.Exec(`
+		INSERT INTO mixer(
+		user_id, first_ingredient_id, second_ingredient_id,
+		username, first_ingredient_name, second_ingredient_name, number)
+		VALUES(?,?,?,?,?,?,?)`,
+		m.UserID, m.FirstIngredientID, m.SecondIngredientID,
+		m.Username, m.FirstIngredientName, m.SecondIngredientName, m.Number)
+	if err != nil {
+		return fmt.Errorf("Repository mixer, add to mixer: %w", err)
+	}
+
+	return nil
+}
+
+func (r *repositoryManager) FindMixRowByID(id int) (*mixer, error) {
 
 	var m mixer
 
@@ -111,13 +77,13 @@ func (r *repositoryManager) ExportMixRowByID(id int) (mixer, error) {
 		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
 		username, first_ingredient_name, second_ingredient_name,
 		number, date_time
-		FROM mixer WHERE id = ? `, id,
+		FROM mixer WHERE id = ?`, id,
 	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
 		&m.Username, &m.FirstIngredientName, &m.SecondIngredientName,
 		&m.Number, &m.DateTime)
 	if err != nil {
-		return mixer{}, err
+		return nil, fmt.Errorf("Repository mixer, find mix row by id: %w", err)
 	}
 
-	return m, nil
+	return &m, nil
 }

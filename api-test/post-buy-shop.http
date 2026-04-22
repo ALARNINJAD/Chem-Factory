@@ -1,9 +1,9 @@
 POST http://localhost:8090/shop/buy
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY1MjM4MDUsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.LeB0EXiFBWnZu6PH3DNBWpOzM6-IXP7kDhajKgti6WQ
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY2NzMyNTgsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.KP9FKT40dUVfRXWUkdfoEBB-ElMyvllTOviWrdttFOE
 
 {
     "seller_username": "admin",
-    "material_name": "dirt",
-    "number": 2,
-    "price": 5
+    "material_name": "weed_seed",
+    "number": 1,
+    "price": 100
 }

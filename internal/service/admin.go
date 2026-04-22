@@ -10,7 +10,7 @@ import (
 
 func (s *serviceManager) createAdminUser() {
 
-	if id, _ := s.repository.ExportIDbyUsername("admin"); id != 0 {
+	if id, _ := s.repository.FindIDbyUsername("admin"); id != 0 {
 		return
 	}
 
@@ -19,7 +19,7 @@ func (s *serviceManager) createAdminUser() {
 		panic(fmt.Sprintf("Could not register admin. %s", err.Error()))
 	}
 
-	if err := s.repository.SaveNewUser("admin", hashedPassword); err != nil {
+	if err := s.repository.SaveUser("admin", hashedPassword); err != nil {
 		panic(fmt.Sprintf("Could not register admin. %s", err.Error()))
 	}
 }
@@ -32,12 +32,6 @@ func (s *serviceManager) createAdminMaterials() {
 	if err != nil {
 		panic("Could not open admin file.")
 	}
-
-	// var admin model.User
-	// if err = json.Unmarshal(data, &admin); err != nil {
-	// 	log.Println(admin)
-	// 	panic("Could not unmarshal admin file.")
-	// }
 
 	data, err = os.ReadFile(filepath.Join(".", "configs", "materials.json"))
 	if err != nil {

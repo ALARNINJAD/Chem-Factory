@@ -13,10 +13,10 @@ func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
 		return shop.ShopItemsResponse{}, err
 	}
 
-	var shopItems shop.ShopItemsResponse
+	var response shop.ShopItemsResponse
 
 	for _, sm := range shopMaterials {
-		shopItems.Items = append(shopItems.Items, model.Shop{
+		response.Items = append(response.Items, model.Shop{
 			Username:     sm.Username,
 			MaterialName: sm.MaterialName,
 			Number:       sm.Number,
@@ -31,7 +31,7 @@ func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
 
 	for _, bm := range baseMaterials {
 
-		shopItems.Items = append(shopItems.Items, model.Shop{
+		response.Items = append(response.Items, model.Shop{
 			Username:     bm.Username,
 			MaterialName: bm.Name,
 			Number:       10,
@@ -39,7 +39,7 @@ func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
 		})
 	}
 
-	return shopItems, nil
+	return response, nil
 }
 
 func (s *serviceManager) Buy(shp shop.ShopBuyRequest) error {
@@ -63,10 +63,8 @@ func (s *serviceManager) Buy(shp shop.ShopBuyRequest) error {
 		return err
 	}
 
-	if ms.Username != "admin" {
-		if err = s.repository.RemoveFromShop(ms); err != nil {
-			return err
-		}
+	if err = s.repository.RemoveFromShop(ms); err != nil {
+		return err
 	}
 
 	mi := model.Inventory{

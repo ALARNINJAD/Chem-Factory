@@ -1,8 +1,7 @@
 package repository
 
 import (
-	"chem-factory/internal/model"
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -32,99 +31,70 @@ func createInventoryTable(r *repositoryManager) {
 		FOREIGN KEY("user_id") REFERENCES "user"("id")
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic("Could not create inventory table.")
+		panic(fmt.Errorf("Repository inventory, create inventory table: %w", err))
 	}
 }
 
-func (r *repositoryManager) AddToInventory(i model.Inventory) error {
+func (r *repositoryManager) FindInvenIDByUserIDmatID(userID, materialID int) (int, error) {
 
-	userID, err := r.ExportIDbyUsername(i.Username)
+	var id int
+	err := r.db.QueryRow("SELECT id FROM inventory WHERE user_id = ? AND material_id = ?",
+		userID, materialID).Scan(&id)
 	if err != nil {
-		return err
+		return 0, fmt.Errorf("Repository inventory, find inventory id by user&material id: %w", err)
 	}
+	return id, nil
+}
 
-	materialID, err := r.ExportIDbyMaterialName(i.MaterialName)
+func (r *repositoryManager) IncreaseInventoryByID(id, number int) error {
+
+	_, err := r.db.Exec("UPDATE inventory SET number = number + ? WHERE id = ?", number, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Repository inventory, increase inventoy number: %w", err)
 	}
+	return nil
+}
 
-	inv := inventory{
-		UserID:       userID,
-		MaterialID:   materialID,
-		Username:     i.Username,
-		MaterialName: i.MaterialName,
-		Number:       i.Number,
-	}
+func (r *repositoryManager) ReduceInventoryByID(id, number int) error {
 
-	r.db.QueryRow("SELECT id FROM inventory WHERE user_id = ? AND material_id = ?", inv.UserID, inv.MaterialID).Scan(&inv.ID)
-
-	if inv.ID != 0 {
-		_, err := r.db.Exec("UPDATE inventory SET number = number + ? WHERE id = ?", inv.Number, inv.ID)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
-	_, err = r.db.Exec("INSERT INTO inventory(user_id,material_id,username,material_name,number) VALUES(?,?,?,?,?)",
-		inv.UserID, inv.MaterialID, inv.Username, inv.MaterialName, inv.Number)
+	_, err := r.db.Exec("UPDATE inventory SET number = number - ? WHERE id = ?", number, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Repository inventory, reduce inventoy number: %w", err)
+	}
+	return nil
+}
+
+func (r *repositoryManager) AddToInventory(i inventory) error {
+
+	_, err := r.db.Exec(`
+		INSERT INTO 
+		inventory(user_id,material_id,username,material_name,number)
+		VALUES(?,?,?,?,?)`,
+		i.UserID, i.MaterialID, i.Username, i.MaterialName, i.Number)
+	if err != nil {
+		return fmt.Errorf("Repository inventory, add to inventory: %w", err)
 	}
 
 	return nil
 }
 
-func (r *repositoryManager) RemoveFromInventory(i model.Inventory) error {
+func (r *repositoryManager) DeleteInventoryByID(id int) error {
 
-	inv := inventory{
-		Username:     i.Username,
-		MaterialName: i.MaterialName,
-		Number:       i.Number,
-	}
-
-	err := r.db.QueryRow("SELECT id FROM inventory WHERE username = ? AND material_name = ?", inv.Username, inv.MaterialName).Scan(&inv.ID)
+	_, err := r.db.Exec("DELETE FROM inventory WHERE id = ?", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Repository inventory, delelte inventory by id: %w", err)
 	}
-
-	var number int
-	err = r.db.QueryRow("SELECT number FROM inventory WHERE id = ?", inv.ID).Scan(&number)
-	if err != nil {
-		return err
-	}
-
-	if number < inv.Number {
-
-		return errors.New("Could not remove items from inventory.")
-
-	} else if number == inv.Number {
-
-		_, err = r.db.Exec("DELETE FROM inventory WHERE id = ?", inv.ID)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		_, err = r.db.Exec("UPDATE inventory SET number = number - ? WHERE id = ?", inv.Number, inv.ID)
-		if err != nil {
-			return err
-		}
-
-	}
-
 	return nil
 }
 
-func (r *repositoryManager) ExportInventory(username string) ([]inventory, error) {
+func (r *repositoryManager) GetInventoryByUsername(username string) ([]inventory, error) {
 
 	rows, err := r.db.Query(`
         SELECT id, user_id, material_id, username, material_name, number, date_time
         FROM inventory 
         WHERE username = ?`, username)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Repository inventory, get inventory by username query: %w", err)
 	}
 	defer rows.Close()
 
@@ -144,14 +114,14 @@ func (r *repositoryManager) ExportInventory(username string) ([]inventory, error
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Repository inventory, get inventory by username scan: %w", err)
 		}
 
 		list = append(list, i)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Repository inventory, get inventory by username rows: %w", err)
 	}
 
 	return list, nil

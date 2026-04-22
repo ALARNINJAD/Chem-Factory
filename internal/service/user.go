@@ -12,7 +12,7 @@ func (service *serviceManager) UserData(token string) (u.UserDataResponse, error
 		return u.UserDataResponse{}, err
 	}
 
-	user, err := service.repository.ExportUserByUsername(username)
+	user, err := service.repository.FindUserByUsername(username)
 	if err != nil {
 		return u.UserDataResponse{}, err
 	}
@@ -29,7 +29,7 @@ func (service *serviceManager) UserData(token string) (u.UserDataResponse, error
 
 func (service *serviceManager) Login(userLR u.UserLoginRequest) (string, error) {
 
-	savedHashedPassword, err := service.repository.ExportPasswordByUsername(userLR.Username)
+	savedHashedPassword, err := service.repository.FindPasswordByUsername(userLR.Username)
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func (service *serviceManager) Login(userLR u.UserLoginRequest) (string, error) 
 func (service *serviceManager) Register(userRR u.UserRegisterRequest) error {
 
 	// it's better to not use a functino like this
-	if _, err := service.repository.ExportIDbyUsername(userRR.Username); err == nil {
+	if _, err := service.repository.FindIDbyUsername(userRR.Username); err == nil {
 		return errors.New("Username already exists.")
 	}
 
@@ -58,7 +58,7 @@ func (service *serviceManager) Register(userRR u.UserRegisterRequest) error {
 		return err
 	}
 
-	err = service.repository.SaveNewUser(userRR.Username, hashedPassword)
+	err = service.repository.SaveUser(userRR.Username, hashedPassword)
 	if err != nil {
 		return err
 	}

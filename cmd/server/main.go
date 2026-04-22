@@ -14,16 +14,7 @@ func main() {
 	routes.Init(
 		gin.Default(), service.Init(
 			auth.Init(), repository.Init())).Start()
-
-	// repository := repository.Init()
-	// auth := auth.Init()
-
-	// service := service.Init(auth, repository)
-
-	// routes := routes.Init(gin.Default(), service)
-
-	// routes.Start()
-
-	// service.CreateAdminUser()
-	// service.CreateAdminMaterials()
 }
+
+// acid
+// add to mix

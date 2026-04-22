@@ -1,8 +1,7 @@
 package repository
 
 import (
-	"chem-factory/internal/model"
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -34,7 +33,7 @@ func createShopTable(r *repositoryManager) {
 		FOREIGN KEY("user_id") REFERENCES "user"("id")
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic("Could not create shop table.")
+		panic(fmt.Errorf("Repository shop, create table: %w", err))
 	}
 }
 
@@ -42,7 +41,7 @@ func (r *repositoryManager) ExportShop() ([]shop, error) {
 
 	rows, err := r.db.Query("SELECT * FROM shop")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Repository shop, export shop select all query: %w", err)
 	}
 	defer rows.Close()
 
@@ -63,100 +62,76 @@ func (r *repositoryManager) ExportShop() ([]shop, error) {
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Repository shop, export shop rows scan: %w", err)
 		}
 
 		list = append(list, s)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Repository shop, export shop rows error: %w", err)
 	}
 
 	return list, nil
 }
 
-func (r *repositoryManager) AddToShop(s model.Shop) error {
+func (r *repositoryManager) EmptyShopStruct() *shop {
+	return &shop{}
+}
 
-	userID, err := r.ExportIDbyUsername(s.Username)
+func (r *repositoryManager) FindShopIDByInfo(userID, materialID, price int) (int, error) {
+
+	var id int
+
+	err := r.db.QueryRow("SELECT id FROM shop WHERE user_id = ? AND material_id = ? AND price = ?",
+		userID, materialID, price).Scan(&id)
 	if err != nil {
-		return err
+		return 0, fmt.Errorf("Repository shop, find shop id by info: %w", err)
 	}
 
-	materialID, err := r.ExportIDbyMaterialName(s.MaterialName)
+	return id, nil
+}
+
+func (r *repositoryManager) FindShopByInfo(userID, materialID, price int) (*shop, error) {
+
+	var shp shop
+
+	err := r.db.QueryRow(`
+		SELECT id, user_id, material_id, username, material_name, number, price, date_time
+		FROM shop WHERE user_id = ? AND material_id = ? AND price = ?`,
+		userID, materialID, price).Scan(
+		&shp.ID, &shp.UserID, &shp.MaterialID,
+		&shp.Username, &shp.MaterialName, &shp.Number, &shp.Price, &shp.DateTime)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Repository shop, find shop by info: %w", err)
 	}
 
-	shp := shop{
-		UserID:       userID,
-		MaterialID:   materialID,
-		Username:     s.Username,
-		MaterialName: s.MaterialName,
-		Number:       s.Number,
-		Price:        s.Price,
-	}
+	return &shp, nil
+}
 
-	r.db.QueryRow("SELECT id FROM shop WHERE user_id = ? AND material_id = ? AND price = ?",
-		shp.UserID, shp.MaterialID, shp.Price).Scan(&shp.ID)
+func (r *repositoryManager) ReduceShopNumberByID(id, number int) error {
 
-	if shp.ID != 0 {
-		_, err := r.db.Exec("UPDATE shop SET number = number + ? WHERE id = ?", shp.Number, shp.ID)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
-	_, err = r.db.Exec("INSERT INTO shop(user_id,material_id,username,material_name,number,price) VALUES(?,?,?,?,?,?)",
-		shp.UserID, shp.MaterialID, shp.Username, shp.MaterialName, shp.Number, shp.Price)
+	_, err := r.db.Exec("UPDATE shop SET number = number - ? WHERE id = ?", number, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Repository shop, reduce shop number by id: %w", err)
 	}
-
 	return nil
 }
 
-func (r *repositoryManager) RemoveFromShop(s model.Shop) error {
+func (r *repositoryManager) IncreaseShopNumberByID(id, number int) error {
 
-	shp := shop{
-		Username:     s.Username,
-		MaterialName: s.MaterialName,
-		Number:       s.Number,
-		Price:        s.Price,
-	}
-
-	err := r.db.QueryRow("SELECT id FROM shop WHERE username = ? AND material_name = ? AND price = ?",
-		shp.Username, shp.MaterialName, shp.Price).Scan(&shp.ID)
+	_, err := r.db.Exec("UPDATE shop SET number = number + ? WHERE id = ?", number, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Repository shop, increase shop number by id: %w", err)
 	}
+	return nil
+}
 
-	var number int
-	err = r.db.QueryRow("SELECT number FROM shop WHERE id = ?", shp.ID).Scan(&number)
+func (r *repositoryManager) DeleteFromShopByID(id int) error {
+
+	_, err := r.db.Exec("DELETE FROM shop WHERE id = ?", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("Repository shop, delete from shop by id: %w", err)
 	}
-
-	if number < shp.Number {
-
-		return errors.New("Could not remove items from shop.")
-
-	} else if number == shp.Number {
-
-		_, err = r.db.Exec("DELETE FROM shop WHERE id = ?", shp.ID)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		_, err = r.db.Exec("UPDATE shop SET number = number - ? WHERE id = ?", shp.Number, shp.ID)
-		if err != nil {
-			return err
-		}
-
-	}
-
 	return nil
 }
