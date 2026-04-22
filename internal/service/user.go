@@ -3,42 +3,41 @@ package service
 import (
 	u "chem-factory/internal/dto/user"
 	"errors"
+	"fmt"
 )
 
-func (service *serviceManager) UserData(token string) (u.UserDataResponse, error) {
+func (s *serviceManager) UserData(token string) (u.UserDataResponse, error) {
 
-	username, err := service.auth.VerifyJWT(token)
+	username, err := s.auth.VerifyJWT(token)
 	if err != nil {
-		return u.UserDataResponse{}, err
+		return u.UserDataResponse{}, fmt.Errorf("Service user, get user data: %w", err)
 	}
 
-	user, err := service.repository.FindUserByUsername(username)
+	user, err := s.repository.FindUserByUsername(username)
 	if err != nil {
-		return u.UserDataResponse{}, err
+		return u.UserDataResponse{}, fmt.Errorf("Service user, get user data: %w", err)
 	}
 
-	userData := u.UserDataResponse{
+	return u.UserDataResponse{
 		Username: user.Username,
 		Balance:  user.Balance,
 		XP:       user.XP,
 		Level:    user.Level,
-	}
-
-	return userData, nil
+	}, nil
 }
 
-func (service *serviceManager) Login(userLR u.UserLoginRequest) (string, error) {
+func (s *serviceManager) Login(request u.UserLoginRequest) (string, error) {
 
-	savedHashedPassword, err := service.repository.FindPasswordByUsername(userLR.Username)
+	savedHashedPassword, err := s.repository.FindPasswordByUsername(request.Username)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Service user, login: %w", err)
 	}
 
-	if !service.auth.CheckPassword(userLR.Password, savedHashedPassword) {
-		return "", errors.New("Password is wrong.")
+	if !s.auth.CheckPassword(request.Password, savedHashedPassword) {
+		return "", fmt.Errorf("Service user, login: %w", err)
 	}
 
-	token, err := service.auth.GenerateJWT(userLR.Username)
+	token, err := s.auth.GenerateJWT(request.Username)
 	if err != nil {
 		return "", err
 	}
@@ -46,19 +45,18 @@ func (service *serviceManager) Login(userLR u.UserLoginRequest) (string, error) 
 	return token, nil
 }
 
-func (service *serviceManager) Register(userRR u.UserRegisterRequest) error {
+func (s *serviceManager) Register(userRR u.UserRegisterRequest) error {
 
-	// it's better to not use a functino like this
-	if _, err := service.repository.FindIDbyUsername(userRR.Username); err == nil {
+	if _, err := s.repository.FindIDbyUsername(userRR.Username); err == nil {
 		return errors.New("Username already exists.")
 	}
 
-	hashedPassword, err := service.auth.HashPassword(userRR.Password)
+	hashedPassword, err := s.auth.HashPassword(userRR.Password)
 	if err != nil {
 		return err
 	}
 
-	err = service.repository.SaveUser(userRR.Username, hashedPassword)
+	err = s.repository.SaveUser(userRR.Username, hashedPassword)
 	if err != nil {
 		return err
 	}
