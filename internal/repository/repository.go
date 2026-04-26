@@ -23,6 +23,7 @@ type RepositoryManager interface {
 	// Material
 	EmptyMaterialStruct() *material
 	EmptyMaterialSlice() []material
+	FindBaseMaterialByID(id int) (*baseMaterial, error)
 	GetMaterialsByUsername(username string) ([]material, error)
 	SaveMaterial(m material) error
 	SaveBaseMaterial(m mat.BaseMaterial) error

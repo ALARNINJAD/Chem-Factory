@@ -13,7 +13,7 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
-	var id, userID, firstID, secID int
+	var id, userID, firstID, secID, invID int
 
 	if userID, err = s.repository.FindIDbyUsername(username); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
@@ -50,9 +50,51 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 	if err = s.repository.AddToMixer(*mxr); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
+	
+	inv := s.repository.EmptyInventoryStruct()
+
+	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID,firstID); err != nil {
+		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+	}
+
+	if inv, err = s.repository.FindUserInvenByID(invID); err != nil {
+		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+	}
+
+	if inv.Number > request.Number {
+		if err = s.repository.ReduceInventoryByID(invID,request.Number); err != nil {
+			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+		}
+	} else if inv.Number == request.Number {
+		if err = s.repository.DeleteInventoryByID(invID); err != nil {
+			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+		}
+	} else {
+		return 0, errors.New("Service mixer, add to mixer: not enough material.")
+	}
+
+	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID,secID); err != nil {
+		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+	}
+
+	if inv, err = s.repository.FindUserInvenByID(invID); err != nil {
+		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+	}
+
+	if inv.Number > request.Number {
+		if err = s.repository.ReduceInventoryByID(invID,request.Number); err != nil {
+			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+		}
+	} else if inv.Number == request.Number {
+		if err = s.repository.DeleteInventoryByID(invID); err != nil {
+			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+		}
+	} else {
+		return 0, errors.New("Service mixer, add to mixer: not enough material.")
+	}
 
 	id, err = s.repository.FindMixIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
-	if err == nil {
+	if err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 

@@ -19,6 +19,15 @@ type material struct {
 	MixTime              int    `json:"mix_time"`
 }
 
+type baseMaterial struct {
+	ID                   int    `json:"id,omitempty"`
+	UserID               int    `json:"user_id,omitempty"`
+	Name                 string `json:"name"`
+	Username             string `json:"username"`
+	SellPrice            int    `json:"sell_price"`
+	BuyPrice             int    `json:"buy_price"`
+}
+
 func createMaterialTable(r *repositoryManager) {
 	query := `
 	CREATE TABLE IF NOT EXISTS material (
@@ -42,6 +51,21 @@ func createMaterialTable(r *repositoryManager) {
 	if _, err := r.db.Exec(query); err != nil {
 		panic(fmt.Errorf("Repository material, crate material table: %w ", err))
 	}
+}
+
+func (r *repositoryManager) FindBaseMaterialByID(id int) (*baseMaterial, error) {
+
+	var m baseMaterial
+
+	err := r.db.QueryRow(`
+		SELECT id, user_id, username, name,	sell_price, buy_price 
+		FROM material WHERE id = ? `, id,
+	).Scan(&m.ID, &m.UserID, &m.Username, &m.Name, &m.SellPrice, &m.BuyPrice)
+	if err != nil {
+		return nil, fmt.Errorf("Repository material, find material by id: %w ", err)
+	}
+
+	return &m, nil
 }
 
 func (r *repositoryManager) EmptyMaterialStruct() *material {

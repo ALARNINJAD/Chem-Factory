@@ -4,6 +4,7 @@ import (
 	"chem-factory/internal/dto/shop"
 	"errors"
 	"fmt"
+	"log"
 )
 
 func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
@@ -41,7 +42,63 @@ func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
 	return response, nil
 }
 
-func (s *serviceManager) BuyMaterial(request shop.ShopBuyRequest) error {
+func (s *serviceManager) buyAdminMaterial(request shop.ShopBuyRequest) error {
+
+	username, err := s.auth.VerifyJWT(request.Token)
+	if err != nil {
+		return fmt.Errorf("Service shop, buy admin material: %w ", err)
+	}
+
+	var userID, matID, invID int
+
+	if matID, err = s.repository.FindIDbyMaterialName(request.MaterialName); err != nil {
+		return fmt.Errorf("Service shop, buy admin material: %w ", err)
+	}
+
+	mat, err := s.repository.FindBaseMaterialByID(matID)
+	if err != nil {
+		return fmt.Errorf("Service shop, buy admin material: %w ", err)
+	}
+
+	log.Println(*mat)
+
+	if mat.BuyPrice != request.Price || mat.Username != request.SellerUsername {
+		return errors.New("Service shop, buy admin material: material does not exist.")
+	}
+
+	if userID, err = s.repository.FindIDbyUsername(username); err != nil {
+		return fmt.Errorf("Service shop, buy admin material: %w ", err)
+	}
+
+	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID, matID); err != nil {
+
+		inv := s.repository.EmptyInventoryStruct()
+
+		inv.UserID = userID
+		inv.Username = username
+		inv.MaterialID = matID
+		inv.MaterialName = request.MaterialName
+		inv.Number = request.Number
+
+		if err = s.repository.AddToInventory(*inv); err != nil {
+			return fmt.Errorf("Service shop, buy admin material: %w ", err)
+		}
+
+	} else {
+
+		if err = s.repository.IncreaseInventoryByID(invID, request.Number); err != nil {
+			return fmt.Errorf("Service shop, buy admin material: %w ", err)
+		}		
+	}
+
+	if err = s.repository.ReduceBalance(username, request.Number*request.Price); err != nil {
+		return fmt.Errorf("Service shop, buy admin material: %w ", err)
+	}
+
+	return nil
+}
+
+func (s *serviceManager) buyUserMaterial(request shop.ShopBuyRequest) error {
 
 	username, err := s.auth.VerifyJWT(request.Token)
 	if err != nil {
@@ -58,28 +115,25 @@ func (s *serviceManager) BuyMaterial(request shop.ShopBuyRequest) error {
 		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
-	if request.SellerUsername != "admin" {
+	shopRepo, err := s.repository.FindShopByInfo(userID, materialID, request.Price)
+	if err != nil {
+		return fmt.Errorf("Service shop, buy material: %w ", err)
+	}
 
-		shopRepo, err := s.repository.FindShopByInfo(userID, materialID, request.Price)
-		if err != nil {
+	if shopRepo.Number > request.Number {
+		if err = s.repository.ReduceShopNumberByID(shopID, request.Number); err != nil {
 			return fmt.Errorf("Service shop, buy material: %w ", err)
 		}
-
-		if err = s.repository.IncreaseBalance(request.SellerUsername, request.Number*request.Price); err != nil {
+	} else if shopRepo.Number == request.Number {
+		if err = s.repository.DeleteFromShopByID(shopID); err != nil {
 			return fmt.Errorf("Service shop, buy material: %w ", err)
 		}
-
-		if shopRepo.Number > request.Number {
-			if err = s.repository.ReduceShopNumberByID(shopID, request.Number); err != nil {
-				return fmt.Errorf("Service shop, buy material: %w ", err)
-			}
-		} else if shopRepo.Number == request.Number {
-			if err = s.repository.DeleteFromShopByID(shopID); err != nil {
-				return fmt.Errorf("Service shop, buy material: %w ", err)
-			}
-		} else {
-			return errors.New("Service shop, buy material: not anough shop items.")
-		}
+	} else {
+		return errors.New("Service shop, buy material: not anough shop items.")
+	}
+	
+	if err = s.repository.IncreaseBalance(request.SellerUsername, request.Number*request.Price); err != nil {
+		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
 	if userID, err = s.repository.FindIDbyUsername(username); err != nil {
@@ -112,6 +166,15 @@ func (s *serviceManager) BuyMaterial(request shop.ShopBuyRequest) error {
 	}
 
 	return nil
+}
+
+func (s *serviceManager) BuyMaterial(request shop.ShopBuyRequest) error {
+
+	if request.SellerUsername == "admin" {
+		return s.buyAdminMaterial(request)
+	} else {
+		return s.buyUserMaterial(request)
+	}
 }
 
 func (s *serviceManager) SetForSell(request shop.ShopSetForSellRequest) error {
