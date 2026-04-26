@@ -35,14 +35,12 @@ func registerRoutes() {
 	route.server.POST("/login", login)
 	route.server.POST("/register", register)
 	route.server.GET("/user", getUserData)
-	// route.server.POST("/inventory", postInventoryItems)
-	route.server.DELETE("/inventory", deleteInventoryItems)
 	route.server.GET("/inventory", getInventory)
 	route.server.GET("/shop", getShopItems)
 	route.server.POST("/shop/buy", getBuyShopItems)
 	route.server.POST("/shop", postSetForSell)
 	route.server.POST("/mixer", postAddToMixer)
-	route.server.GET("/mixer", getCkeckMix)
+	// route.server.GET("/mixer", getCkeckMix)
 
 	// get inventory
 	// get all products on sell

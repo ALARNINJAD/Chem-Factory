@@ -1,7 +1,0 @@
-POST http://localhost:8090/inventory
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY0OTgyODksInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.wO-OLxEgRz1eCyGI-seiuGIE5is7tIM6f20EBNr1KBw
-
-{
-    "name":"wead",
-    "number":5
-}

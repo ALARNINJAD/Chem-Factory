@@ -1,6 +1,7 @@
 package repository
 
 import (
+	mat "chem-factory/internal/dto/material"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -20,9 +21,12 @@ type RepositoryManager interface {
 	IncreaseBalance(username string, amount int) error
 	ReduceBalance(username string, amount int) error
 	// Material
+	EmptyMaterialStruct() *material
+	EmptyMaterialSlice() []material
+	GetMaterialsByUsername(username string) ([]material, error)
 	SaveMaterial(m material) error
+	SaveBaseMaterial(m mat.BaseMaterial) error
 	FindIDbyMaterialName(name string) (int, error)
-	FindBaseMaterials() ([]material, error)
 	FindMaterialByID(id int) (*material, error)
 	FindMaterialByIngrID(firstID int, secondID int) (*material, error)
 	FindMaterialIDByIngrID(firstID int, secondID int) (int, error)
@@ -30,19 +34,24 @@ type RepositoryManager interface {
 	// shop
 	ExportShop() ([]shop, error)
 	EmptyShopStruct() *shop
+	AddToShop(s shop) error
 	FindShopIDByInfo(userID, materialID, price int) (int, error)
 	FindShopByInfo(userID, materialID, price int) (*shop, error)
 	ReduceShopNumberByID(id, number int) error
 	IncreaseShopNumberByID(id, number int) error
 	DeleteFromShopByID(id int) error
 	// inventory
+	EmptyInventoryStruct() *inventory
+	EmptyInventorySlice() []inventory
+	FindUserInvenByID(id int) (*inventory, error)
 	FindInvenIDByUserIDmatID(userID, materialID int) (int, error)
 	IncreaseInventoryByID(id, number int) error
 	ReduceInventoryByID(id, number int) error
 	AddToInventory(i inventory) error
 	DeleteInventoryByID(id int) error
-	GetInventoryByUsername(username string) ([]inventory, error)
+	GetInventoryItemsByUsername(username string) ([]inventory, error)
 	// mixer
+	EmptyMixerStruct() *mixer
 	FindMixIDByUserIDIngrID(userID, firstID, secID int) (int, error)
 	AddToMixer(m mixer) error
 	FindMixRowByID(id int) (*mixer, error)
@@ -59,7 +68,7 @@ func Init() *repositoryManager {
 
 	r.db, err = sql.Open("sqlite3", filepath.Join(".", "database", "database.db"))
 	if err != nil {
-		panic(fmt.Errorf("Repository, init open db: %w", err))
+		panic(fmt.Errorf("Repository, init open db: %w ", err))
 	}
 
 	createUserTable(&r)

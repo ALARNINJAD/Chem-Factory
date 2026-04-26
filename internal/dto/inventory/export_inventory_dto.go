@@ -1,11 +1,15 @@
 package inventory
 
-import "chem-factory/internal/model"
+type Inventory struct {
+	Username     string `json:"username"`
+	MaterialName string `json:"material_name"`
+	Number       int    `json:"number"`
+}
 
 type InventoryExportRequest struct {
 	Token string `json:"token"`
 }
 
 type InventoryExportResponse struct {
-	InventoryList []model.Inventory `json:"inventory_list"`
+	InventoryList []Inventory `json:"inventory_list"`
 }

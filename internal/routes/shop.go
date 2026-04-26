@@ -33,7 +33,7 @@ func getBuyShopItems(context *gin.Context) {
 		return
 	}
 
-	if err := route.service.Buy(request); err != nil {
+	if err := route.service.BuyMaterial(request); err != nil {
 		context.JSON(http.StatusInternalServerError, e.ErrorResponse{Error: err.Error()})
 		return
 	}

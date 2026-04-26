@@ -1,7 +1,7 @@
 package service
 
 import (
-	"chem-factory/internal/model"
+	"chem-factory/internal/dto/material"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -10,42 +10,73 @@ import (
 
 func (s *serviceManager) createAdminUser() {
 
-	if id, _ := s.repository.FindIDbyUsername("admin"); id != 0 {
+	_, err := s.repository.FindIDbyUsername("admin")
+	if err == nil {
 		return
 	}
 
 	hashedPassword, err := s.auth.HashPassword("admin")
 	if err != nil {
-		panic(fmt.Sprintf("Could not register admin. %s", err.Error()))
+		panic(fmt.Errorf("Service admin, create admin: %w ", err))
 	}
 
 	if err := s.repository.SaveUser("admin", hashedPassword); err != nil {
-		panic(fmt.Sprintf("Could not register admin. %s", err.Error()))
+		panic(fmt.Errorf("Service admin, create admin: %w ", err))
 	}
 }
 
 func (s *serviceManager) createAdminMaterials() {
 
-	var materials []model.Material
-
-	data, err := os.ReadFile(filepath.Join(".", "configs", "admin.json"))
+	adminID, err := s.repository.FindIDbyUsername("admin")
 	if err != nil {
-		panic("Could not open admin file.")
+		panic(fmt.Errorf("Service admin, create admin materials: %w ", err))
 	}
 
-	data, err = os.ReadFile(filepath.Join(".", "configs", "materials.json"))
+	data, err := os.ReadFile(filepath.Join(".", "configs", "materials.json"))
 	if err != nil {
-		panic("Could not open materials file.")
+		panic(fmt.Errorf("Service admin, create admin materials, read file: %w ", err))
 	}
+
+	materials := s.repository.EmptyMaterialSlice()
 
 	if err = json.Unmarshal(data, &materials); err != nil {
-		panic("Could not unmarshal materials file.")
+		panic(fmt.Errorf("Service admin, create admin materials, unmarshal: %w ", err))
 	}
 
 	for _, m := range materials {
+
 		m.Username = "admin"
-		if err = s.repository.SaveMaterial(m); err != nil {
-			panic(fmt.Sprintf("Could not add the %s material to database. %s", m.Name, err.Error()))
+		m.UserID = adminID
+
+		if m.Name == m.FirstIngredientName && m.Name == m.SecondIngredientName {
+			s.repository.SaveBaseMaterial(material.BaseMaterial{
+				Name:      m.Name,
+				UserID:    m.UserID,
+				Username:  m.Username,
+				SellPrice: m.SellPrice,
+				BuyPrice:  m.BuyPrice,
+			})
+			continue
+		}
+
+		m.FirstIngredientID, err = s.repository.FindIDbyMaterialName(m.FirstIngredientName)
+		if err != nil {
+			panic(fmt.Errorf("Service admin, create admin materials: %w ", err))
+		}
+
+		m.SecondIngredientID, err = s.repository.FindIDbyMaterialName(m.SecondIngredientName)
+		if err != nil {
+			panic(fmt.Errorf("Service admin, create admin materials: %w ", err))
+		}
+
+		_, err = s.repository.FindMaterialIDByIngrID(m.FirstIngredientID, m.SecondIngredientID)
+		if err != nil {
+			_, err = s.repository.FindMaterialIDByIngrID(m.SecondIngredientID, m.FirstIngredientID)
+			if err != nil {
+				if err = s.repository.SaveMaterial(m); err != nil {
+					panic(fmt.Errorf("Service admin, create admin materials, %s: %w ", m.Name, err))
+				}
+			}
 		}
 	}
 }

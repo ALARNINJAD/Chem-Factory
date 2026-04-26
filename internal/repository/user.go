@@ -22,7 +22,7 @@ func createUserTable(r *repositoryManager) {
 		level INTEGER DEFAULT 0 CHECK("level" >= 0)
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic(fmt.Errorf("Repository user, create table: %w", err))
+		panic(fmt.Errorf("Repository user, create table: %w ", err))
 	}
 }
 
@@ -35,7 +35,7 @@ func (r *repositoryManager) FindUserByUsername(username string) (*user, error) {
 		FROM user WHERE username = ?`, username).Scan(
 		&u.ID, &u.Username, &u.Password, &u.Balance, &u.XP, &u.Level)
 	if err != nil {
-		return nil, fmt.Errorf("Repository user, find user by username: %w", err)
+		return nil, fmt.Errorf("Repository user, find user by username: %w ", err)
 	}
 
 	return &u, nil
@@ -50,7 +50,7 @@ func (r *repositoryManager) FindUserByID(id int) (*user, error) {
 		FROM user WHERE id = ?`, id).Scan(
 		&u.ID, &u.Username, &u.Password, &u.Balance, &u.XP, &u.Level)
 	if err != nil {
-		return nil, fmt.Errorf("Repository user, find user by id: %w", err)
+		return nil, fmt.Errorf("Repository user, find user by id: %w ", err)
 	}
 
 	return &u, nil
@@ -60,41 +60,56 @@ func (r *repositoryManager) FindPasswordByID(id int) (string, error) {
 
 	var password string
 	err := r.db.QueryRow("SELECT password FROM user WHERE id = ?", id).Scan(&password)
-	return password, fmt.Errorf("Repository uesr, find password by id: %w", err)
+	if err != nil {
+		return "", fmt.Errorf("Repository uesr, find password by id: %w ", err)
+	}
+	return password, nil
 }
 
 func (r *repositoryManager) FindPasswordByUsername(username string) (string, error) {
 
 	var password string
 	err := r.db.QueryRow("SELECT password FROM user WHERE username = ?", username).Scan(&password)
-	return password, fmt.Errorf("Repository user, find password by username: %w", err)
+	if err != nil {
+		return "", fmt.Errorf("Repository user, find password by username: %w ", err)
+	}
+	return password, nil
 }
 
 func (r *repositoryManager) FindIDbyUsername(username string) (int, error) {
 
 	var id int
 	err := r.db.QueryRow("SELECT id FROM user WHERE username = ?", username).Scan(&id)
-	return id, fmt.Errorf("Repository user, find id by username: %w", err)
+	if err != nil {
+		return 0, fmt.Errorf("Repository user, find id by username: %w ", err)
+	}
+	return id, nil
 }
 
 func (r *repositoryManager) FindUsernameByID(id int) (string, error) {
 
 	var username string
 	err := r.db.QueryRow("SELECT username FROM user WHERE id = ?", id).Scan(&username)
-	return username, fmt.Errorf("Repository user, find username by id: %w", err)
+	if err != nil {
+		return "", fmt.Errorf("Repository user, find username by id: %w ", err)
+	}
+	return username, nil
 }
 
 func (r *repositoryManager) SaveUser(username string, password string) error {
 
 	_, err := r.db.Exec("INSERT INTO user(username, password) VALUES (?, ?)", username, password)
-	return fmt.Errorf("Repository user, save user: %w", err)
+	if err != nil {
+		return fmt.Errorf("Repository user, save user: %w ", err)
+	}
+	return nil
 }
 
 func (r *repositoryManager) IncreaseBalance(username string, amount int) error {
 
 	_, err := r.db.Exec("UPDATE user SET balance = balance + ? WHERE username = ?", amount, username)
 	if err != nil {
-		return fmt.Errorf("Repository user, increase balance: %w", err)
+		return fmt.Errorf("Repository user, increase balance: %w ", err)
 	}
 
 	return nil
@@ -104,7 +119,7 @@ func (r *repositoryManager) ReduceBalance(username string, amount int) error {
 
 	_, err := r.db.Exec("UPDATE user SET balance = balance - ? WHERE username = ?", amount, username)
 	if err != nil {
-		return fmt.Errorf("Repository user, reduce balance: %w", err)
+		return fmt.Errorf("Repository user, reduce balance: %w ", err)
 	}
 
 	return nil

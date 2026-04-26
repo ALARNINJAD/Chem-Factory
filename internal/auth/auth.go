@@ -25,13 +25,13 @@ func Init() *authManager {
 
 	data, err := os.ReadFile(filepath.Join(".", "configs", "auth.json"))
 	if err != nil {
-		panic(fmt.Errorf("Auth, init, config read file: %w", err))
+		panic(fmt.Errorf("Auth, init, config read file: %w ", err))
 	}
 
 	var auth []authManager
 	err = json.Unmarshal(data, &auth)
 	if err != nil {
-		panic(fmt.Errorf("Auth, init, config unmarshal: %w", err))
+		panic(fmt.Errorf("Auth, init, config unmarshal: %w ", err))
 	}
 
 	return &auth[0]

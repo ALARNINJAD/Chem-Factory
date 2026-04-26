@@ -1,9 +1,9 @@
 POST http://localhost:8090/shop/buy
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY2NzMyNTgsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.KP9FKT40dUVfRXWUkdfoEBB-ElMyvllTOviWrdttFOE
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcxOTM4NzksInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.nvTnlCkwx63hasFg18OPZ3qkMf3XXgbGA-Y8QgYe_LM
 
 {
     "seller_username": "admin",
-    "material_name": "weed_seed",
+    "material_name": "water",
     "number": 1,
-    "price": 100
+    "price": 5
 }

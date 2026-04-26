@@ -15,7 +15,14 @@ type ShopUserIDMatIDPrice struct {
 
 // route ---------------------------------------------
 
-// buy
+// buy basd material
+
+type ShopBaseMatRequest struct {
+	Token string `json:"token"`
+	ID    int    `json:"id"`
+}
+
+// buy material
 
 type ShopBuyRequest struct {
 	Token          string `json:"token"`

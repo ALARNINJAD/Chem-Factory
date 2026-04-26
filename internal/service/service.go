@@ -11,20 +11,20 @@ import (
 
 type ServiceManager interface {
 	// user
-	Login(userLR u.UserLoginRequest) (string, error)
-	Register(userRR u.UserRegisterRequest) error
+	Login(request u.UserLoginRequest) (string, error)
+	Register(request u.UserRegisterRequest) error
 	UserData(token string) (u.UserDataResponse, error)
 	// inventory
-	AddToInventory(inv i.InventoryAddRequest) (i.InventoryAddResponse, error)
-	RemoveFromInventory(inv i.InventoryAddRequest) (i.InventoryRemoveResponse, error)
+	AddToInventory(inv i.InventoryAddRequest) error
+	RemoveFromInventory(inv i.InventoryAddRequest) error
 	ExportUserInventory(inv i.InventoryExportRequest) (i.InventoryExportResponse, error)
 	// shop
 	ItemsForSell() (shop.ShopItemsResponse, error)
-	Buy(shp shop.ShopBuyRequest) error
-	SetForSell(shp shop.ShopSetForSellRequest) error
+	BuyMaterial(request shop.ShopBuyRequest) error
+	SetForSell(request shop.ShopSetForSellRequest) error
 	// mixer
 	AddToMixer(m mixer.MixerAddRequest) (int, error)
-	CkeckMix(mr mixer.MixerCheckMixRequest) error
+	// CkeckMix(mr mixer.MixerCheckMixRequest) error
 }
 
 type serviceManager struct {

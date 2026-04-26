@@ -36,8 +36,12 @@ func createMixerTable(r *repositoryManager) {
 		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
 	)`
 	if _, err := r.db.Exec(query); err != nil {
-		panic(fmt.Errorf("Repository mixer, create mixer table: %w", err))
+		panic(fmt.Errorf("Repository mixer, create mixer table: %w ", err))
 	}
+}
+
+func (r *repositoryManager) EmptyMixerStruct() *mixer {
+	return &mixer{}
 }
 
 func (r *repositoryManager) FindMixIDByUserIDIngrID(userID, firstID, secID int) (int, error) {
@@ -48,7 +52,7 @@ func (r *repositoryManager) FindMixIDByUserIDIngrID(userID, firstID, secID int) 
 		WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
 		userID, firstID, secID).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("Repository mixer, find mix id by user&ingr id: %w", err)
+		return 0, fmt.Errorf("Repository mixer, find mix id by user&ingr id: %w ", err)
 	}
 	return id, nil
 }
@@ -63,7 +67,7 @@ func (r *repositoryManager) AddToMixer(m mixer) error {
 		m.UserID, m.FirstIngredientID, m.SecondIngredientID,
 		m.Username, m.FirstIngredientName, m.SecondIngredientName, m.Number)
 	if err != nil {
-		return fmt.Errorf("Repository mixer, add to mixer: %w", err)
+		return fmt.Errorf("Repository mixer, add to mixer: %w ", err)
 	}
 
 	return nil
@@ -82,7 +86,7 @@ func (r *repositoryManager) FindMixRowByID(id int) (*mixer, error) {
 		&m.Username, &m.FirstIngredientName, &m.SecondIngredientName,
 		&m.Number, &m.DateTime)
 	if err != nil {
-		return nil, fmt.Errorf("Repository mixer, find mix row by id: %w", err)
+		return nil, fmt.Errorf("Repository mixer, find mix row by id: %w ", err)
 	}
 
 	return &m, nil

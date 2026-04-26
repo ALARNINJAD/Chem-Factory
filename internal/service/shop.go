@@ -2,114 +2,166 @@ package service
 
 import (
 	"chem-factory/internal/dto/shop"
-	"chem-factory/internal/model"
 	"errors"
+	"fmt"
 )
 
 func (s *serviceManager) ItemsForSell() (shop.ShopItemsResponse, error) {
 
-	shopMaterials, err := s.repository.ExportShop()
+	shopItems, err := s.repository.ExportShop()
 	if err != nil {
-		return shop.ShopItemsResponse{}, err
+		return shop.ShopItemsResponse{}, fmt.Errorf("Service shop, items for sell: %w ", err)
 	}
 
 	var response shop.ShopItemsResponse
 
-	for _, sm := range shopMaterials {
-		response.Items = append(response.Items, model.Shop{
-			Username:     sm.Username,
-			MaterialName: sm.MaterialName,
-			Number:       sm.Number,
-			Price:        sm.Price,
+	for _, si := range shopItems {
+		response.Items = append(response.Items, shop.Shop{
+			Username:     si.Username,
+			MaterialName: si.MaterialName,
+			Number:       si.Number,
+			Price:        si.Price,
 		})
 	}
 
-	baseMaterials, err := s.repository.ExportBaseMaterials()
+	materials, err := s.repository.GetMaterialsByUsername("admin")
 	if err != nil {
-		return shop.ShopItemsResponse{}, err
+		return shop.ShopItemsResponse{}, fmt.Errorf("Service shop, items for sell: %w ", err)
 	}
 
-	for _, bm := range baseMaterials {
-
-		response.Items = append(response.Items, model.Shop{
-			Username:     bm.Username,
-			MaterialName: bm.Name,
+	for _, m := range materials {
+		response.Items = append(response.Items, shop.Shop{
+			Username:     m.Username,
+			MaterialName: m.Name,
 			Number:       10,
-			Price:        bm.BuyPrice,
+			Price:        m.BuyPrice,
 		})
 	}
 
 	return response, nil
 }
 
-func (s *serviceManager) Buy(shp shop.ShopBuyRequest) error {
+func (s *serviceManager) BuyMaterial(request shop.ShopBuyRequest) error {
 
-	username, err := s.auth.VerifyJWT(shp.Token)
+	username, err := s.auth.VerifyJWT(request.Token)
 	if err != nil {
-		return err
-	}
-	if username == shp.SellerUsername {
-		return errors.New("Unacceptable request.")
+		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
-	ms := model.Shop{
-		Username:     shp.SellerUsername,
-		MaterialName: shp.MaterialName,
-		Number:       shp.Number,
-		Price:        shp.Price,
+	var userID, materialID, shopID, invID int
+
+	if userID, err = s.repository.FindIDbyUsername(request.SellerUsername); err != nil {
+		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
-	if err = s.repository.IncreaseBalance(ms.Username, ms.Number*ms.Price); err != nil {
-		return err
+	if materialID, err = s.repository.FindIDbyMaterialName(request.MaterialName); err != nil {
+		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
-	if err = s.repository.RemoveFromShop(ms); err != nil {
-		return err
+	if request.SellerUsername != "admin" {
+
+		shopRepo, err := s.repository.FindShopByInfo(userID, materialID, request.Price)
+		if err != nil {
+			return fmt.Errorf("Service shop, buy material: %w ", err)
+		}
+
+		if err = s.repository.IncreaseBalance(request.SellerUsername, request.Number*request.Price); err != nil {
+			return fmt.Errorf("Service shop, buy material: %w ", err)
+		}
+
+		if shopRepo.Number > request.Number {
+			if err = s.repository.ReduceShopNumberByID(shopID, request.Number); err != nil {
+				return fmt.Errorf("Service shop, buy material: %w ", err)
+			}
+		} else if shopRepo.Number == request.Number {
+			if err = s.repository.DeleteFromShopByID(shopID); err != nil {
+				return fmt.Errorf("Service shop, buy material: %w ", err)
+			}
+		} else {
+			return errors.New("Service shop, buy material: not anough shop items.")
+		}
 	}
 
-	mi := model.Inventory{
-		Username:     username,
-		MaterialName: shp.MaterialName,
-		Number:       shp.Number,
+	if userID, err = s.repository.FindIDbyUsername(username); err != nil {
+		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
-	if err = s.repository.AddToInventory(mi); err != nil {
-		return err
+	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID, materialID); err != nil {
+
+		inv := s.repository.EmptyInventoryStruct()
+
+		inv.UserID = userID
+		inv.Username = username
+		inv.MaterialID = materialID
+		inv.MaterialName = request.MaterialName
+		inv.Number = request.Number
+
+		if err = s.repository.AddToInventory(*inv); err != nil {
+			return fmt.Errorf("Service shop, buy material: %w ", err)
+		}
+
+	} else {
+
+		if err = s.repository.IncreaseInventoryByID(invID, request.Number); err != nil {
+			return fmt.Errorf("Service shop, buy material: %w ", err)
+		}		
 	}
 
-	if err = s.repository.ReduceBalance(username, ms.Price*ms.Number); err != nil {
-		return err
+	if err = s.repository.ReduceBalance(username, request.Number*request.Price); err != nil {
+		return fmt.Errorf("Service shop, buy material: %w ", err)
 	}
 
 	return nil
 }
 
-func (s *serviceManager) SetForSell(shp shop.ShopSetForSellRequest) error {
+func (s *serviceManager) SetForSell(request shop.ShopSetForSellRequest) error {
 
-	username, err := s.auth.VerifyJWT(shp.Token)
+	username, err := s.auth.VerifyJWT(request.Token)
 	if err != nil {
-		return err
+		return fmt.Errorf("Service shop, set for sell: %w ", err)
 	}
 
-	ms := model.Shop{
-		Username:     username,
-		MaterialName: shp.MaterialName,
-		Number:       shp.Number,
-		Price:        shp.Price,
+	var userID, matID, invID int
+
+	if userID, err = s.repository.FindIDbyUsername(username); err != nil {
+		return fmt.Errorf("Service shop, set for sell: %w ", err)
 	}
 
-	if err = s.repository.AddToShop(ms); err != nil {
-		return err
+	if matID, err = s.repository.FindIDbyMaterialName(request.MaterialName); err != nil {
+		return fmt.Errorf("Service shop, set for sell: %w ", err)
 	}
 
-	mi := model.Inventory{
-		Username:     username,
-		MaterialName: shp.MaterialName,
-		Number:       shp.Number,
+	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID, matID); err != nil {
+		return fmt.Errorf("Service shop, set for sell: %w ", err)
 	}
 
-	if err = s.repository.RemoveFromInventory(mi); err != nil {
-		return err
+	inv, err := s.repository.FindUserInvenByID(invID)
+	if err != nil {
+		return fmt.Errorf("Service shop, set for sell: %w ", err)
+	}
+
+	if inv.Number > request.Number {
+		if err = s.repository.ReduceInventoryByID(invID, request.Number); err != nil {
+			return fmt.Errorf("Service shop, set for sell: %w ", err)
+		}
+	} else if inv.Number == request.Number {
+		if err = s.repository.DeleteInventoryByID(invID); err != nil {
+			return fmt.Errorf("Service shop, set for sell: %w ", err)
+		}
+	} else {
+		return errors.New("Service shop, set for sell: not enough inventory items.")
+	}
+
+	shopRepo := s.repository.EmptyShopStruct()
+
+	shopRepo.MaterialID = matID
+	shopRepo.UserID = userID
+	shopRepo.MaterialName = request.MaterialName
+	shopRepo.Username = username
+	shopRepo.Number = request.Number
+
+	if err = s.repository.AddToShop(*shopRepo); err != nil {
+		return fmt.Errorf("Service shop, set for sell: %w ", err)
 	}
 
 	return nil

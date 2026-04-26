@@ -15,7 +15,7 @@ func (a *authManager) GenerateJWT(username string) (string, error) {
 	})
 	t, err := token.SignedString([]byte(a.secretKey))
 	if err != nil {
-		return "", fmt.Errorf("Auth jwt, generate jwt: %w", err)
+		return "", fmt.Errorf("Auth jwt, generate jwt: %w ", err)
 	}
 	return t, nil
 }
@@ -29,7 +29,7 @@ func (a *authManager) VerifyJWT(token string) (string, error) {
 		return []byte(a.secretKey), nil
 	})
 	if err != nil {
-		return "", fmt.Errorf("Auth jwt, verify jwt, jwt parse: %w", err)
+		return "", fmt.Errorf("Auth jwt, verify jwt, jwt parse: %w ", err)
 	}
 
 	if !parsedToken.Valid {
