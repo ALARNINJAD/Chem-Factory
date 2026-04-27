@@ -24,7 +24,9 @@ type ServiceManager interface {
 	SetForSell(request shop.ShopSetForSellRequest) error
 	// mixer
 	AddToMixer(m mixer.MixerAddRequest) (int, error)
-	// CkeckMix(mr mixer.MixerCheckMixRequest) error
+	CheckMix(request mixer.CheckMixRequest) (mixer.CheckMixResponse, error)
+	PickMix(request mixer.PickMixRequest) error
+	PickNewMix(request mixer.PickNewMixRequest) error
 }
 
 type serviceManager struct {

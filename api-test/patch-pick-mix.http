@@ -1,8 +1,6 @@
-POST http://localhost:8090/shop
+PATCH http://localhost:8090/mixer
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyNzMwNDYsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.tfgZQiXxfXwUoodDctpW0lwJDEVu7_H-eR1T1rFumhk
 
 {
-    "material_name": "dirt",
-    "number": 2,
-    "price": 2
+    "id": 1
 }

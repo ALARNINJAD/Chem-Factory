@@ -2,7 +2,7 @@ package routes
 
 import (
 	"chem-factory/internal/service"
-	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,14 +24,13 @@ func Init(svr *gin.Engine, svc service.ServiceManager) *routesManager {
 }
 
 func (r *routesManager) Start() {
-	fmt.Println("Server Is Started")
+	log.Println("Server is started.")
 	route = r
 	registerRoutes()
 	route.server.Run(":8090")
 }
 
 func registerRoutes() {
-	// route.server.POST("/", root)
 	route.server.POST("/login", login)
 	route.server.POST("/register", register)
 	route.server.GET("/user", getUserData)
@@ -40,11 +39,7 @@ func registerRoutes() {
 	route.server.POST("/shop/buy", getBuyShopItems)
 	route.server.POST("/shop", postSetForSell)
 	route.server.POST("/mixer", postAddToMixer)
-	// route.server.GET("/mixer", getCkeckMix)
-
-	// get inventory
-	// get all products on sell
-	// buy product
-	// get mixing recipie
-	// post new product
+	route.server.GET("/mixer", getCheckMixTime)
+	route.server.PATCH("/mixer", patchPickMix)
+	route.server.PATCH("/mixer/new", patchPickNewMix)
 }

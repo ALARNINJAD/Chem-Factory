@@ -1,8 +1,8 @@
 POST http://localhost:8090/mixer
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyMDYxNDIsInVzZXJuYW1lIjoicmV6YSJ9.CH1Y-7la5x8pEuPoVCrTZuNYxO-Q5joRLumIj7LhvT8
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyNzMwNDYsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.tfgZQiXxfXwUoodDctpW0lwJDEVu7_H-eR1T1rFumhk
 
 {
-    "first_ingredient_name": "dirt",
-    "second_ingredient_name": "weed_seed",
-    "number": 1
+    "first_ingredient_name": "water",
+    "second_ingredient_name": "dirt",
+    "number": 2
 }

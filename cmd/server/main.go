@@ -15,6 +15,3 @@ func main() {
 		gin.Default(), service.Init(
 			auth.Init(), repository.Init())).Start()
 }
-
-// acid
-// add to mix

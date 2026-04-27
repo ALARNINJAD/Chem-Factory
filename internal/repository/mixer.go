@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -22,8 +23,8 @@ func createMixerTable(r *repositoryManager) {
 	CREATE TABLE IF NOT EXISTS mixer (
 		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
-		first_ingredient_id INTEGER,
-		second_ingredient_id INTEGER,
+		first_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
+		second_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
 		username TEXT NOT NULL,
 		first_ingredient_name TEXT NOT NULL,
 		second_ingredient_name TEXT NOT NULL,
@@ -31,7 +32,7 @@ func createMixerTable(r *repositoryManager) {
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE("user_id","first_ingredient_id","second_ingredient_id"),
 		UNIQUE("username","first_ingredient_name","second_ingredient_name"),
-		FOREIGN KEY("user_id") REFERENCES "user"("id")
+		FOREIGN KEY("user_id") REFERENCES "user"("id"),
 		FOREIGN KEY("first_ingredient_id") REFERENCES "material"("id"),
 		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
 	)`
@@ -80,14 +81,24 @@ func (r *repositoryManager) FindMixRowByID(id int) (*mixer, error) {
 	err := r.db.QueryRow(`
 		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
 		username, first_ingredient_name, second_ingredient_name,
-		number, date_time
-		FROM mixer WHERE id = ?`, id,
+		number, date_time FROM mixer WHERE id = ?`, id,
 	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
 		&m.Username, &m.FirstIngredientName, &m.SecondIngredientName,
 		&m.Number, &m.DateTime)
 	if err != nil {
+		log.Println(id)
+		log.Println(m)
 		return nil, fmt.Errorf("Repository mixer, find mix row by id: %w ", err)
 	}
 
 	return &m, nil
+}
+
+func (r *repositoryManager) DeleteMixByID(id int) error {
+
+	_, err := r.db.Exec("DELETE FROM mixer WHERE id = ?", id)
+	if err != nil {
+		return fmt.Errorf("Repository mixer, delelte mixer by id: %w ", err)
+	}
+	return nil
 }

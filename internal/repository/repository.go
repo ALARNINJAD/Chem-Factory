@@ -56,6 +56,7 @@ type RepositoryManager interface {
 	FindMixIDByUserIDIngrID(userID, firstID, secID int) (int, error)
 	AddToMixer(m mixer) error
 	FindMixRowByID(id int) (*mixer, error)
+	DeleteMixByID(id int) error
 }
 
 type repositoryManager struct {

@@ -73,6 +73,10 @@ func (s *serviceManager) createAdminMaterials() {
 		if err != nil {
 			_, err = s.repository.FindMaterialIDByIngrID(m.SecondIngredientID, m.FirstIngredientID)
 			if err != nil {
+				if m.FirstIngredientID > m.SecondIngredientID {
+					m.FirstIngredientID, m.SecondIngredientID = m.SecondIngredientID, m.FirstIngredientID
+					m.FirstIngredientName, m.SecondIngredientName = m.SecondIngredientName, m.FirstIngredientName
+				}
 				if err = s.repository.SaveMaterial(m); err != nil {
 					panic(fmt.Errorf("Service admin, create admin materials, %s: %w ", m.Name, err))
 				}

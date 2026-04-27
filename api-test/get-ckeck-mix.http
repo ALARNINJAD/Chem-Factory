@@ -1,6 +1,0 @@
-GET http://localhost:8090/mixer
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY2Njk5MzYsInVzZXJuYW1lIjoibWFtYWQifQ.r0ajAt3ytT49IDmsBUe-EomJrM3y5SF4YjdpxCHIuzk
-
-{
-    "id": 1
-}
