@@ -15,26 +15,6 @@ type inventory struct {
 	DateTime     time.Time `json:"date_time"`
 }
 
-func createInventoryTable(r *repositoryManager) {
-	query := `
-	CREATE TABLE IF NOT EXISTS inventory (
-		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
-		user_id	INTEGER NOT NULL,
-		material_id	INTEGER NOT NULL,
-		username TEXT NOT NULL,
-		material_name TEXT NOT NULL,
-		number INTEGER NOT NULL CHECK("number" >= 1),
-		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		UNIQUE("user_id","material_id"),
-		UNIQUE("username","material_name"),
-		FOREIGN KEY("material_id") REFERENCES "material"("id"),
-		FOREIGN KEY("user_id") REFERENCES "user"("id")
-	)`
-	if _, err := r.db.Exec(query); err != nil {
-		panic(fmt.Errorf("Repository inventory, create inventory table: %w ", err))
-	}
-}
-
 func (r *repositoryManager) EmptyInventoryStruct() *inventory {
 	return &inventory{}
 }

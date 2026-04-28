@@ -7,7 +7,6 @@ import (
 )
 
 func (a *authManager) CheckPassword(password, hashedPassword string) error {
-
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		return fmt.Errorf("Auth hash, check password: %w ", err)
@@ -16,7 +15,7 @@ func (a *authManager) CheckPassword(password, hashedPassword string) error {
 }
 
 func (a *authManager) HashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), a.costOfHash)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 15)
 	if err != nil {
 		return "", fmt.Errorf("Auth hash, hash password: %w ", err)
 	}

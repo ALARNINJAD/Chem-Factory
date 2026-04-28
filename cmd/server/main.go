@@ -23,3 +23,5 @@ func main() {
 		gin.Default(), service.Init(
 			auth.Init(), repository.Init(), notification.Init())).Start()
 }
+
+// repository interface

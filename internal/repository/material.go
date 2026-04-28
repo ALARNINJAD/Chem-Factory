@@ -28,31 +28,6 @@ type baseMaterial struct {
 	BuyPrice             int    `json:"buy_price"`
 }
 
-func createMaterialTable(r *repositoryManager) {
-	query := `
-	CREATE TABLE IF NOT EXISTS material (
-		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
-		user_id INTEGER NOT NULL,
-		first_ingredient_id INTEGER,
-		second_ingredient_id INTEGER,
-		username TEXT NOT NULL,
-		name TEXT NOT NULL UNIQUE,
-		first_ingredient_name TEXT,
-		second_ingredient_name TEXT,
-		sell_price INTEGER NOT NULL CHECK("sell_price" >= 0),
-		buy_price INTEGER NOT NULL CHECK("buy_price" >= 0),
-		mix_time INTEGER CHECK("mix_time" >= 0),
-		UNIQUE("first_ingredient_id","second_ingredient_id"),
-		UNIQUE("first_ingredient_name","second_ingredient_name"),
-		FOREIGN KEY("user_id") REFERENCES "user"("id")
-		FOREIGN KEY("first_ingredient_id") REFERENCES "material"("id"),
-		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
-	)`
-	if _, err := r.db.Exec(query); err != nil {
-		panic(fmt.Errorf("Repository material, crate material table: %w ", err))
-	}
-}
-
 func (r *repositoryManager) FindBaseMaterialByID(id int) (*baseMaterial, error) {
 
 	var m baseMaterial

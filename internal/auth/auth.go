@@ -1,11 +1,6 @@
 package auth
 
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"path/filepath"
-)
+import "os"
 
 type AuthManager interface {
 	// hash
@@ -17,22 +12,9 @@ type AuthManager interface {
 }
 
 type authManager struct {
-	secretKey  string `json:"secret_key"`
-	costOfHash int    `json:"cost_of_hash"`
+	secretKey  string
 }
 
 func Init() *authManager {
-
-	data, err := os.ReadFile(filepath.Join(".", "configs", "auth.json"))
-	if err != nil {
-		panic(fmt.Errorf("Auth, init, config read file: %w ", err))
-	}
-
-	var auth []authManager
-	err = json.Unmarshal(data, &auth)
-	if err != nil {
-		panic(fmt.Errorf("Auth, init, config unmarshal: %w ", err))
-	}
-
-	return &auth[0]
+	return &authManager{secretKey: os.Getenv("SECRET_KEY")}
 }

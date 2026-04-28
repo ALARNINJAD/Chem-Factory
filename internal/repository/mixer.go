@@ -18,29 +18,6 @@ type mixer struct {
 	DateTime             time.Time `json:"date_time"`
 }
 
-func createMixerTable(r *repositoryManager) {
-	query := `
-	CREATE TABLE IF NOT EXISTS mixer (
-		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
-		user_id INTEGER NOT NULL,
-		first_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
-		second_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
-		username TEXT NOT NULL,
-		first_ingredient_name TEXT NOT NULL,
-		second_ingredient_name TEXT NOT NULL,
-		number INTEGER NOT NULL CHECK("number" >= 1),
-		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		UNIQUE("user_id","first_ingredient_id","second_ingredient_id"),
-		UNIQUE("username","first_ingredient_name","second_ingredient_name"),
-		FOREIGN KEY("user_id") REFERENCES "user"("id"),
-		FOREIGN KEY("first_ingredient_id") REFERENCES "material"("id"),
-		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
-	)`
-	if _, err := r.db.Exec(query); err != nil {
-		panic(fmt.Errorf("Repository mixer, create mixer table: %w ", err))
-	}
-}
-
 func (r *repositoryManager) EmptyMixerStruct() *mixer {
 	return &mixer{}
 }

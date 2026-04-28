@@ -11,21 +11,6 @@ type user struct {
 	Level    int    `json:"level"`
 }
 
-func createUserTable(r *repositoryManager) {
-	query := `
-	CREATE TABLE IF NOT EXISTS user (
-		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
-		username TEXT NOT NULL UNIQUE,
-		password TEXT NOT NULL,
-		balance INTEGER DEFAULT 200 CHECK("balance" >= 0),
-		xp INTEGER DEFAULT 0 CHECK("xp" >= 0),
-		level INTEGER DEFAULT 0 CHECK("level" >= 0)
-	)`
-	if _, err := r.db.Exec(query); err != nil {
-		panic(fmt.Errorf("Repository user, create table: %w ", err))
-	}
-}
-
 func (r *repositoryManager) FindUserByUsername(username string) (*user, error) {
 
 	var u user

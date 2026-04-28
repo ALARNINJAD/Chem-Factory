@@ -10,6 +10,8 @@ import (
 )
 
 type RepositoryManager interface {
+	// repository
+	ExecQuery(query string) error
 	// User
 	FindUserByUsername(username string) (*user, error)
 	FindUserByID(id int) (*user, error)
@@ -64,20 +66,18 @@ type repositoryManager struct {
 }
 
 func Init() *repositoryManager {
-
 	var r repositoryManager
 	var err error
-
 	r.db, err = sql.Open("sqlite3", filepath.Join(".", "database", "database.db"))
 	if err != nil {
 		panic(fmt.Errorf("Repository, init open db: %w ", err))
 	}
-
-	createUserTable(&r)
-	createMaterialTable(&r)
-	createShopTable(&r)
-	createInventoryTable(&r)
-	createMixerTable(&r)
-
 	return &r
+}
+
+func (r *repositoryManager) ExecQuery(query string) error {
+	if _, err := r.db.Exec(query); err != nil {
+		return fmt.Errorf("Repository, exec query: %w", err)
+	}
+	return nil
 }
