@@ -130,7 +130,7 @@ func (r *repositoryManager) IncreaseShopNumberByID(id, number int) error {
 func (r *repositoryManager) AddToShop(s shop) error {
 
 	_, err := r.db.Exec(`
-		INSERT material(user_id, material_id, username, material_name, number, price)
+		INSERT INTO shop(user_id, material_id, username, material_name, number, price)
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		s.UserID, s.MaterialID, s.Username, s.MaterialName, s.Number, s.Price)
 	if err != nil {

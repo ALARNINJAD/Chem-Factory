@@ -6,6 +6,7 @@ import (
 	"chem-factory/internal/dto/mixer"
 	"chem-factory/internal/dto/shop"
 	u "chem-factory/internal/dto/user"
+	"chem-factory/internal/notification"
 	"chem-factory/internal/repository"
 )
 
@@ -32,10 +33,11 @@ type ServiceManager interface {
 type serviceManager struct {
 	auth       auth.AuthManager
 	repository repository.RepositoryManager
+	notification *notification.NotificationManager
 }
 
-func Init(a auth.AuthManager, r repository.RepositoryManager) *serviceManager {
-	s := serviceManager{auth: a, repository: r}
+func Init(a auth.AuthManager, r repository.RepositoryManager, m *notification.NotificationManager) *serviceManager {
+	s := serviceManager{auth: a, repository: r, notification: m}
 	s.createAdminUser()
 	s.createAdminMaterials()
 	return &s

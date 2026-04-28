@@ -1,8 +1,8 @@
 POST http://localhost:8090/shop
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyNzMwNDYsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.tfgZQiXxfXwUoodDctpW0lwJDEVu7_H-eR1T1rFumhk
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyNzQyMTIsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.Ncs1XkgwVH6JLwS-mmFuz-6U9tu4aMsl4bUBpRs1bjY
 
 {
     "material_name": "dirt",
-    "number": 2,
-    "price": 2
+    "number": 1,
+    "price": 3
 }

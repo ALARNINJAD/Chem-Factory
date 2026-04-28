@@ -222,6 +222,7 @@ func (s *serviceManager) SetForSell(request shop.ShopSetForSellRequest) error {
 	shopRepo.MaterialName = request.MaterialName
 	shopRepo.Username = username
 	shopRepo.Number = request.Number
+	shopRepo.Price = request.Price
 
 	if err = s.repository.AddToShop(*shopRepo); err != nil {
 		return fmt.Errorf("Service shop, set for sell: %w ", err)
