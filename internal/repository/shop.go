@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -88,27 +89,27 @@ func (r *repositoryManager) FindShopByInfo(userID, materialID, price int) (*shop
 	return &shp, nil
 }
 
-func (r *repositoryManager) ReduceShopNumberByID(id, number int) error {
+func (r *repositoryManager) ReduceShopNumberByID(tx *sql.Tx, id, number int) error {
 
-	_, err := r.db.Exec("UPDATE shop SET number = number - ? WHERE id = ?", number, id)
+	_, err := tx.Exec("UPDATE shop SET number = number - ? WHERE id = ?", number, id)
 	if err != nil {
 		return fmt.Errorf("Repository shop, reduce shop number by id: %w ", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) IncreaseShopNumberByID(id, number int) error {
+func (r *repositoryManager) IncreaseShopNumberByID(tx *sql.Tx, id, number int) error {
 
-	_, err := r.db.Exec("UPDATE shop SET number = number + ? WHERE id = ?", number, id)
+	_, err := tx.Exec("UPDATE shop SET number = number + ? WHERE id = ?", number, id)
 	if err != nil {
 		return fmt.Errorf("Repository shop, increase shop number by id: %w ", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) AddToShop(s shop) error {
+func (r *repositoryManager) AddToShop(tx *sql.Tx, s shop) error {
 
-	_, err := r.db.Exec(`
+	_, err := tx.Exec(`
 		INSERT INTO shop(user_id, material_id, username, material_name, number, price)
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		s.UserID, s.MaterialID, s.Username, s.MaterialName, s.Number, s.Price)
@@ -119,9 +120,9 @@ func (r *repositoryManager) AddToShop(s shop) error {
 	return nil
 }
 
-func (r *repositoryManager) DeleteFromShopByID(id int) error {
+func (r *repositoryManager) DeleteFromShopByID(tx *sql.Tx, id int) error {
 
-	_, err := r.db.Exec("DELETE FROM shop WHERE id = ?", id)
+	_, err := tx.Exec("DELETE FROM shop WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("Repository shop, delete from shop by id: %w ", err)
 	}

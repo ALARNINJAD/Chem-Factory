@@ -1,6 +1,9 @@
 package repository
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type user struct {
 	ID       int    `json:"id"`
@@ -81,18 +84,18 @@ func (r *repositoryManager) FindUsernameByID(id int) (string, error) {
 	return username, nil
 }
 
-func (r *repositoryManager) SaveUser(username string, password string) error {
+func (r *repositoryManager) SaveUser(tx *sql.Tx, username, password string) error {
 
-	_, err := r.db.Exec("INSERT INTO user(username, password) VALUES (?, ?)", username, password)
+	_, err := tx.Exec("INSERT INTO user(username, password) VALUES (?, ?)", username, password)
 	if err != nil {
 		return fmt.Errorf("Repository user, save user: %w ", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) IncreaseBalance(username string, amount int) error {
+func (r *repositoryManager) IncreaseBalance(tx *sql.Tx, username string, amount int) error {
 
-	_, err := r.db.Exec("UPDATE user SET balance = balance + ? WHERE username = ?", amount, username)
+	_, err := tx.Exec("UPDATE user SET balance = balance + ? WHERE username = ?", amount, username)
 	if err != nil {
 		return fmt.Errorf("Repository user, increase balance: %w ", err)
 	}
@@ -100,9 +103,9 @@ func (r *repositoryManager) IncreaseBalance(username string, amount int) error {
 	return nil
 }
 
-func (r *repositoryManager) ReduceBalance(username string, amount int) error {
+func (r *repositoryManager) ReduceBalance(tx *sql.Tx, username string, amount int) error {
 
-	_, err := r.db.Exec("UPDATE user SET balance = balance - ? WHERE username = ?", amount, username)
+	_, err := tx.Exec("UPDATE user SET balance = balance - ? WHERE username = ?", amount, username)
 	if err != nil {
 		return fmt.Errorf("Repository user, reduce balance: %w ", err)
 	}

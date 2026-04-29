@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -35,9 +36,9 @@ func (r *repositoryManager) FindMixIDByUserIDIngrID(userID, firstID, secID int) 
 	return id, nil
 }
 
-func (r *repositoryManager) AddToMixer(m mixer) error {
+func (r *repositoryManager) AddToMixer(tx *sql.Tx, m mixer) error {
 
-	_, err := r.db.Exec(`
+	_, err := tx.Exec(`
 		INSERT INTO mixer(
 		user_id, first_ingredient_id, second_ingredient_id,
 		username, first_ingredient_name, second_ingredient_name, number)
@@ -71,9 +72,9 @@ func (r *repositoryManager) FindMixRowByID(id int) (*mixer, error) {
 	return &m, nil
 }
 
-func (r *repositoryManager) DeleteMixByID(id int) error {
+func (r *repositoryManager) DeleteMixByID(tx *sql.Tx, id int) error {
 
-	_, err := r.db.Exec("DELETE FROM mixer WHERE id = ?", id)
+	_, err := tx.Exec("DELETE FROM mixer WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("Repository mixer, delelte mixer by id: %w ", err)
 	}

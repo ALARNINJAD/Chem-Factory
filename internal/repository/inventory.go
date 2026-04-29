@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -47,27 +48,27 @@ func (r *repositoryManager) FindInvenIDByUserIDmatID(userID, materialID int) (in
 	return id, nil
 }
 
-func (r *repositoryManager) IncreaseInventoryByID(id, number int) error {
+func (r *repositoryManager) IncreaseInventoryByID(tx *sql.Tx, id, number int) error {
 
-	_, err := r.db.Exec("UPDATE inventory SET number = number + ? WHERE id = ?", number, id)
+	_, err := tx.Exec("UPDATE inventory SET number = number + ? WHERE id = ?", number, id)
 	if err != nil {
 		return fmt.Errorf("Repository inventory, increase inventoy number: %w ", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) ReduceInventoryByID(id, number int) error {
+func (r *repositoryManager) ReduceInventoryByID(tx *sql.Tx, id, number int) error {
 
-	_, err := r.db.Exec("UPDATE inventory SET number = number - ? WHERE id = ?", number, id)
+	_, err := tx.Exec("UPDATE inventory SET number = number - ? WHERE id = ?", number, id)
 	if err != nil {
 		return fmt.Errorf("Repository inventory, reduce inventoy number: %w ", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) AddToInventory(i inventory) error {
+func (r *repositoryManager) AddToInventory(tx *sql.Tx, i inventory) error {
 
-	_, err := r.db.Exec(`
+	_, err := tx.Exec(`
 		INSERT INTO 
 		inventory(user_id,material_id,username,material_name,number)
 		VALUES(?,?,?,?,?)`,
@@ -79,9 +80,9 @@ func (r *repositoryManager) AddToInventory(i inventory) error {
 	return nil
 }
 
-func (r *repositoryManager) DeleteInventoryByID(id int) error {
+func (r *repositoryManager) DeleteInventoryByID(tx *sql.Tx, id int) error {
 
-	_, err := r.db.Exec("DELETE FROM inventory WHERE id = ?", id)
+	_, err := tx.Exec("DELETE FROM inventory WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("Repository inventory, delelte inventory by id: %w ", err)
 	}

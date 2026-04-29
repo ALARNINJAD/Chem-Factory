@@ -131,8 +131,22 @@ func createAdminUser(r repository.RepositoryManager, a auth.AuthManager) {
 		panic(fmt.Errorf("Migration, create admin: %w ", err))
 	}
 
-	if err := r.SaveUser(os.Getenv("ADMIN_NAME"), hashedPassword); err != nil {
+	tx, err := r.Transaction()
+	if err != nil {
+		panic(fmt.Errorf("Migration, create admin, transaction: %w ", err))
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := r.SaveUser(tx, os.Getenv("ADMIN_NAME"), hashedPassword); err != nil {
 		panic(fmt.Errorf("Migration, create admin: %w ", err))
+	}
+
+	if err = tx.Commit(); err != nil {
+		panic(fmt.Errorf("Migration, create admin, commit: %w ", err))
 	}
 }
 
@@ -143,7 +157,7 @@ func createAdminMaterials(r repository.RepositoryManager) {
 		panic(fmt.Errorf("Migration, create admin materials: %w ", err))
 	}
 
-	data, err := os.ReadFile(filepath.Join(".", "configs", "materials.json"))
+	data, err := os.ReadFile(filepath.Join(".", "cmd", "migration", "materials.json"))
 	if err != nil {
 		panic(fmt.Errorf("Migration, create admin materials, read file: %w ", err))
 	}
@@ -159,25 +173,41 @@ func createAdminMaterials(r repository.RepositoryManager) {
 		m.Username = os.Getenv("ADMIN_NAME")
 		m.UserID = adminID
 
+		tx, err := r.Transaction()
+		if err != nil {
+			panic(fmt.Errorf("Migration, create admin, transaction: %w ", err))
+		}
+		defer func() {
+			if err != nil {
+				tx.Rollback()
+			}
+		}()
+
 		if m.Name == m.FirstIngredientName && m.Name == m.SecondIngredientName {
-			r.SaveBaseMaterial(material.BaseMaterial{
+			err = r.SaveBaseMaterial(tx, material.BaseMaterial{
 				Name:      m.Name,
 				UserID:    m.UserID,
 				Username:  m.Username,
 				SellPrice: m.SellPrice,
 				BuyPrice:  m.BuyPrice,
 			})
+			if err != nil {
+				panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
+			}
+			if err = tx.Commit(); err != nil {
+				panic(fmt.Errorf("Migration, create admin materials, commit: %w ", err))
+			}
 			continue
 		}
 
 		m.FirstIngredientID, err = r.FindIDbyMaterialName(m.FirstIngredientName)
 		if err != nil {
-			panic(fmt.Errorf("Migration, create admin materials: %w ", err))
+			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
 		}
 
 		m.SecondIngredientID, err = r.FindIDbyMaterialName(m.SecondIngredientName)
 		if err != nil {
-			panic(fmt.Errorf("Migration, create admin materials: %w ", err))
+			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
 		}
 
 		if m.FirstIngredientID > m.SecondIngredientID {
@@ -185,8 +215,12 @@ func createAdminMaterials(r repository.RepositoryManager) {
 			m.FirstIngredientName, m.SecondIngredientName = m.SecondIngredientName, m.FirstIngredientName
 		}
 
-		if err = r.SaveMaterial(m); err != nil {
-			panic(fmt.Errorf("Migration, create admin materials: %w ", err))
+		if err = r.SaveMaterial(tx, m); err != nil {
+			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
+		}
+
+		if err = tx.Commit(); err != nil {
+			panic(fmt.Errorf("Migration, create admin materials, commit: %w ", err))
 		}
 	}
 }

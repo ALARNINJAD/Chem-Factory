@@ -37,8 +37,5 @@ type serviceManager struct {
 }
 
 func Init(a auth.AuthManager, r repository.RepositoryManager, m *notification.NotificationManager) *serviceManager {
-	s := serviceManager{auth: a, repository: r, notification: m}
-	s.createAdminUser()
-	s.createAdminMaterials()
-	return &s
+	return &serviceManager{auth: a, repository: r, notification: m}
 }

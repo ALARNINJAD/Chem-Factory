@@ -29,8 +29,22 @@ func (s *serviceManager) AddToInventory(inv i.InventoryAddRequest) error {
 	inventory.MaterialName = inv.Name
 	inventory.Number = inv.Number
 
-	if err = s.repository.AddToInventory(*inventory); err != nil {
+	tx, err := s.repository.Transaction()
+	if err != nil {
 		return fmt.Errorf("Service inventory, add to inventory: %w ", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err = s.repository.AddToInventory(tx, *inventory); err != nil {
+		return fmt.Errorf("Service inventory, add to inventory: %w ", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("Service inventory, add to inventory, commit: %w ", err)
 	}
 
 	return nil
@@ -62,21 +76,35 @@ func (s *serviceManager) RemoveFromInventory(inv i.InventoryAddRequest) error {
 		return fmt.Errorf("Service inventory, remove from inventory: %w ", err)
 	}
 
+	tx, err := s.repository.Transaction()
+	if err != nil {
+		return fmt.Errorf("Service inventory, remove from inventory: %w ", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
 	if inventory.Number > inv.Number {
 
-		if err = s.repository.ReduceBalance(inventory.Username, inv.Number); err != nil {
+		if err = s.repository.ReduceBalance(tx, inventory.Username, inv.Number); err != nil {
 			return fmt.Errorf("Service inventory, remove from inventory: %w ", err)
 		}
 
 	} else if inventory.Number == inv.Number {
 
-		if err = s.repository.DeleteInventoryByID(invID); err != nil {
+		if err = s.repository.DeleteInventoryByID(tx, invID); err != nil {
 			return fmt.Errorf("Service inventory, remove from inventory: %w ", err)
 		}
 
 	} else {
 
 		return fmt.Errorf("Service inventory, remove from inventory: low balance.")
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("Service inventory, remove from inventory, commit: %w ", err)
 	}
 
 	return nil

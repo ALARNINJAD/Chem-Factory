@@ -58,14 +58,27 @@ func (s *serviceManager) Register(request u.UserRegisterRequest) error {
 		return fmt.Errorf("Service user, register: %w ", err)
 	}
 
-	err = s.repository.SaveUser(request.Username, hashedPassword)
+	tx, err := s.repository.Transaction()
 	if err != nil {
 		return fmt.Errorf("Service user, register: %w ", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err = s.repository.SaveUser(tx, request.Username, hashedPassword); err != nil {
+		return fmt.Errorf("Service user, register: %w ", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("Service user, register, commit: %w ", err)
 	}
 
 	err = s.notification.SendSMSWithProvider(s.notification.Kavenegar, notification.SimpleSMS{
 		Receptor: []string{"09120538596"},
-		Massage: fmt.Sprintf("Welcome %s.", request.Username),
+		Massage:  fmt.Sprintf("Welcome %s.", request.Username),
 	})
 	if err != nil {
 		log.Printf("Service user, register: %s ", err)
