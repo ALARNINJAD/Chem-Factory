@@ -2,10 +2,8 @@ package service
 
 import (
 	u "chem-factory/internal/dto/user"
-	"chem-factory/internal/notification"
 	"errors"
 	"fmt"
-	"log"
 )
 
 func (s *serviceManager) UserData(token string) (u.UserDataResponse, error) {
@@ -76,13 +74,13 @@ func (s *serviceManager) Register(request u.UserRegisterRequest) error {
 		return fmt.Errorf("Service user, register, commit: %w ", err)
 	}
 
-	err = s.notification.SendSMSWithProvider(s.notification.Kavenegar, notification.SimpleSMS{
-		Receptor: []string{"09120538596"},
-		Massage:  fmt.Sprintf("Welcome %s.", request.Username),
-	})
-	if err != nil {
-		log.Printf("Service user, register: %s ", err)
-	}
+	// err = s.notification.SendSMSWithProvider(s.notification.Kavenegar, notification.SimpleSMS{
+	// 	Receptor: []string{"09120538596"},
+	// 	Massage:  fmt.Sprintf("Welcome %s.", request.Username),
+	// })
+	// if err != nil {
+	// 	log.Printf("Service user, register: %s ", err)
+	// }
 
 	return nil
 }

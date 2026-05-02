@@ -1,9 +1,9 @@
 PATCH http://localhost:8090/mixer/new
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyNzMwNDYsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.tfgZQiXxfXwUoodDctpW0lwJDEVu7_H-eR1T1rFumhk
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc3MDc2NjcsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.__NSwowOKvbTnbs3R_LQHw6ycBTHNAd5NkMPe1Uq_fY
 
 {
-    "id": 2,
-    "name" : "ab_gel",
-    "price": 20,
+    "id": 1,
+    "name" : "ass",
+    "price": 1,
     "mix_time": 10
 }

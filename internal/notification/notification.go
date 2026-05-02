@@ -1,7 +1,6 @@
 package notification
 
 import (
-	"log"
 	"os"
 
 	"github.com/kavenegar/kavenegar-go"
@@ -13,7 +12,7 @@ type SimpleSenderSMS interface {
 
 type NotificationManager struct {
 	Kavenegar *kavenegarManager
-	Mediana *medianaManager
+	Mediana   *medianaManager
 }
 
 type SimpleSMS struct {
@@ -26,14 +25,13 @@ func (n *NotificationManager) SendSMSWithProvider(sender SimpleSenderSMS, sms Si
 }
 
 func Init() *NotificationManager {
-	log.Println(os.Getenv("KAVENEGAR_API"))
 	return &NotificationManager{
 		Kavenegar: &kavenegarManager{
-			API: kavenegar.New(os.Getenv("KAVENEGAR_API_KEY")),
+			API:    kavenegar.New(os.Getenv("KAVENEGAR_API_KEY")),
 			Sender: os.Getenv("KAVENEGAR_SENDER"),
 		}, Mediana: &medianaManager{
 			APIKey: os.Getenv("MEDIANA_API_KEY"),
-			URL: os.Getenv("MEDIANA_URL"),
+			URL:    os.Getenv("MEDIANA_URL"),
 			Sender: os.Getenv("MEDIANA_SENDER"),
 		},
 	}

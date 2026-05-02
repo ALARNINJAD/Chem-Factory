@@ -28,7 +28,7 @@ type RepositoryManager interface {
 	EmptyMaterialSlice() []material
 	FindBaseMaterialByID(id int) (*baseMaterial, error)
 	GetMaterialsByUsername(username string) ([]material, error)
-	SaveMaterial(tx *sql.Tx, m material) error
+	SaveMaterial(m material) error
 	SaveBaseMaterial(tx *sql.Tx, m mat.BaseMaterial) error
 	FindIDbyMaterialName(name string) (int, error)
 	FindMaterialByID(id int) (*material, error)

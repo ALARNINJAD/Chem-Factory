@@ -1,9 +1,9 @@
 POST http://localhost:8090/shop/buy
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzcyNzQyMTIsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.Ncs1XkgwVH6JLwS-mmFuz-6U9tu4aMsl4bUBpRs1bjY
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc3MDk2NzksInVzZXJuYW1lIjoibWFtYWQifQ.pYVKrp6RQifICutQ1mf87lFwXBVYn4hvsBQ2aemG4xk
 
 {
-    "seller_username": "admin",
-    "material_name": "water",
+    "seller_username": "alarninjad",
+    "material_name": "ass",
     "number": 1,
-    "price": 5
+    "price": 99
 }

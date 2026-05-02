@@ -215,7 +215,7 @@ func createAdminMaterials(r repository.RepositoryManager) {
 			m.FirstIngredientName, m.SecondIngredientName = m.SecondIngredientName, m.FirstIngredientName
 		}
 
-		if err = r.SaveMaterial(tx, m); err != nil {
+		if err = r.SaveMaterial(m); err != nil {
 			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
 		}
 

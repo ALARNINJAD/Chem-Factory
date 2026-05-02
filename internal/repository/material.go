@@ -90,9 +90,9 @@ func (r *repositoryManager) GetMaterialsByUsername(username string) ([]material,
 	return list, nil
 }
 
-func (r *repositoryManager) SaveMaterial(tx *sql.Tx, m material) error {
+func (r *repositoryManager) SaveMaterial(m material) error {
 
-	_, err := tx.Exec(`
+	_, err := r.db.Exec(`
 		INSERT INTO material(user_id, first_ingredient_id, second_ingredient_id,
 		username, name, first_ingredient_name, second_ingredient_name,
 		sell_price, buy_price, mix_time)

@@ -4,6 +4,7 @@ import (
 	"chem-factory/internal/dto/mixer"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -47,8 +48,10 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 	mxr.SecondIngredientName = request.SecondIngredientName
 	mxr.Number = request.Number
 
-	id, err = s.repository.FindMixIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
-	if err == nil {
+	log.Println(*mxr)
+
+	id, _ = s.repository.FindMixIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
+	if id != 0 {
 		return id, errors.New("Service mixer, add to mixer: already exists.")
 	}
 
@@ -108,13 +111,13 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 		return 0, errors.New("Service mixer, add to mixer: not enough material.")
 	}
 
+	if err = tx.Commit(); err != nil {
+		return 0, fmt.Errorf("Service mixer, add to mixer, commit: %w ", err)
+	}
+
 	id, err = s.repository.FindMixIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
 	if err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
-	}
-
-	if err = tx.Commit(); err != nil {
-		return 0, fmt.Errorf("Service mixer, add to mixer, commit: %w ", err)
 	}
 
 	return id, nil
@@ -212,7 +215,7 @@ func (s *serviceManager) PickMix(request mixer.PickMixRequest) error {
 	} else {
 		if err = s.repository.IncreaseInventoryByID(tx, invID, mxr.Number); err != nil {
 			return fmt.Errorf("Service mixer, pick mix: %w ", err)
-		}		
+		}
 	}
 
 	if err = s.repository.DeleteMixByID(tx, mxr.ID); err != nil {
@@ -269,7 +272,7 @@ func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
 	mat := s.repository.EmptyMaterialStruct()
 	mat.Name = request.Name
 	mat.BuyPrice = request.Price
-	mat.SellPrice = request.Price*4/5
+	mat.SellPrice = request.Price * 4 / 5
 	mat.MixTime = request.MixTime
 	mat.FirstIngredientID = firstID
 	mat.SecondIngredientID = secID
@@ -288,7 +291,7 @@ func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
 		}
 	}()
 
-	if err = s.repository.SaveMaterial(tx, *mat); err != nil {
+	if err = s.repository.SaveMaterial(*mat); err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
@@ -310,7 +313,7 @@ func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
 	} else {
 		if err = s.repository.IncreaseInventoryByID(tx, invID, mxr.Number); err != nil {
 			return fmt.Errorf("Service mixer, pick new mix: %w ", err)
-		}		
+		}
 	}
 
 	if err = s.repository.DeleteMixByID(tx, mxr.ID); err != nil {

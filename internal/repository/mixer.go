@@ -31,8 +31,10 @@ func (r *repositoryManager) FindMixIDByUserIDIngrID(userID, firstID, secID int) 
 		WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
 		userID, firstID, secID).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("Repository mixer, find mix id by user&ingr id: %w ", err)
+		log.Println(userID, firstID, secID, id)
+		return 0, fmt.Errorf("Repository mixer, find mix id by user id and ingredients id: %w ", err)
 	}
+	log.Println(userID, firstID, secID, id)
 	return id, nil
 }
 

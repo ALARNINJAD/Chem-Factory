@@ -25,3 +25,4 @@ func main() {
 }
 
 // repository interface
+// transaction structure

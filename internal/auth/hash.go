@@ -15,7 +15,7 @@ func (a *authManager) CheckPassword(password, hashedPassword string) error {
 }
 
 func (a *authManager) HashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 15)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 5)
 	if err != nil {
 		return "", fmt.Errorf("Auth hash, hash password: %w ", err)
 	}
