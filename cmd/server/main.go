@@ -19,9 +19,9 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	routes.Init(
-		gin.Default(), service.Init(
-			auth.Init(), repository.Init(), notification.Init())).Start()
+	routes.New(
+		gin.Default(), service.New(
+			auth.New(), repository.New(), notification.New())).Start()
 }
 
 // repository interface

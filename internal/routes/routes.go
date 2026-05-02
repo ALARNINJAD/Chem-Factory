@@ -2,32 +2,27 @@ package routes
 
 import (
 	"chem-factory/internal/service"
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
-var route *routesManager
+var route *Manager
 
-type RoutesManager interface {
-	Route()
-}
-
-type routesManager struct {
-	port    string
+type Manager struct {
 	server  *gin.Engine
-	service service.ServiceManager
+	service *service.Manager
 }
 
-func Init(svr *gin.Engine, svc service.ServiceManager) *routesManager {
-	return &routesManager{server: svr, service: svc}
+func New(svr *gin.Engine, svc *service.Manager) *Manager {
+	return &Manager{server: svr, service: svc}
 }
 
-func (r *routesManager) Start() {
-	log.Println("Server is started.")
+func (r *Manager) Start() {
 	route = r
 	registerRoutes()
-	route.server.Run(":8090")
+	route.server.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }
 
 func registerRoutes() {

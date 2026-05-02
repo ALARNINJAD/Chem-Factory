@@ -8,28 +8,32 @@ import (
 	"time"
 )
 
-func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) {
+func (m *Manager) AddToMixer(request mixer.MixerAddRequest) (int, error) {
 
-	username, err := s.auth.VerifyJWT(request.Token)
+	a := m.auth
+
+	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
-		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
+		return 0, fmt.Errorf("Service mixer, add to mixer: %w", err)
 	}
 
 	if request.FirstIngredientName == request.SecondIngredientName {
-		return 0, errors.New("Service mixer, add to mixer: ")
+		return 0, errors.New("Service mixer, add to mixer: same materials exist.")
 	}
 
 	var id, userID, firstID, secID, invID int
 
-	if userID, err = s.repository.FindIDbyUsername(username); err != nil {
+	r := m.repository
+
+	if userID, err = r.User.FindIDbyUsername(username); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
-	if firstID, err = s.repository.FindIDbyMaterialName(request.FirstIngredientName); err != nil {
+	if firstID, err = r.Material.FindIDByName(request.FirstIngredientName); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
-	if secID, err = s.repository.FindIDbyMaterialName(request.SecondIngredientName); err != nil {
+	if secID, err = r.Material.FindIDByName(request.SecondIngredientName); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
@@ -38,7 +42,7 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 		request.FirstIngredientName, request.SecondIngredientName = request.SecondIngredientName, request.FirstIngredientName
 	}
 
-	mxr := s.repository.EmptyMixerStruct()
+	mxr := r.Mixer.EmptyStruct()
 
 	mxr.UserID = userID
 	mxr.FirstIngredientID = firstID
@@ -50,12 +54,12 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 
 	log.Println(*mxr)
 
-	id, _ = s.repository.FindMixIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
+	id, _ = r.Mixer.FindIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
 	if id != 0 {
 		return id, errors.New("Service mixer, add to mixer: already exists.")
 	}
 
-	tx, err := s.repository.Transaction()
+	tx, err := r.Transaction()
 	if err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
@@ -65,46 +69,46 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 		}
 	}()
 
-	if err = s.repository.AddToMixer(tx, *mxr); err != nil {
+	if err = r.Mixer.Add(tx, *mxr); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
-	inv := s.repository.EmptyInventoryStruct()
+	inv := r.Inventory.EmptyStruct()
 
-	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID, firstID); err != nil {
+	if invID, err = r.Inventory.FindIDByUserIDmatID(userID, firstID); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
-	if inv, err = s.repository.FindUserInvenByID(invID); err != nil {
+	if inv, err = r.Inventory.FindByID(invID); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
 	if inv.Number > request.Number {
-		if err = s.repository.ReduceInventoryByID(tx, invID, request.Number); err != nil {
+		if err = r.Inventory.ReduceByID(tx, invID, request.Number); err != nil {
 			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 		}
 	} else if inv.Number == request.Number {
-		if err = s.repository.DeleteInventoryByID(tx, invID); err != nil {
+		if err = r.Inventory.DeleteByID(tx, invID); err != nil {
 			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 		}
 	} else {
 		return 0, errors.New("Service mixer, add to mixer: not enough material.")
 	}
 
-	if invID, err = s.repository.FindInvenIDByUserIDmatID(userID, secID); err != nil {
+	if invID, err = r.Inventory.FindIDByUserIDmatID(userID, secID); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
-	if inv, err = s.repository.FindUserInvenByID(invID); err != nil {
+	if inv, err = r.Inventory.FindByID(invID); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
 
 	if inv.Number > request.Number {
-		if err = s.repository.ReduceInventoryByID(tx, invID, request.Number); err != nil {
+		if err = r.Inventory.ReduceByID(tx, invID, request.Number); err != nil {
 			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 		}
 	} else if inv.Number == request.Number {
-		if err = s.repository.DeleteInventoryByID(tx, invID); err != nil {
+		if err = r.Inventory.DeleteByID(tx, invID); err != nil {
 			return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 		}
 	} else {
@@ -115,7 +119,7 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 		return 0, fmt.Errorf("Service mixer, add to mixer, commit: %w ", err)
 	}
 
-	id, err = s.repository.FindMixIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
+	id, err = r.Mixer.FindIDByUserIDIngrID(mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID)
 	if err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
 	}
@@ -123,14 +127,18 @@ func (s *serviceManager) AddToMixer(request mixer.MixerAddRequest) (int, error) 
 	return id, nil
 }
 
-func (s *serviceManager) CheckMix(request mixer.CheckMixRequest) (mixer.CheckMixResponse, error) {
+func (m *Manager) CheckMix(request mixer.CheckMixRequest) (mixer.CheckMixResponse, error) {
 
-	username, err := s.auth.VerifyJWT(request.Token)
+	a := m.auth
+
+	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
 		return mixer.CheckMixResponse{}, fmt.Errorf("Service mixer, check mix: %w ", err)
 	}
 
-	mix, err := s.repository.FindMixRowByID(request.ID)
+	r := m.repository
+
+	mix, err := r.Mixer.FindByID(request.ID)
 	if err != nil {
 		return mixer.CheckMixResponse{}, fmt.Errorf("Service mixer, check mix: %w ", err)
 	}
@@ -139,7 +147,7 @@ func (s *serviceManager) CheckMix(request mixer.CheckMixRequest) (mixer.CheckMix
 		return mixer.CheckMixResponse{}, errors.New("Service mixer, check mix: not accessable.")
 	}
 
-	mat, err := s.repository.FindMaterialByIngrID(mix.FirstIngredientID, mix.SecondIngredientID)
+	mat, err := r.Material.FindByIngrID(mix.FirstIngredientID, mix.SecondIngredientID)
 	var timeLimit int
 	var newStatus bool
 	if err != nil {
@@ -157,23 +165,27 @@ func (s *serviceManager) CheckMix(request mixer.CheckMixRequest) (mixer.CheckMix
 	}
 }
 
-func (s *serviceManager) PickMix(request mixer.PickMixRequest) error {
+func (m *Manager) PickMix(request mixer.PickMixRequest) error {
 
-	r, err := s.CheckMix(mixer.CheckMixRequest{Token: request.Token, ID: request.ID})
+	resp, err := m.CheckMix(mixer.CheckMixRequest{Token: request.Token, ID: request.ID})
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
 
-	if r.NewStatus || r.Time > 0 {
+	if resp.NewStatus || resp.Time > 0 {
 		return errors.New("Service mixer, pick mix: not accessable.")
 	}
 
-	username, err := s.auth.VerifyJWT(request.Token)
+	a := m.auth
+
+	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
 
-	mxr, err := s.repository.FindMixRowByID(request.ID)
+	r := m.repository
+
+	mxr, err := r.Mixer.FindByID(request.ID)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
@@ -182,17 +194,17 @@ func (s *serviceManager) PickMix(request mixer.PickMixRequest) error {
 		return errors.New("Service mixer, pick mix: not accessable.")
 	}
 
-	userID, err := s.repository.FindIDbyUsername(username)
+	userID, err := r.User.FindIDbyUsername(username)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
 
-	mat, err := s.repository.FindMaterialByIngrID(mxr.FirstIngredientID, mxr.SecondIngredientID)
+	mat, err := r.Material.FindByIngrID(mxr.FirstIngredientID, mxr.SecondIngredientID)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
 
-	tx, err := s.repository.Transaction()
+	tx, err := r.Transaction()
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
@@ -202,23 +214,23 @@ func (s *serviceManager) PickMix(request mixer.PickMixRequest) error {
 		}
 	}()
 
-	if invID, err := s.repository.FindInvenIDByUserIDmatID(userID, mat.ID); err != nil {
-		inv := s.repository.EmptyInventoryStruct()
+	if invID, err := r.Inventory.FindIDByUserIDmatID(userID, mat.ID); err != nil {
+		inv := r.Inventory.EmptyStruct()
 		inv.UserID = userID
 		inv.Username = username
 		inv.MaterialID = mat.ID
 		inv.MaterialName = mat.Name
 		inv.Number = mxr.Number
-		if err = s.repository.AddToInventory(tx, *inv); err != nil {
+		if err = r.Inventory.Add(tx, *inv); err != nil {
 			return fmt.Errorf("Service mixer, pick mix: %w ", err)
 		}
 	} else {
-		if err = s.repository.IncreaseInventoryByID(tx, invID, mxr.Number); err != nil {
+		if err = r.Inventory.IncreaseByID(tx, invID, mxr.Number); err != nil {
 			return fmt.Errorf("Service mixer, pick mix: %w ", err)
 		}
 	}
 
-	if err = s.repository.DeleteMixByID(tx, mxr.ID); err != nil {
+	if err = r.Mixer.DeleteByID(tx, mxr.ID); err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
 
@@ -229,23 +241,27 @@ func (s *serviceManager) PickMix(request mixer.PickMixRequest) error {
 	return nil
 }
 
-func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
+func (m *Manager) PickNewMix(request mixer.PickNewMixRequest) error {
 
-	r, err := s.CheckMix(mixer.CheckMixRequest{Token: request.Token, ID: request.ID})
+	resp, err := m.CheckMix(mixer.CheckMixRequest{Token: request.Token, ID: request.ID})
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	if !r.NewStatus || r.Time > 0 {
+	if !resp.NewStatus || resp.Time > 0 {
 		return errors.New("Service mixer, pick new mix: not accessable.")
 	}
 
-	username, err := s.auth.VerifyJWT(request.Token)
+	a := m.auth
+
+	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	mxr, err := s.repository.FindMixRowByID(request.ID)
+	r := m.repository
+
+	mxr, err := r.Mixer.FindByID(request.ID)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
@@ -254,22 +270,22 @@ func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
 		return errors.New("Service mixer, pick new mix: not accessable.")
 	}
 
-	userID, err := s.repository.FindIDbyUsername(username)
+	userID, err := r.User.FindIDbyUsername(username)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	firstID, err := s.repository.FindIDbyMaterialName(mxr.FirstIngredientName)
+	firstID, err := r.Material.FindIDByName(mxr.FirstIngredientName)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	secID, err := s.repository.FindIDbyMaterialName(mxr.SecondIngredientName)
+	secID, err := r.Material.FindIDByName(mxr.SecondIngredientName)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	mat := s.repository.EmptyMaterialStruct()
+	mat := r.Material.EmptyStruct()
 	mat.Name = request.Name
 	mat.BuyPrice = request.Price
 	mat.SellPrice = request.Price * 4 / 5
@@ -281,7 +297,7 @@ func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
 	mat.Username = username
 	mat.UserID = userID
 
-	tx, err := s.repository.Transaction()
+	tx, err := r.Transaction()
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
@@ -291,32 +307,32 @@ func (s *serviceManager) PickNewMix(request mixer.PickNewMixRequest) error {
 		}
 	}()
 
-	if err = s.repository.SaveMaterial(*mat); err != nil {
+	if err = r.Material.Add(*mat); err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	mat.ID, err = s.repository.FindMaterialIDByIngrID(mat.FirstIngredientID, mat.SecondIngredientID)
+	mat.ID, err = r.Material.FindIDByIngrID(mat.FirstIngredientID, mat.SecondIngredientID)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	if invID, err := s.repository.FindInvenIDByUserIDmatID(userID, mat.ID); err != nil {
-		inv := s.repository.EmptyInventoryStruct()
+	if invID, err := r.Inventory.FindIDByUserIDmatID(userID, mat.ID); err != nil {
+		inv := r.Inventory.EmptyStruct()
 		inv.UserID = userID
 		inv.Username = username
 		inv.MaterialID = mat.ID
 		inv.MaterialName = mat.Name
 		inv.Number = mxr.Number
-		if err = s.repository.AddToInventory(tx, *inv); err != nil {
+		if err = r.Inventory.Add(tx, *inv); err != nil {
 			return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 		}
 	} else {
-		if err = s.repository.IncreaseInventoryByID(tx, invID, mxr.Number); err != nil {
+		if err = r.Inventory.IncreaseByID(tx, invID, mxr.Number); err != nil {
 			return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 		}
 	}
 
-	if err = s.repository.DeleteMixByID(tx, mxr.ID); err != nil {
+	if err = r.Mixer.DeleteByID(tx, mxr.ID); err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 

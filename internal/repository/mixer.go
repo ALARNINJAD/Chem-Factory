@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -19,63 +18,54 @@ type mixer struct {
 	DateTime             time.Time `json:"date_time"`
 }
 
-func (r *repositoryManager) EmptyMixerStruct() *mixer {
-	return &mixer{}
-}
+type mixerManager struct{ db *sql.DB }
 
-func (r *repositoryManager) FindMixIDByUserIDIngrID(userID, firstID, secID int) (int, error) {
+func NewMixerManager(db *sql.DB) *mixerManager { return &mixerManager{db: db} }
 
+func (m *mixerManager) EmptyStruct() *mixer { return &mixer{} }
+
+func (m *mixerManager) FindIDByUserIDIngrID(userID, firstID, secID int) (int, error) {
 	var id int
-	err := r.db.QueryRow(`
+	err := m.db.QueryRow(`
 		SELECT id FROM mixer
 		WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
 		userID, firstID, secID).Scan(&id)
 	if err != nil {
-		log.Println(userID, firstID, secID, id)
 		return 0, fmt.Errorf("Repository mixer, find mix id by user id and ingredients id: %w ", err)
 	}
-	log.Println(userID, firstID, secID, id)
 	return id, nil
 }
 
-func (r *repositoryManager) AddToMixer(tx *sql.Tx, m mixer) error {
-
+func (m *mixerManager) Add(tx *sql.Tx, mxr mixer) error {
 	_, err := tx.Exec(`
 		INSERT INTO mixer(
 		user_id, first_ingredient_id, second_ingredient_id,
 		username, first_ingredient_name, second_ingredient_name, number)
 		VALUES(?,?,?,?,?,?,?)`,
-		m.UserID, m.FirstIngredientID, m.SecondIngredientID,
-		m.Username, m.FirstIngredientName, m.SecondIngredientName, m.Number)
+		mxr.UserID, mxr.FirstIngredientID, mxr.SecondIngredientID,
+		mxr.Username, mxr.FirstIngredientName, mxr.SecondIngredientName, mxr.Number)
 	if err != nil {
 		return fmt.Errorf("Repository mixer, add to mixer: %w ", err)
 	}
-
 	return nil
 }
 
-func (r *repositoryManager) FindMixRowByID(id int) (*mixer, error) {
-
-	var m mixer
-
-	err := r.db.QueryRow(`
+func (m *mixerManager) FindByID(id int) (*mixer, error) {
+	var mxr mixer
+	err := m.db.QueryRow(`
 		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
 		username, first_ingredient_name, second_ingredient_name,
 		number, date_time FROM mixer WHERE id = ?`, id,
-	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
-		&m.Username, &m.FirstIngredientName, &m.SecondIngredientName,
-		&m.Number, &m.DateTime)
+	).Scan(&mxr.ID, &mxr.UserID, &mxr.FirstIngredientID, &mxr.SecondIngredientID,
+		&mxr.Username, &mxr.FirstIngredientName, &mxr.SecondIngredientName,
+		&mxr.Number, &mxr.DateTime)
 	if err != nil {
-		log.Println(id)
-		log.Println(m)
 		return nil, fmt.Errorf("Repository mixer, find mix row by id: %w ", err)
 	}
-
-	return &m, nil
+	return &mxr, nil
 }
 
-func (r *repositoryManager) DeleteMixByID(tx *sql.Tx, id int) error {
-
+func (m *mixerManager) DeleteByID(tx *sql.Tx, id int) error {
 	_, err := tx.Exec("DELETE FROM mixer WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("Repository mixer, delelte mixer by id: %w ", err)

@@ -20,14 +20,14 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	r := repository.Init()
-	a := auth.Init()
+	r := repository.New()
+	a := auth.New()
 	createTables(r)
 	createAdminUser(r, a)
 	createAdminMaterials(r)
 }
 
-func createTables(r repository.RepositoryManager) {
+func createTables(r *repository.Manager) {
 
 	if err := r.ExecQuery(`
 	CREATE TABLE IF NOT EXISTS user (
@@ -119,14 +119,14 @@ func createTables(r repository.RepositoryManager) {
 	}
 }
 
-func createAdminUser(r repository.RepositoryManager, a auth.AuthManager) {
+func createAdminUser(r *repository.Manager, a *auth.Manager) {
 
-	_, err := r.FindIDbyUsername(os.Getenv("ADMIN_NAME"))
+	_, err := r.User.FindIDbyUsername(os.Getenv("ADMIN_NAME"))
 	if err == nil {
 		return
 	}
 
-	hashedPassword, err := a.HashPassword(os.Getenv("ADMIN_PASSWORD"))
+	hashedPassword, err := a.Hash.HashPassword(os.Getenv("ADMIN_PASSWORD"))
 	if err != nil {
 		panic(fmt.Errorf("Migration, create admin: %w ", err))
 	}
@@ -141,7 +141,7 @@ func createAdminUser(r repository.RepositoryManager, a auth.AuthManager) {
 		}
 	}()
 
-	if err := r.SaveUser(tx, os.Getenv("ADMIN_NAME"), hashedPassword); err != nil {
+	if err := r.User.Add(tx, os.Getenv("ADMIN_NAME"), hashedPassword); err != nil {
 		panic(fmt.Errorf("Migration, create admin: %w ", err))
 	}
 
@@ -150,9 +150,9 @@ func createAdminUser(r repository.RepositoryManager, a auth.AuthManager) {
 	}
 }
 
-func createAdminMaterials(r repository.RepositoryManager) {
+func createAdminMaterials(r *repository.Manager) {
 
-	adminID, err := r.FindIDbyUsername(os.Getenv("ADMIN_NAME"))
+	adminID, err := r.User.FindIDbyUsername(os.Getenv("ADMIN_NAME"))
 	if err != nil {
 		panic(fmt.Errorf("Migration, create admin materials: %w ", err))
 	}
@@ -162,7 +162,7 @@ func createAdminMaterials(r repository.RepositoryManager) {
 		panic(fmt.Errorf("Migration, create admin materials, read file: %w ", err))
 	}
 
-	materials := r.EmptyMaterialSlice()
+	materials := r.Material.EmptySlice()
 
 	if err = json.Unmarshal(data, &materials); err != nil {
 		panic(fmt.Errorf("Migration, create admin materials, unmarshal: %w ", err))
@@ -184,7 +184,7 @@ func createAdminMaterials(r repository.RepositoryManager) {
 		}()
 
 		if m.Name == m.FirstIngredientName && m.Name == m.SecondIngredientName {
-			err = r.SaveBaseMaterial(tx, material.BaseMaterial{
+			err = r.Material.AddBase(tx, material.BaseMaterial{
 				Name:      m.Name,
 				UserID:    m.UserID,
 				Username:  m.Username,
@@ -200,12 +200,12 @@ func createAdminMaterials(r repository.RepositoryManager) {
 			continue
 		}
 
-		m.FirstIngredientID, err = r.FindIDbyMaterialName(m.FirstIngredientName)
+		m.FirstIngredientID, err = r.Material.FindIDByName(m.FirstIngredientName)
 		if err != nil {
 			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
 		}
 
-		m.SecondIngredientID, err = r.FindIDbyMaterialName(m.SecondIngredientName)
+		m.SecondIngredientID, err = r.Material.FindIDByName(m.SecondIngredientName)
 		if err != nil {
 			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
 		}
@@ -215,7 +215,7 @@ func createAdminMaterials(r repository.RepositoryManager) {
 			m.FirstIngredientName, m.SecondIngredientName = m.SecondIngredientName, m.FirstIngredientName
 		}
 
-		if err = r.SaveMaterial(m); err != nil {
+		if err = r.Material.Add(m); err != nil {
 			panic(fmt.Errorf("Migration, create admin materials, %v: %w ", m, err))
 		}
 

@@ -10,9 +10,17 @@ import (
 )
 
 type medianaManager struct {
-	URL    string
-	APIKey string
-	Sender string
+	url    string
+	apiKey string
+	sender string
+}
+
+func NewMedianaManager(url, apiKey, sender string) *medianaManager {
+	return &medianaManager{
+		url: url,
+		apiKey: apiKey,
+		sender: sender,
+	}
 }
 
 type medianaSimpleRequest struct {
@@ -24,7 +32,7 @@ type medianaSimpleRequest struct {
 func (m *medianaManager) SendSimpleSMS(sms SimpleSMS) error {
 
 	reqBody := medianaSimpleRequest{
-		SendingNumber: m.Sender,
+		SendingNumber: m.sender,
 		Recipients:    sms.Receptor,
 		MessageText:   sms.Massage,
 	}
@@ -34,12 +42,12 @@ func (m *medianaManager) SendSimpleSMS(sms SimpleSMS) error {
 		return fmt.Errorf("Notification mediana, send simple sms, json marshal: %w ", err)
 	}
 
-	req, err := http.NewRequest("POST", m.URL, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", m.url, bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("Notification mediana, send simple sms, new request: %w ", err)
 	}
 
-	req.Header.Set("Authorization", "ApiKey "+m.APIKey)
+	req.Header.Set("Authorization", "ApiKey "+m.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

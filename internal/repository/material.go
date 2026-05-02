@@ -29,164 +29,142 @@ type baseMaterial struct {
 	BuyPrice  int    `json:"buy_price"`
 }
 
-func (r *repositoryManager) FindBaseMaterialByID(id int) (*baseMaterial, error) {
+type materialManager struct{ db *sql.DB }
 
-	var m baseMaterial
+func NewMaterialManager(db *sql.DB) *materialManager { return &materialManager{db: db} }
 
-	err := r.db.QueryRow(`
+func (m *materialManager) FindBaseByID(id int) (*baseMaterial, error) {
+	var mat baseMaterial
+	err := m.db.QueryRow(`
 		SELECT id, user_id, username, name,	sell_price, buy_price 
 		FROM material WHERE id = ? `, id,
-	).Scan(&m.ID, &m.UserID, &m.Username, &m.Name, &m.SellPrice, &m.BuyPrice)
+	).Scan(&mat.ID, &mat.UserID, &mat.Username, &mat.Name, &mat.SellPrice, &mat.BuyPrice)
 	if err != nil {
-		return nil, fmt.Errorf("Repository material, find material by id: %w ", err)
+		return nil, fmt.Errorf("Repository material, find material by id: %w", err)
 	}
-
-	return &m, nil
+	return &mat, nil
 }
 
-func (r *repositoryManager) EmptyMaterialStruct() *material {
-	return &material{}
-}
+func (m *materialManager) EmptyStruct() *material { return &material{} }
 
-func (r *repositoryManager) EmptyMaterialSlice() []material {
-	return []material{}
-}
+func (m *materialManager) EmptySlice() []material {	return []material{} }
 
-func (r *repositoryManager) GetMaterialsByUsername(username string) ([]material, error) {
+func (m *materialManager) FindByUsername(username string) ([]baseMaterial, error) {
 
-	rows, err := r.db.Query(`
+	rows, err := m.db.Query(`
 		SELECT id, user_id, username, name, sell_price, buy_price
 		FROM material WHERE username = ?`, username)
 	if err != nil {
-		return nil, fmt.Errorf("Repository material, get base materials by username select query: %w ", err)
+		return nil, fmt.Errorf("Repository material, get base materials by username select query: %w", err)
 	}
 	defer rows.Close()
 
-	var list []material
+	var list []baseMaterial
 
 	for rows.Next() {
-		var s material
-
+		var mat baseMaterial
 		err := rows.Scan(
-			&s.ID,
-			&s.UserID,
-			&s.Username,
-			&s.Name,
-			&s.SellPrice,
-			&s.BuyPrice,
+			&mat.ID,
+			&mat.UserID,
+			&mat.Username,
+			&mat.Name,
+			&mat.SellPrice,
+			&mat.BuyPrice,
 		)
-
 		if err != nil {
-			return nil, fmt.Errorf("Repository material, get base materials by username rows scan: %w ", err)
+			return nil, fmt.Errorf("Repository material, get base materials by username rows scan: %w", err)
 		}
-
-		list = append(list, s)
+		list = append(list, mat)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("Repository material, get base materials by username rows error: %w ", err)
+		return nil, fmt.Errorf("Repository material, get base materials by username rows error: %w", err)
 	}
-
 	return list, nil
 }
 
-func (r *repositoryManager) SaveMaterial(m material) error {
-
-	_, err := r.db.Exec(`
+func (m *materialManager) Add(mat material) error {
+	_, err := m.db.Exec(`
 		INSERT INTO material(user_id, first_ingredient_id, second_ingredient_id,
 		username, name, first_ingredient_name, second_ingredient_name,
 		sell_price, buy_price, mix_time)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		m.UserID, m.FirstIngredientID, m.SecondIngredientID,
-		m.Username, m.Name, m.FirstIngredientName, m.SecondIngredientName,
-		m.SellPrice, m.BuyPrice, m.MixTime)
+		mat.UserID, mat.FirstIngredientID, mat.SecondIngredientID,
+		mat.Username, mat.Name, mat.FirstIngredientName, mat.SecondIngredientName,
+		mat.SellPrice, mat.BuyPrice, mat.MixTime)
 	if err != nil {
-		return fmt.Errorf("Repository material, save material: %w ", err)
+		return fmt.Errorf("Repository material, save material: %w", err)
 	}
-
 	return nil
 }
 
-func (r *repositoryManager) SaveBaseMaterial(tx *sql.Tx, m mat.BaseMaterial) error {
-
+func (m *materialManager) AddBase(tx *sql.Tx, mat mat.BaseMaterial) error {
 	_, err := tx.Exec(`
 		INSERT INTO material(user_id, username, name, sell_price, buy_price) VALUES (?, ?, ?, ?, ?)`,
-		m.UserID, m.Username, m.Name, m.SellPrice, m.BuyPrice)
+		mat.UserID, mat.Username, mat.Name, mat.SellPrice, mat.BuyPrice)
 	if err != nil {
-		return fmt.Errorf("Repository material, save base material: %w ", err)
+		return fmt.Errorf("Repository material, save base material: %w", err)
 	}
-
 	return nil
 }
 
-func (r *repositoryManager) FindIDbyMaterialName(name string) (int, error) {
-
+func (m *materialManager) FindIDByName(name string) (int, error) {
 	var id int
-	err := r.db.QueryRow("SELECT id FROM material WHERE name = ?", name).Scan(&id)
+	err := m.db.QueryRow("SELECT id FROM material WHERE name = ?", name).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("Repository material, find id by material name: %w ", err)
+		return 0, fmt.Errorf("Repository material, find id by material name: %w", err)
 	}
 	return id, nil
 }
 
-func (r *repositoryManager) FindMaterialByID(id int) (*material, error) {
-
-	var m material
-
-	err := r.db.QueryRow(`
+func (m *materialManager) FindByID(id int) (*material, error) {
+	var mat material
+	err := m.db.QueryRow(`
 		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
 		username, name, first_ingredient_name, second_ingredient_name,
 		sell_price, buy_price, mix_time
 		FROM material WHERE id = ? `, id,
-	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
-		&m.Username, &m.Name, &m.FirstIngredientName, &m.SecondIngredientName,
-		&m.SellPrice, &m.BuyPrice, &m.MixTime)
+	).Scan(&mat.ID, &mat.UserID, &mat.FirstIngredientID, &mat.SecondIngredientID,
+		&mat.Username, &mat.Name, &mat.FirstIngredientName, &mat.SecondIngredientName,
+		&mat.SellPrice, &mat.BuyPrice, &mat.MixTime)
 	if err != nil {
-		return nil, fmt.Errorf("Repository material, find material by id: %w ", err)
+		return nil, fmt.Errorf("Repository material, find material by id: %w", err)
 	}
-
-	return &m, nil
+	return &mat, nil
 }
 
-func (r *repositoryManager) FindMaterialByIngrID(firstID int, secondID int) (*material, error) {
-
-	var m material
-
-	err := r.db.QueryRow(`
+func (m *materialManager) FindByIngrID(firstID int, secondID int) (*material, error) {
+	var mat material
+	err := m.db.QueryRow(`
 		SELECT id, user_id, first_ingredient_id, second_ingredient_id,
 		username, name, first_ingredient_name, second_ingredient_name,
 		sell_price, buy_price, mix_time
 		FROM material  WHERE first_ingredient_id = ? AND second_ingredient_id = ?`, firstID, secondID,
-	).Scan(&m.ID, &m.UserID, &m.FirstIngredientID, &m.SecondIngredientID,
-		&m.Username, &m.Name, &m.FirstIngredientName, &m.SecondIngredientName,
-		&m.SellPrice, &m.BuyPrice, &m.MixTime)
+	).Scan(&mat.ID, &mat.UserID, &mat.FirstIngredientID, &mat.SecondIngredientID,
+		&mat.Username, &mat.Name, &mat.FirstIngredientName, &mat.SecondIngredientName,
+		&mat.SellPrice, &mat.BuyPrice, &mat.MixTime)
 	if err != nil {
-		return nil, fmt.Errorf("Repository material, find material by ingredient id: %w ", err)
+		return nil, fmt.Errorf("Repository material, find material by ingredient id: %w", err)
 	}
-
-	return &m, nil
+	return &mat, nil
 }
 
-func (r *repositoryManager) FindMaterialIDByIngrID(firstID int, secondID int) (int, error) {
-
+func (m *materialManager) FindIDByIngrID(firstID int, secondID int) (int, error) {
 	var id int
-
-	err := r.db.QueryRow(`
+	err := m.db.QueryRow(`
 		SELECT id FROM material WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
 		firstID, secondID,
 	).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("Repository material, find material id by ingredient id: %w ", err)
+		return 0, fmt.Errorf("Repository material, find material id by ingredient id: %w", err)
 	}
-
 	return id, nil
 }
 
-func (r *repositoryManager) FindMatMixTimeByID(id int) (int, error) {
-
+func (m *materialManager) FindMixTimeByID(id int) (int, error) {
 	var time int
-	if err := r.db.QueryRow(`SELECT mix_time FROM material WHERE id = ?`, id).Scan(&time); err != nil {
-		return 0, fmt.Errorf("Repository material, find material mix time by id: %w ", err)
+	if err := m.db.QueryRow(`SELECT mix_time FROM material WHERE id = ?`, id).Scan(&time); err != nil {
+		return 0, fmt.Errorf("Repository material, find material mix time by id: %w", err)
 	}
 	return time, nil
 }

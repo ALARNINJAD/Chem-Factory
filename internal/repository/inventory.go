@@ -16,115 +16,103 @@ type inventory struct {
 	DateTime     time.Time `json:"date_time"`
 }
 
-func (r *repositoryManager) EmptyInventoryStruct() *inventory {
-	return &inventory{}
-}
+type inventoryManager struct{ db *sql.DB }
 
-func (r *repositoryManager) EmptyInventorySlice() []inventory {
-	return []inventory{}
-}
+func NewInventoryManager(db *sql.DB) *inventoryManager { return &inventoryManager{db: db} }
 
-func (r *repositoryManager) FindUserInvenByID(id int) (*inventory, error) {
+func (i *inventoryManager) EmptyStruct() *inventory {	return &inventory{} }
 
-	var i inventory
-	err := r.db.QueryRow(`
+func (i *inventoryManager) EmptySlice() []inventory { return []inventory{} }
+
+func (i *inventoryManager) FindByID(id int) (*inventory, error) {
+	var inv inventory
+	err := i.db.QueryRow(`
 		SELECT id, user_id, material_id, username, material_name, number, date_time
 		FROM inventory WHERE id = ?`, id).Scan(
-		&i.ID, &i.UserID, &i.MaterialID, &i.Username, &i.MaterialName, &i.Number, &i.DateTime)
+		&inv.ID, &inv.UserID, &inv.MaterialID, &inv.Username, &inv.MaterialName, &inv.Number, &inv.DateTime)
 	if err != nil {
-		return nil, fmt.Errorf("Repository inventory, find user inventory by id: %w ", err)
+		return nil, fmt.Errorf("Repository inventory, find user inventory by id: %w", err)
 	}
-	return &i, nil
+	return &inv, nil
 }
 
-func (r *repositoryManager) FindInvenIDByUserIDmatID(userID, materialID int) (int, error) {
-
+func (i *inventoryManager) FindIDByUserIDmatID(userID, materialID int) (int, error) {
 	var id int
-	err := r.db.QueryRow("SELECT id FROM inventory WHERE user_id = ? AND material_id = ?",
+	err := i.db.QueryRow("SELECT id FROM inventory WHERE user_id = ? AND material_id = ?",
 		userID, materialID).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("Repository inventory, find inventory id by user and material id: %w ", err)
+		return 0, fmt.Errorf("Repository inventory, find inventory id by user and material id: %w", err)
 	}
 	return id, nil
 }
 
-func (r *repositoryManager) IncreaseInventoryByID(tx *sql.Tx, id, number int) error {
-
+func (i *inventoryManager) IncreaseByID(tx *sql.Tx, id, number int) error {
 	_, err := tx.Exec("UPDATE inventory SET number = number + ? WHERE id = ?", number, id)
 	if err != nil {
-		return fmt.Errorf("Repository inventory, increase inventoy number: %w ", err)
+		return fmt.Errorf("Repository inventory, increase inventoy number: %w", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) ReduceInventoryByID(tx *sql.Tx, id, number int) error {
-
+func (i *inventoryManager) ReduceByID(tx *sql.Tx, id, number int) error {
 	_, err := tx.Exec("UPDATE inventory SET number = number - ? WHERE id = ?", number, id)
 	if err != nil {
-		return fmt.Errorf("Repository inventory, reduce inventoy number: %w ", err)
+		return fmt.Errorf("Repository inventory, reduce inventoy number: %w", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) AddToInventory(tx *sql.Tx, i inventory) error {
-
+func (i *inventoryManager) Add(tx *sql.Tx, inv inventory) error {
 	_, err := tx.Exec(`
 		INSERT INTO 
 		inventory(user_id,material_id,username,material_name,number)
 		VALUES(?,?,?,?,?)`,
-		i.UserID, i.MaterialID, i.Username, i.MaterialName, i.Number)
+		inv.UserID, inv.MaterialID, inv.Username, inv.MaterialName, inv.Number)
 	if err != nil {
 		return fmt.Errorf("Repository inventory, add to inventory: %w ", err)
 	}
-
 	return nil
 }
 
-func (r *repositoryManager) DeleteInventoryByID(tx *sql.Tx, id int) error {
-
+func (i *inventoryManager) DeleteByID(tx *sql.Tx, id int) error {
 	_, err := tx.Exec("DELETE FROM inventory WHERE id = ?", id)
 	if err != nil {
-		return fmt.Errorf("Repository inventory, delelte inventory by id: %w ", err)
+		return fmt.Errorf("Repository inventory, delelte inventory by id: %w", err)
 	}
 	return nil
 }
 
-func (r *repositoryManager) GetInventoryItemsByUsername(username string) ([]inventory, error) {
-
-	rows, err := r.db.Query(`
+func (i *inventoryManager) FindByUsername(username string) ([]inventory, error) {
+	rows, err := i.db.Query(`
         SELECT id, user_id, material_id, username, material_name, number, date_time
         FROM inventory 
         WHERE username = ?`, username)
 	if err != nil {
-		return nil, fmt.Errorf("Repository inventory, get inventory by username query: %w ", err)
+		return nil, fmt.Errorf("Repository inventory, get inventory by username query: %w", err)
 	}
 	defer rows.Close()
 
 	var list []inventory
 
 	for rows.Next() {
-		var i inventory
-
+		var inv inventory
 		err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.MaterialID,
-			&i.Username,
-			&i.MaterialName,
-			&i.Number,
-			&i.DateTime,
+			&inv.ID,
+			&inv.UserID,
+			&inv.MaterialID,
+			&inv.Username,
+			&inv.MaterialName,
+			&inv.Number,
+			&inv.DateTime,
 		)
-
 		if err != nil {
-			return nil, fmt.Errorf("Repository inventory, get inventory by username scan: %w ", err)
+			return nil, fmt.Errorf("Repository inventory, get inventory by username scan: %w", err)
 		}
-
-		list = append(list, i)
+		list = append(list, inv)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("Repository inventory, get inventory by username rows: %w ", err)
+		return nil, fmt.Errorf("Repository inventory, get inventory by username rows: %w", err)
 	}
-
 	return list, nil
 }

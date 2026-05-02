@@ -6,11 +6,11 @@ import (
 	"github.com/kavenegar/kavenegar-go"
 )
 
-type SimpleSenderSMS interface {
+type SimpleSMSSender interface {
 	SendSimpleSMS(sms SimpleSMS) error
 }
 
-type NotificationManager struct {
+type Manager struct {
 	Kavenegar *kavenegarManager
 	Mediana   *medianaManager
 }
@@ -20,19 +20,20 @@ type SimpleSMS struct {
 	Massage  string   `json:"massage"`
 }
 
-func (n *NotificationManager) SendSMSWithProvider(sender SimpleSenderSMS, sms SimpleSMS) error {
+func (m *Manager) SendSMSWithProvider(sender SimpleSMSSender, sms SimpleSMS) error {
 	return sender.SendSimpleSMS(sms)
 }
 
-func Init() *NotificationManager {
-	return &NotificationManager{
-		Kavenegar: &kavenegarManager{
-			API:    kavenegar.New(os.Getenv("KAVENEGAR_API_KEY")),
-			Sender: os.Getenv("KAVENEGAR_SENDER"),
-		}, Mediana: &medianaManager{
-			APIKey: os.Getenv("MEDIANA_API_KEY"),
-			URL:    os.Getenv("MEDIANA_URL"),
-			Sender: os.Getenv("MEDIANA_SENDER"),
-		},
+func New() *Manager {
+	return &Manager{
+		Kavenegar: NewKavenegarManager(
+			kavenegar.New(os.Getenv("KAVENEGAR_API_KEY")),
+			os.Getenv("KAVENEGAR_SENDER"),
+		),
+		Mediana: NewMedianaManager(
+			os.Getenv("MEDIANA_URL"),
+			os.Getenv("MEDIANA_API_KEY"),
+			os.Getenv("MEDIANA_SENDER"),
+		),
 	}
 }

@@ -2,40 +2,20 @@ package service
 
 import (
 	"chem-factory/internal/auth"
-	i "chem-factory/internal/dto/inventory"
-	"chem-factory/internal/dto/mixer"
-	"chem-factory/internal/dto/shop"
-	u "chem-factory/internal/dto/user"
 	"chem-factory/internal/notification"
 	"chem-factory/internal/repository"
 )
 
-type ServiceManager interface {
-	// user
-	Login(request u.UserLoginRequest) (string, error)
-	Register(request u.UserRegisterRequest) error
-	UserData(token string) (u.UserDataResponse, error)
-	// inventory
-	AddToInventory(inv i.InventoryAddRequest) error
-	RemoveFromInventory(inv i.InventoryAddRequest) error
-	ExportUserInventory(inv i.InventoryExportRequest) (i.InventoryExportResponse, error)
-	// shop
-	ItemsForSell() (shop.ShopItemsResponse, error)
-	BuyMaterial(request shop.ShopBuyRequest) error
-	SetForSell(request shop.ShopSetForSellRequest) error
-	// mixer
-	AddToMixer(m mixer.MixerAddRequest) (int, error)
-	CheckMix(request mixer.CheckMixRequest) (mixer.CheckMixResponse, error)
-	PickMix(request mixer.PickMixRequest) error
-	PickNewMix(request mixer.PickNewMixRequest) error
+type Manager struct {
+	auth         *auth.Manager
+	repository   *repository.Manager
+	notification *notification.Manager
 }
 
-type serviceManager struct {
-	auth       auth.AuthManager
-	repository repository.RepositoryManager
-	notification *notification.NotificationManager
-}
-
-func Init(a auth.AuthManager, r repository.RepositoryManager, m *notification.NotificationManager) *serviceManager {
-	return &serviceManager{auth: a, repository: r, notification: m}
+func New(a *auth.Manager, r *repository.Manager, n *notification.Manager) *Manager {
+	return &Manager{
+		auth:         a,
+		repository:   r,
+		notification: n,
+	}
 }
