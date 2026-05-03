@@ -1,8 +1,8 @@
 POST http://localhost:8090/shop
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc3MDk1ODgsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.NhvfIIH_n4mhrc3ZiLxprBIJhA5aLey-_tvTG-ecWVI
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc4MDM1MTcsInVzZXJuYW1lIjoicHVuZWgifQ.htwvHYaGVcEEYoHDMGVolVbT7ay9Y1mBVpBsnTOHbdw
 
 {
-    "material_name": "ass",
+    "material_name": "mude",
     "number": 1,
     "price": 99
 }

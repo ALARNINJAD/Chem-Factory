@@ -1,6 +1,6 @@
 GET http://localhost:8090/mixer
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc3MDc2NjcsInVzZXJuYW1lIjoiYWxhcm5pbmphZCJ9.__NSwowOKvbTnbs3R_LQHw6ycBTHNAd5NkMPe1Uq_fY
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc4MDM5NzMsInVzZXJuYW1lIjoieWFsZGEifQ.22zcfSPLOPyTqj_OLh6g3JMpALDBeSBcqG0EqIoj7sw
 
 {
-    "id": 1
+    "id": 2
 }
