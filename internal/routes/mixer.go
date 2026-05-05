@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func postAddToMixer(context *gin.Context) {
+func (route *Manager) postAddToMixer(context *gin.Context) {
 
 	request := mixer.MixerAddRequest{Token: context.Request.Header.Get("Authorization")}
 
@@ -33,7 +33,7 @@ func postAddToMixer(context *gin.Context) {
 	context.JSON(http.StatusOK, mixer.MixerAddResponse{ID: id})
 }
 
-func getCheckMixTime(context *gin.Context) {
+func (route *Manager) getCheckMixTime(context *gin.Context) {
 
 	request := mixer.CheckMixRequest{Token: context.Request.Header.Get("Authorization")}
 	if request.Token == "" {
@@ -55,7 +55,7 @@ func getCheckMixTime(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func patchPickMix(context *gin.Context) {
+func (route *Manager) patchPickMix(context *gin.Context) {
 
 	request := mixer.PickMixRequest{Token: context.Request.Header.Get("Authorization")}
 	if request.Token == "" {
@@ -76,7 +76,7 @@ func patchPickMix(context *gin.Context) {
 	context.JSON(http.StatusOK, massage.MassageResponse{Massage: "Done."})
 }
 
-func patchPickNewMix(context *gin.Context) {
+func (route *Manager) patchPickNewMix(context *gin.Context) {
 
 	request := mixer.PickNewMixRequest{Token: context.Request.Header.Get("Authorization")}
 	if request.Token == "" {

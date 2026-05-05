@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getShopItems(context *gin.Context) {
+func (route *Manager) getShopItems(context *gin.Context) {
 
 	response, err := route.service.ItemsForSell()
 	if err != nil {
@@ -19,7 +19,7 @@ func getShopItems(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func getBuyShopItems(context *gin.Context) {
+func (route *Manager) getBuyShopItems(context *gin.Context) {
 
 	request := s.ShopBuyRequest{Token: context.Request.Header.Get("Authorization")}
 
@@ -41,7 +41,7 @@ func getBuyShopItems(context *gin.Context) {
 	context.JSON(http.StatusOK, s.ShopBuyResponse{Massage: "Done."})
 }
 
-func postSetForSell(context *gin.Context) {
+func (route *Manager) postSetForSell(context *gin.Context) {
 
 	request := s.ShopSetForSellRequest{Token: context.Request.Header.Get("Authorization")}
 

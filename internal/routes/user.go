@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getUserData(context *gin.Context) {
+func (route *Manager) getUserData(context *gin.Context) {
 
 	request := u.UserDataRequest{Token: context.Request.Header.Get("Authorization")}
 
@@ -26,7 +26,7 @@ func getUserData(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func login(context *gin.Context) {
+func (route *Manager) login(context *gin.Context) {
 
 	var request u.UserLoginRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
@@ -43,7 +43,7 @@ func login(context *gin.Context) {
 	context.JSON(http.StatusOK, u.UserLoginResponse{Token: t})
 }
 
-func register(context *gin.Context) {
+func (route *Manager) register(context *gin.Context) {
 
 	var request u.UserRegisterRequest
 	if err := context.ShouldBindJSON(&request); err != nil {

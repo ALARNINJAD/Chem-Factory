@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getInventory(context *gin.Context) {
+func (route *Manager) getInventory(context *gin.Context) {
 
 	request := i.InventoryExportRequest{Token: context.Request.Header.Get("Authorization")}
 

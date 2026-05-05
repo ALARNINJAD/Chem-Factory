@@ -1,4 +1,5 @@
 POST http://localhost:8090/shop
+Content-Type: application/json
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc4MDM1MTcsInVzZXJuYW1lIjoicHVuZWgifQ.htwvHYaGVcEEYoHDMGVolVbT7ay9Y1mBVpBsnTOHbdw
 
 {

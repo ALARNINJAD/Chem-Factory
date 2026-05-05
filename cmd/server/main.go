@@ -8,7 +8,6 @@ import (
 	"chem-factory/internal/service"
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -20,9 +19,14 @@ func main() {
 	}
 
 	routes.New(
-		gin.Default(), service.New(
+		service.New(
 			auth.New(), repository.New(), notification.New())).Start()
 }
 
-// repository interface
-// transaction structure
+// transaction context
+// middleware
+// handler
+// remove extra columns
+// acid repo
+// cun and chan
+// try https
