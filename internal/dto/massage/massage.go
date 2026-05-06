@@ -1,5 +1,5 @@
 package massage
 
-type MassageResponse struct {
+type Response struct {
 	Massage string `json:"massage"`
 }

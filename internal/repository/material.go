@@ -98,7 +98,7 @@ func (m *materialManager) Add(mat material) error {
 	return nil
 }
 
-func (m *materialManager) AddBase(tx *sql.Tx, mat mat.BaseMaterial) error {
+func (m *materialManager) AddBase(tx *sql.Tx, mat mat.Base) error {
 	_, err := tx.Exec(`
 		INSERT INTO material(user_id, username, name, sell_price, buy_price) VALUES (?, ?, ?, ?, ?)`,
 		mat.UserID, mat.Username, mat.Name, mat.SellPrice, mat.BuyPrice)

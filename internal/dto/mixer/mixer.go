@@ -1,21 +1,21 @@
 package mixer
 
-type CheckMixRequest struct {
+type CheckRequest struct {
 	Token string `json:"token"`
 	ID    int    `json:"id"`
 }
 
-type CheckMixResponse struct {
+type CheckResponse struct {
 	Time      int  `json:"time"`
 	NewStatus bool `json:"new_status"`
 }
 
-type PickMixRequest struct {
+type PickRequest struct {
 	Token string `json:"token"`
 	ID    int    `json:"id"`
 }
 
-type PickNewMixRequest struct {
+type PickNewRequest struct {
 	Token   string `json:"token"`
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
@@ -23,7 +23,7 @@ type PickNewMixRequest struct {
 	MixTime int    `json:"mix_time"`
 }
 
-type MixerAddRequest struct {
+type AddRequest struct {
 	Token                string `json:"token"`
 	FirstIngredientName  string `json:"first_ingredient_name"`
 	SecondIngredientName string `json:"second_ingredient_name"`

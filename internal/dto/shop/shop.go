@@ -7,24 +7,18 @@ type Shop struct {
 	Price        int    `json:"price"`
 }
 
-type ShopUserIDMatIDPrice struct {
+type UserIDMatIDPrice struct {
 	UserID     int `json:"user_id"`
 	MaterialID int `json:"material_id"`
 	Price      int `json:"price"`
 }
 
-// route ---------------------------------------------
-
-// buy basd material
-
-type ShopBaseMatRequest struct {
+type BaseMatRequest struct {
 	Token string `json:"token"`
 	ID    int    `json:"id"`
 }
 
-// buy material
-
-type ShopBuyRequest struct {
+type BuyRequest struct {
 	Token          string `json:"token"`
 	SellerUsername string `json:"seller_username"`
 	MaterialName   string `json:"material_name"`
@@ -32,25 +26,21 @@ type ShopBuyRequest struct {
 	Price          int    `json:"price"`
 }
 
-type ShopBuyResponse struct {
+type BuyResponse struct {
 	Massage string `json:"massage"`
 }
 
-// set for sell
-
-type ShopSetForSellRequest struct {
+type SetForSellRequest struct {
 	Token        string `json:"token"`
 	MaterialName string `json:"material_name"`
 	Number       int    `json:"number"`
 	Price        int    `json:"price"`
 }
 
-type ShopSetForSellResponse struct {
+type SetForSellResponse struct {
 	Massage string `json:"massage"`
 }
 
-// get all items
-
-type ShopItemsResponse struct {
+type ItemsResponse struct {
 	Items []Shop `json:"items"`
 }

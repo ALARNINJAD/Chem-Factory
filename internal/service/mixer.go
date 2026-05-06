@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-func (m *Manager) AddToMixer(request mixer.MixerAddRequest) (int, error) {
+func (service *Manager) AddToMixer(request mixer.AddRequest) (int, error) {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
@@ -23,7 +23,7 @@ func (m *Manager) AddToMixer(request mixer.MixerAddRequest) (int, error) {
 
 	var id, userID, firstID, secID, invID int
 
-	r := m.repository
+	r := service.repository
 
 	if userID, err = r.User.FindIDbyUsername(username); err != nil {
 		return 0, fmt.Errorf("Service mixer, add to mixer: %w ", err)
@@ -127,24 +127,24 @@ func (m *Manager) AddToMixer(request mixer.MixerAddRequest) (int, error) {
 	return id, nil
 }
 
-func (m *Manager) CheckMix(request mixer.CheckMixRequest) (mixer.CheckMixResponse, error) {
+func (service *Manager) CheckMix(request mixer.CheckRequest) (mixer.CheckResponse, error) {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
-		return mixer.CheckMixResponse{}, fmt.Errorf("Service mixer, check mix: %w ", err)
+		return mixer.CheckResponse{}, fmt.Errorf("Service mixer, check mix: %w ", err)
 	}
 
-	r := m.repository
+	r := service.repository
 
 	mix, err := r.Mixer.FindByID(request.ID)
 	if err != nil {
-		return mixer.CheckMixResponse{}, fmt.Errorf("Service mixer, check mix: %w ", err)
+		return mixer.CheckResponse{}, fmt.Errorf("Service mixer, check mix: %w ", err)
 	}
 
 	if mix.Username != username {
-		return mixer.CheckMixResponse{}, errors.New("Service mixer, check mix: not accessable.")
+		return mixer.CheckResponse{}, errors.New("Service mixer, check mix: not accessable.")
 	}
 
 	mat, err := r.Material.FindByIngrID(mix.FirstIngredientID, mix.SecondIngredientID)
@@ -159,15 +159,15 @@ func (m *Manager) CheckMix(request mixer.CheckMixRequest) (mixer.CheckMixRespons
 	}
 
 	if t := timeLimit + int(time.Until(mix.DateTime).Seconds()); t < 0 {
-		return mixer.CheckMixResponse{Time: 0, NewStatus: newStatus}, nil
+		return mixer.CheckResponse{Time: 0, NewStatus: newStatus}, nil
 	} else {
-		return mixer.CheckMixResponse{Time: t, NewStatus: newStatus}, nil
+		return mixer.CheckResponse{Time: t, NewStatus: newStatus}, nil
 	}
 }
 
-func (m *Manager) PickMix(request mixer.PickMixRequest) error {
+func (service *Manager) PickMix(request mixer.PickRequest) error {
 
-	resp, err := m.CheckMix(mixer.CheckMixRequest{Token: request.Token, ID: request.ID})
+	resp, err := service.CheckMix(mixer.CheckRequest{Token: request.Token, ID: request.ID})
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
@@ -176,14 +176,14 @@ func (m *Manager) PickMix(request mixer.PickMixRequest) error {
 		return errors.New("Service mixer, pick mix: not accessable.")
 	}
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick mix: %w ", err)
 	}
 
-	r := m.repository
+	r := service.repository
 
 	mxr, err := r.Mixer.FindByID(request.ID)
 	if err != nil {
@@ -241,9 +241,9 @@ func (m *Manager) PickMix(request mixer.PickMixRequest) error {
 	return nil
 }
 
-func (m *Manager) PickNewMix(request mixer.PickNewMixRequest) error {
+func (service *Manager) PickNewMix(request mixer.PickNewRequest) error {
 
-	resp, err := m.CheckMix(mixer.CheckMixRequest{Token: request.Token, ID: request.ID})
+	resp, err := service.CheckMix(mixer.CheckRequest{Token: request.Token, ID: request.ID})
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
@@ -252,14 +252,14 @@ func (m *Manager) PickNewMix(request mixer.PickNewMixRequest) error {
 		return errors.New("Service mixer, pick new mix: not accessable.")
 	}
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
 		return fmt.Errorf("Service mixer, pick new mix: %w ", err)
 	}
 
-	r := m.repository
+	r := service.repository
 
 	mxr, err := r.Mixer.FindByID(request.ID)
 	if err != nil {

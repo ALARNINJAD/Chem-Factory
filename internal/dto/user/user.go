@@ -1,30 +1,30 @@
 package user
 
-type UserDataRequest struct {
+type DataRequest struct {
 	Token string `json:"token"`
 }
 
-type UserDataResponse struct {
+type DataResponse struct {
 	Username string `json:"username"`
 	Balance  int    `json:"balace"`
 	XP       int    `json:"xp"`
 	Level    int    `json:"level"`
 }
 
-type UserRegisterRequest struct {
+type RegisterRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type UserRegisterResponse struct {
+type RegisterResponse struct {
 	Massage string `json:"massage"`
 }
 
-type UserLoginRequest struct {
+type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type UserLoginResponse struct {
+type LoginResponse struct {
 	Token string `json:"token"`
 }

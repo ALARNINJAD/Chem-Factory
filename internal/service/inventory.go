@@ -1,30 +1,30 @@
 package service
 
 import (
-	i "chem-factory/internal/dto/inventory"
+	"chem-factory/internal/dto/inventory"
 	"fmt"
 )
 
-func (m *Manager) ExportUserInventory(inv i.InventoryExportRequest) (i.InventoryExportResponse, error) {
+func (service *Manager) ExportUserInventory(inv inventory.ExportRequest) (inventory.ExportResponse, error) {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(inv.Token)
 	if err != nil {
-		return i.InventoryExportResponse{}, fmt.Errorf("Service inventory, export user inventory: %w", err)
+		return inventory.ExportResponse{}, fmt.Errorf("Service inventory, export user inventory: %w", err)
 	}
 
-	r := m.repository
+	r := service.repository
 
 	list, err := r.Inventory.FindByUsername(username)
 	if err != nil {
-		return i.InventoryExportResponse{}, fmt.Errorf("Service inventory, export user inventory: %w", err)
+		return inventory.ExportResponse{}, fmt.Errorf("Service inventory, export user inventory: %w", err)
 	}
 
-	var response i.InventoryExportResponse
+	var response inventory.ExportResponse
 
 	for _, l := range list {
-		response.InventoryList = append(response.InventoryList, i.Inventory{
+		response.InventoryList = append(response.InventoryList, inventory.Inventory{
 			Username: l.Username, MaterialName: l.MaterialName, Number: l.Number})
 	}
 

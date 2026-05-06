@@ -10,7 +10,7 @@ type Material struct {
 	MixTime              int    `json:"mix_time"`
 }
 
-type BaseMaterial struct {
+type Base struct {
 	Name      string `json:"name"`
 	UserID    int    `json:"user_id"`
 	Username  string `json:"username"`

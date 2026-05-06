@@ -184,7 +184,7 @@ func createAdminMaterials(r *repository.Manager) {
 		}()
 
 		if m.Name == m.FirstIngredientName && m.Name == m.SecondIngredientName {
-			err = r.Material.AddBase(tx, material.BaseMaterial{
+			err = r.Material.AddBase(tx, material.Base{
 				Name:      m.Name,
 				UserID:    m.UserID,
 				Username:  m.Username,

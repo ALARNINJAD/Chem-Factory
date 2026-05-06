@@ -8,16 +8,16 @@ import (
 	"os"
 )
 
-func (m *Manager) ItemsForSell() (shop.ShopItemsResponse, error) {
+func (service *Manager) ItemsForSell() (shop.ItemsResponse, error) {
 
-	r := m.repository
+	r := service.repository
 
 	shopItems, err := r.Shop.Export()
 	if err != nil {
-		return shop.ShopItemsResponse{}, fmt.Errorf("Service shop, items for sell: %w ", err)
+		return shop.ItemsResponse{}, fmt.Errorf("Service shop, items for sell: %w ", err)
 	}
 
-	var response shop.ShopItemsResponse
+	var response shop.ItemsResponse
 
 	for _, si := range shopItems {
 		response.Items = append(response.Items, shop.Shop{
@@ -30,7 +30,7 @@ func (m *Manager) ItemsForSell() (shop.ShopItemsResponse, error) {
 
 	materials, err := r.Material.FindByUsername(os.Getenv("ADMIN_NAME"))
 	if err != nil {
-		return shop.ShopItemsResponse{}, fmt.Errorf("Service shop, items for sell: %w ", err)
+		return shop.ItemsResponse{}, fmt.Errorf("Service shop, items for sell: %w ", err)
 	}
 
 	for _, m := range materials {
@@ -45,9 +45,9 @@ func (m *Manager) ItemsForSell() (shop.ShopItemsResponse, error) {
 	return response, nil
 }
 
-func (m *Manager) buyAdminMaterial(request shop.ShopBuyRequest) error {
+func (service *Manager) buyAdminMaterial(request shop.BuyRequest) error {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
@@ -56,7 +56,7 @@ func (m *Manager) buyAdminMaterial(request shop.ShopBuyRequest) error {
 
 	var userID, matID, invID int
 
-	r := m.repository
+	r := service.repository
 
 	if matID, err = r.Material.FindIDByName(request.MaterialName); err != nil {
 		return fmt.Errorf("Service shop, buy admin material: %w ", err)
@@ -119,9 +119,9 @@ func (m *Manager) buyAdminMaterial(request shop.ShopBuyRequest) error {
 	return nil
 }
 
-func (m *Manager) buyUserMaterial(request shop.ShopBuyRequest) error {
+func (service *Manager) buyUserMaterial(request shop.BuyRequest) error {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
@@ -130,7 +130,7 @@ func (m *Manager) buyUserMaterial(request shop.ShopBuyRequest) error {
 
 	var userID, materialID, shopID, invID int
 
-	r := m.repository
+	r := service.repository
 
 	if userID, err = r.User.FindIDbyUsername(request.SellerUsername); err != nil {
 		return fmt.Errorf("Service shop, buy material: %w ", err)
@@ -207,17 +207,17 @@ func (m *Manager) buyUserMaterial(request shop.ShopBuyRequest) error {
 	return nil
 }
 
-func (m *Manager) BuyMaterial(request shop.ShopBuyRequest) error {
+func (service *Manager) BuyMaterial(request shop.BuyRequest) error {
 	if request.SellerUsername == os.Getenv("ADMIN_NAME") {
-		return m.buyAdminMaterial(request)
+		return service.buyAdminMaterial(request)
 	} else {
-		return m.buyUserMaterial(request)
+		return service.buyUserMaterial(request)
 	}
 }
 
-func (m *Manager) SetForSell(request shop.ShopSetForSellRequest) error {
+func (service *Manager) SetForSell(request shop.SetForSellRequest) error {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(request.Token)
 	if err != nil {
@@ -226,7 +226,7 @@ func (m *Manager) SetForSell(request shop.ShopSetForSellRequest) error {
 
 	var userID, matID, invID int
 
-	r := m.repository
+	r := service.repository
 
 	if userID, err = r.User.FindIDbyUsername(username); err != nil {
 		return fmt.Errorf("Service shop, set for sell: %w ", err)

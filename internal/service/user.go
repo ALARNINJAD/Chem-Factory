@@ -1,47 +1,45 @@
 package service
 
 import (
-	u "chem-factory/internal/dto/user"
-	"chem-factory/internal/notification"
+	"chem-factory/internal/dto/user"
 	"errors"
 	"fmt"
-	"log"
 )
 
-func (m *Manager) UserData(token string) (u.UserDataResponse, error) {
+func (service *Manager) UserData(token string) (user.DataResponse, error) {
 
-	a := m.auth
+	a := service.auth
 
 	username, err := a.JWT.Verify(token)
 	if err != nil {
-		return u.UserDataResponse{}, fmt.Errorf("Service user, get user data: %w", err)
+		return user.DataResponse{}, fmt.Errorf("Service user, get user data: %w", err)
 	}
 
-	r := m.repository
+	r := service.repository
 
-	user, err := r.User.FindByUsername(username)
+	usr, err := r.User.FindByUsername(username)
 	if err != nil {
-		return u.UserDataResponse{}, fmt.Errorf("Service user, get user data: %w", err)
+		return user.DataResponse{}, fmt.Errorf("Service user, get user data: %w", err)
 	}
 
-	return u.UserDataResponse{
-		Username: user.Username,
-		Balance:  user.Balance,
-		XP:       user.XP,
-		Level:    user.Level,
+	return user.DataResponse{
+		Username: usr.Username,
+		Balance:  usr.Balance,
+		XP:       usr.XP,
+		Level:    usr.Level,
 	}, nil
 }
 
-func (m *Manager) Login(request u.UserLoginRequest) (string, error) {
+func (service *Manager) Login(request user.LoginRequest) (string, error) {
 
-	r := m.repository
+	r := service.repository
 
 	savedHashedPassword, err := r.User.FindPasswordByUsername(request.Username)
 	if err != nil {
 		return "", fmt.Errorf("Service user, loging: %w", err)
 	}
 
-	a := m.auth
+	a := service.auth
 
 	if err := a.Hash.CheckPassword(request.Password, savedHashedPassword); err != nil {
 		return "", fmt.Errorf("Service user, loging: %w", err)
@@ -55,15 +53,15 @@ func (m *Manager) Login(request u.UserLoginRequest) (string, error) {
 	return token, nil
 }
 
-func (m *Manager) Register(request u.UserRegisterRequest) error {
+func (service *Manager) Register(request user.RegisterRequest) error {
 
-	r := m.repository
+	r := service.repository
 
 	if _, err := r.User.FindIDbyUsername(request.Username); err == nil {
 		return errors.New("Service user, register, find username: user already exists.")
 	}
 
-	a := m.auth
+	a := service.auth
 
 	hashedPassword, err := a.Hash.HashPassword(request.Password)
 	if err != nil {
@@ -88,15 +86,14 @@ func (m *Manager) Register(request u.UserRegisterRequest) error {
 		return fmt.Errorf("Service user, register, commit: %w", err)
 	}
 
-	n := m.notification
-
-	err = n.SendSMSWithProvider(n.Kavenegar, notification.SimpleSMS{
-		Receptor: []string{"09120538596"},
-		Massage:  fmt.Sprintf("Welcome %s", request.Username),
-	})
-	if err != nil {
-		log.Printf("Service user, register: %s", err)
-	}
+	// n := service.notification
+	// err = n.SendSMSWithProvider(n.Kavenegar, notification.SimpleSMS{
+	// 	Receptor: []string{"09120538596"},
+	// 	Massage:  fmt.Sprintf("Welcome %s", request.Username),
+	// })
+	// if err != nil {
+	// 	log.Printf("Service user, register: %s", err)
+	// }
 
 	return nil
 }
