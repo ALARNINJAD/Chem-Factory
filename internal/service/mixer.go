@@ -287,8 +287,8 @@ func (service *Manager) PickNewMix(request mixer.PickNewRequest) error {
 
 	mat := r.Material.EmptyStruct()
 	mat.Name = request.Name
-	mat.BuyPrice = request.Price
-	mat.SellPrice = request.Price * 4 / 5
+	mat.Price = request.Price
+	mat.Price = request.Price * 4 / 5
 	mat.MixTime = request.MixTime
 	mat.FirstIngredientID = firstID
 	mat.SecondIngredientID = secID

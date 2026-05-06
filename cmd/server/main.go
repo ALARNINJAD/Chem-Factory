@@ -23,6 +23,12 @@ func main() {
 			auth.New(), repository.New(), notification.New())).Start()
 }
 
+// price
+// remove shop price logic
+// new flan bahman 
+// utils
+// middleware
+
 // transaction context
 // middleware
 // handler

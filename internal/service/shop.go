@@ -38,7 +38,7 @@ func (service *Manager) ItemsForSell() (shop.ItemsResponse, error) {
 			Username:     m.Username,
 			MaterialName: m.Name,
 			Number:       10,
-			Price:        m.BuyPrice,
+			Price:        m.Price,
 		})
 	}
 
@@ -69,7 +69,7 @@ func (service *Manager) buyAdminMaterial(request shop.BuyRequest) error {
 
 	log.Println(*mat)
 
-	if mat.BuyPrice != request.Price || mat.Username != request.SellerUsername {
+	if mat.Price != request.Price || mat.Username != request.SellerUsername {
 		return errors.New("Service shop, buy admin material: material does not exist.")
 	}
 
