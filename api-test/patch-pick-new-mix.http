@@ -1,10 +1,10 @@
 PATCH http://localhost:8090/mixer/new
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc4MDM5NzMsInVzZXJuYW1lIjoieWFsZGEifQ.22zcfSPLOPyTqj_OLh6g3JMpALDBeSBcqG0EqIoj7sw
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzgxNTM2NzAsInVzZXJuYW1lIjoibWVvdyJ9.sA7x5e-zHQuvGOf7e6WrpRLDEomqE3R21ovmg6-EqgQ
 
 {
-    "id": 2,
-    "name" : "mud",
-    "price": 150,
+    "id": 1,
+    "name" : "the new element of the universe",
+    "price": 1500,
     "mix_time": 99
 }

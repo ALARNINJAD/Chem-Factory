@@ -1,10 +1,10 @@
 POST http://localhost:8090/shop/buy
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzgwNzEyNDYsInVzZXJuYW1lIjoiMSJ9.OoO4H4tGzgVNl8eIQiCfO2qBl_Vd_VgO5cl3GIsB3oo
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzgxNTM2NzAsInVzZXJuYW1lIjoibWVvdyJ9.sA7x5e-zHQuvGOf7e6WrpRLDEomqE3R21ovmg6-EqgQ
 
 {
     "seller_username": "admin",
-    "material_name": "water",
+    "material_name": "dirt",
     "number": 1,
-    "price": 5
+    "price": 15
 }

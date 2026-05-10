@@ -23,9 +23,8 @@ func main() {
 			auth.New(), repository.New(), notification.New())).Start()
 }
 
-// price
 // remove shop price logic
-// new flan bahman 
+// new flan bahman migration
 // utils
 // middleware
 
@@ -36,3 +35,5 @@ func main() {
 // acid repo
 // cun and chan
 // try https
+
+// air
