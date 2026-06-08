@@ -1,9 +1,0 @@
-POST http://localhost:8090/mixer
-Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzgxNTM2NzAsInVzZXJuYW1lIjoibWVvdyJ9.sA7x5e-zHQuvGOf7e6WrpRLDEomqE3R21ovmg6-EqgQ
-
-{
-    "first_ingredient_name": "water",
-    "second_ingredient_name": "dirt",
-    "number": 1
-}

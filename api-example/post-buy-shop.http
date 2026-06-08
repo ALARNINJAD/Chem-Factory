@@ -1,0 +1,10 @@
+POST http://localhost:8090/shop/buy
+Content-Type: application/json
+Authorization: jwt_toknen
+
+{
+    "seller_username": "seller_username",
+    "material_name": "material_name",
+    "number": 0,
+    "price": 0
+}

@@ -1,9 +1,0 @@
-POST http://localhost:8090/shop
-Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzgxNTM2NzAsInVzZXJuYW1lIjoibWVvdyJ9.sA7x5e-zHQuvGOf7e6WrpRLDEomqE3R21ovmg6-EqgQ
-
-{
-    "material_name": "the new element of the universe",
-    "number": 1,
-    "price": 1500000000
-}

@@ -1,7 +1,0 @@
-PATCH http://localhost:8090/mixer
-Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc4MDM5NzMsInVzZXJuYW1lIjoieWFsZGEifQ.22zcfSPLOPyTqj_OLh6g3JMpALDBeSBcqG0EqIoj7sw
-
-{
-    "id": 2
-}
