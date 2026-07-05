@@ -1,8 +1,0 @@
-POST http://localhost:8090/mixer
-Content-Type: application/json
-Authorization: jwt_token
-{
-    "first_ingredient_name": "first_ingredient_name",
-    "second_ingredient_name": "second_ingredient_name",
-    "number": 0
-}

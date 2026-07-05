@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/mixer
+Content-Type: application/json
+Authorization: jwt_token
+
+{
+    "first_ingredient_id": 0,
+    "second_ingredient_id": 0,
+    "amount": 0
+}

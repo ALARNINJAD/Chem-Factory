@@ -1,4 +1,4 @@
-PATCH http://localhost:8090/mixer
+PATCH http://localhost:8080/api/mixer
 Content-Type: application/json
 Authorization: jwt_token
 
