@@ -10,7 +10,7 @@ import (
 type Database struct { database *sql.DB }
 
 func New() *Database {
-	database, err := sql.Open("sqlite3", filepath.Join(".", "database", "database.db"))
+	database, err := sql.Open("sqlite3", filepath.Join(".", "internal", "database", "sqlite", "database.db"))
 	if err != nil {
 		panic(fmt.Errorf("could not open sqlite database: %w", err))
 	}
