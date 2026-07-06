@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type market struct {
+type Market struct {
 	ID         int       `json:"id"`
 	UserID     int       `json:"user_id"`
 	MaterialID int       `json:"material_id"`
@@ -14,7 +14,7 @@ type market struct {
 	DateTime   time.Time `json:"date_time"`
 }
 
-func (market *market) IncreaseAmount(amount int) error {
+func (market *Market) IncreaseAmount(amount int) error {
 	if amount < 0 {
 		return errors.New("increase amount must be positive")
 	}
@@ -22,7 +22,7 @@ func (market *market) IncreaseAmount(amount int) error {
 	return nil
 }
 
-func (market *market) ReduceAmount(amount int) error {
+func (market *Market) ReduceAmount(amount int) error {
 	if amount < 0 {
 		return errors.New("market reduce amount must be positive")
 	}
