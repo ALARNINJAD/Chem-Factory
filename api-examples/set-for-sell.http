@@ -1,4 +1,4 @@
-POST http://localhost:8080/api/market
+POST http://localhost:8090/api/market
 Content-Type: application/json
 Authorization: jwt_token
 

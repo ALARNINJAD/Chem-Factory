@@ -1,2 +1,2 @@
-GET http://localhost:8080/api/user/profile
+GET http://localhost:8090/api/user/profile
 Authorization: jwt_token

@@ -1,2 +1,2 @@
-GET http://localhost:8080/api/inventory
+GET http://localhost:8090/api/inventory
 Authorization: jwt_token
