@@ -14,9 +14,12 @@ type Server struct {
 }
 
 func NewServer(jwt middleware.JWTManager, userModule userBootstrap.Module, authModule authBootstrap.Module) *Server {
-	gin.SetMode(gin.ReleaseMode)
+	log.Println("Grouping routes")
+
+	gin.SetMode(gin.DebugMode)
 	engine := gin.New()
 	engine.Use(gin.Recovery())
+	engine.Use(gin.Logger())
 
 	api := engine.Group("/api")
 	{
@@ -38,5 +41,6 @@ func NewServer(jwt middleware.JWTManager, userModule userBootstrap.Module, authM
 }
 
 func (s *Server) Start(addr string) {
+	log.Println("Starting server")
 	log.Fatal(s.engine.Run(addr))
 }
