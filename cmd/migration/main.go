@@ -4,8 +4,6 @@ import (
 	"chem-factory/internal/database/sqlite"
 	"context"
 	"fmt"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -32,7 +30,7 @@ func createTables(ctx context.Context, db *sqlite.Database) {
 	if _, err := db.Extract(ctx).ExecContext(ctx, `
 	CREATE TABLE IF NOT EXISTS material (
 		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
-		user_id INTEGER NOT NULL,
+		user_id INTEGER,
 		first_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
 		second_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
 		name TEXT NOT NULL UNIQUE,
@@ -65,7 +63,7 @@ func createTables(ctx context.Context, db *sqlite.Database) {
 		id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
 		user_id	INTEGER NOT NULL,
 		material_id	INTEGER NOT NULL,
-		amount INTEGER NOT NULL DEFAULT 0 CHECK("amount" >= 1),
+		amount INTEGER NOT NULL CHECK("amount" >= 1),
 		price INTEGER NOT NULL CHECK("price" >= 0),
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE("user_id","material_id","price"),
@@ -81,7 +79,7 @@ func createTables(ctx context.Context, db *sqlite.Database) {
 		user_id INTEGER NOT NULL,
 		first_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
 		second_ingredient_id INTEGER CHECK("first_ingredient_id" <= "second_ingredient_id"),
-		amount INTEGER NOT NULL CHECK(10 >= "amount" >= 1),
+		amount INTEGER NOT NULL CHECK(10 >= "amount" AND "amount" >= 1),
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE("user_id","first_ingredient_id","second_ingredient_id"),
 		FOREIGN KEY("user_id") REFERENCES "user"("id"),

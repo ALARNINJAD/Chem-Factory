@@ -14,14 +14,16 @@ import (
 
 func main() {
 
+	log.Println("Loading .env")
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
 
-	BuildServer().Start(":8080")
+	BuildServer().Start("127.0.0.1:8090")
 }
 
 func BuildServer() *routesHTTP.Server {
+	log.Println("Building server")
 
 	db := sqlite.New()
 
