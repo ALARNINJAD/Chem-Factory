@@ -4,12 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"path/filepath"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
-type Database struct { database *sql.DB }
+type Database struct{ database *sql.DB }
 
 func New() *Database {
+	log.Println("Initializing sqlite")
+
 	database, err := sql.Open("sqlite3", filepath.Join(".", "internal", "database", "sqlite", "database.db"))
 	if err != nil {
 		panic(fmt.Errorf("could not open sqlite database: %w", err))
