@@ -6,6 +6,7 @@ import (
 	"chem-factory/internal/modules/auth/core/usecase"
 	"chem-factory/internal/modules/user/adapter/sqlite"
 	"chem-factory/utils/jwt"
+	"log"
 	"os"
 )
 
@@ -14,6 +15,7 @@ type Module struct {
 }
 
 func NewModule(db *database.Database) Module {
+	log.Println("Creating auth module")
 
 	userRepo := sqlite.NewUserRepo(db)
 

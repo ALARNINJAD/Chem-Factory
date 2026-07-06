@@ -5,6 +5,7 @@ import (
 	"chem-factory/internal/modules/user/adapter/http/handler"
 	"chem-factory/internal/modules/user/adapter/sqlite"
 	"chem-factory/internal/modules/user/core/usecase"
+	"log"
 )
 
 type Module struct {
@@ -12,6 +13,7 @@ type Module struct {
 }
 
 func NewModule(db *database.Database) Module {
+	log.Println("Creating user module")
 
 	userRepo := sqlite.NewUserRepo(db)
 
