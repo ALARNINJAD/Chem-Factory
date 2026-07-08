@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -147,7 +148,7 @@ func createMaterials(ctx context.Context, db *sqlite.Database) {
 			FirstIngredientID: firstID,
 			SecondIngredientID: secondID,
 		}); err != nil {
-			panic(fmt.Errorf("Migration, create admin materials, add material: %w", err))
+			log.Println("Could not add material:", m.Name, "error:", err)
 		}
 	}
 }
