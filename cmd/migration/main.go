@@ -2,15 +2,22 @@ package main
 
 import (
 	"chem-factory/internal/database/sqlite"
+	"chem-factory/internal/domain"
+	materialsqlite "chem-factory/internal/modules/material/adapter/sqlite"
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 )
 
 func main() {
 
 	db := sqlite.New()
 	ctx := context.Background()
+
 	createTables(ctx, db)
+	createMaterials(ctx, db)
 }
 
 func createTables(ctx context.Context, db *sqlite.Database) {
@@ -87,5 +94,60 @@ func createTables(ctx context.Context, db *sqlite.Database) {
 		FOREIGN KEY("second_ingredient_id") REFERENCES "material"("id")
 	)`); err != nil {
 		panic(fmt.Errorf("Migration, create mixer table: %w", err))
+	}
+}
+
+func createMaterials(ctx context.Context, db *sqlite.Database) {
+
+	data, err := os.ReadFile(filepath.Join(".", "pkg", "material", "default_materials.json"))
+	if err != nil {
+		panic(fmt.Errorf("Migration, create admin materials, read file: %w ", err))
+	}
+
+	var materials []struct {
+		Name                  string `json:"name"`
+		Price                 int    `json:"price"`
+		MixTime               int    `json:"mix_time"`
+		FirstIngredientName   string `json:"first_ingredient_name"`
+		SecondIngredientName  string `json:"second_ingredient_name"`
+	}
+	if err := json.Unmarshal(data, &materials); err != nil {
+		panic(fmt.Errorf("Migration, create admin materials, parse file: %w ", err))
+	}
+
+	repo := materialsqlite.NewMaterialRepo(db)
+
+	for _, m := range materials {
+		var (
+			firstID  *int
+			secondID *int
+		)
+
+		if m.FirstIngredientName != "" && m.SecondIngredientName != "" {
+			fID, err := repo.FindIDByName(ctx, m.FirstIngredientName)
+			if err != nil {
+				panic(fmt.Errorf("Migration, create admin materials, find first ingredient: %w", err))
+			}
+			sID, err := repo.FindIDByName(ctx, m.SecondIngredientName)
+			if err != nil {
+				panic(fmt.Errorf("Migration, create admin materials, find second ingredient: %w", err))
+			}
+
+			if fID > sID {
+				fID, sID = sID, fID
+			}
+			firstID = &fID
+			secondID = &sID
+		}
+
+		if err := repo.Add(ctx, domain.Material{
+			Name:              m.Name,
+			Price:             m.Price,
+			MixTime:           m.MixTime,
+			FirstIngredientID: firstID,
+			SecondIngredientID: secondID,
+		}); err != nil {
+			panic(fmt.Errorf("Migration, create admin materials, add material: %w", err))
+		}
 	}
 }
