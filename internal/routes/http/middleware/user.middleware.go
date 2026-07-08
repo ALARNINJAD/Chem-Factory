@@ -18,13 +18,13 @@ func Auth(jwt JWTManager) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
 		}
-		username, id, err := jwt.Verify(token)
-		if err != nil || id == 0 {
+		username, userID, err := jwt.Verify(token)
+		if err != nil || userID == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
 		ctx.Set("username", username)
-		ctx.Set("id", id)
+		ctx.Set("user_id", userID)
 		ctx.Next()
 	}
 }
