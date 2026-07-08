@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"chem-factory/internal/modules/user/adapter/http/dto"
 	"chem-factory/internal/modules/user/core/port"
 	"net/http"
 
@@ -20,16 +19,11 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
 	id := ctx.GetInt("id")
 
-	user, err := h.service.GetProfile(ctx.Request.Context(), id)
+	response, err := h.service.GetProfile(ctx.Request.Context(), id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "not found"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch user profile"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ProfileResponse{
-		Username: user.Username,
-		Balance:  user.Balance,
-		XP:       user.XP,
-		Level:    user.Level,
-	})
+	ctx.JSON(http.StatusOK, response)
 }
