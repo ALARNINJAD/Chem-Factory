@@ -1,8 +1,8 @@
 package sqlite
 
 import (
-	"chem-factory/internal/domain"
 	"chem-factory/internal/database/sqlite"
+	"chem-factory/internal/domain"
 	"context"
 	"database/sql"
 	"fmt"
@@ -102,6 +102,16 @@ func (r *MaterialRepo) FindIDByName(ctx context.Context, name string) (int, erro
 		return 0, fmt.Errorf("find id by material name: %w", err)
 	}
 	return id, nil
+}
+
+func (r *MaterialRepo) FindNameByID(ctx context.Context, id int) (string, error) {
+	var name string
+	if err := r.db.Extract(ctx).QueryRowContext(ctx,
+		`SELECT name FROM material WHERE id = ?`, id,
+	).Scan(&name); err != nil {
+		return "", fmt.Errorf("find material name by id: %w", err)
+	}
+	return name, nil
 }
 
 func (r *MaterialRepo) Add(ctx context.Context, material domain.Material) error {
