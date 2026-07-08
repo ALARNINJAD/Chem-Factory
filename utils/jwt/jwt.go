@@ -12,10 +12,10 @@ type JWT struct{ secretKey string }
 
 func NewJWT(secretKey string) *JWT { return &JWT{secretKey: secretKey} }
 
-func (j JWT) Generate(username string, id int) (string, error) {
+func (j JWT) Generate(username string, userID int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": username,
-		"id":       id,
+		"user_id":  userID,
 		"exp":      time.Now().Add(time.Hour).Unix(),
 	})
 	t, err := token.SignedString([]byte(j.secretKey))
@@ -45,8 +45,8 @@ func (j JWT) Verify(token string) (string, int, error) {
 	if !ok {
 		return "", 0, errors.New("Auth jwt, verify jwt, token claims: not ok.")
 	}
-	
-	idFloat, ok := claims["id"].(float64)
+
+	idFloat, ok := claims["user_id"].(float64)
 	if !ok {
 		return "", 0, errors.New("Auth jwt, verify jwt: id claim is not a float64 number")
 	}
