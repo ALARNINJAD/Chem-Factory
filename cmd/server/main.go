@@ -2,10 +2,11 @@ package main
 
 import (
 	"chem-factory/internal/database/sqlite"
-	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	authBootstrap "chem-factory/internal/modules/auth/bootstrap"
+	inventoryBootstrap "chem-factory/internal/modules/inventory/bootstrap"
+	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	routesHTTP "chem-factory/internal/routes/http"
-	"chem-factory/utils/jwt"
+	jwtManager "chem-factory/utils/jwt"
 	"log"
 	"os"
 
@@ -27,9 +28,10 @@ func BuildServer() *routesHTTP.Server {
 
 	db := sqlite.New()
 
-	j := jwt.NewJWT(os.Getenv("SECRET_KEY"))
+	jwt := jwtManager.NewJWT(os.Getenv("SECRET_KEY"))
 	user := userBootstrap.NewModule(db)
 	auth := authBootstrap.NewModule(db)
+	inventory := inventoryBootstrap.NewModule(db)
 
-	return routesHTTP.NewServer(j, user, auth)
+	return routesHTTP.NewServer(jwt, user, auth, inventory)
 }
