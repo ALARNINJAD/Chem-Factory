@@ -1,1 +1,2 @@
-GET http://localhost:8090/api/market
+GET http://localhost:8090/api/market/export
+Authorization: jwt_token
