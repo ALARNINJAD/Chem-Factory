@@ -4,6 +4,7 @@ import (
 	"chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
 	"context"
+	"database/sql"
 	"fmt"
 )
 
@@ -73,6 +74,20 @@ func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materia
 		return 0, fmt.Errorf("find inventory id by user and material id: %w", err)
 	}
 	return id, nil
+}
+
+func (r *InventoryRepo) HasByUserIDMaterialID(ctx context.Context, userID, materialID int) (bool, error) {
+	var exists int
+	if err := r.db.Extract(ctx).QueryRowContext(ctx,
+		`SELECT 1 FROM inventory WHERE user_id = ? AND material_id = ? LIMIT 1`,
+		userID, materialID,
+	).Scan(&exists); err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, fmt.Errorf("check inventory exists by user and material id: %w", err)
+	}
+	return true, nil
 }
 
 func (r *InventoryRepo) IncreaseByID(ctx context.Context, id, amount int) error {
