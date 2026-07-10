@@ -176,3 +176,68 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id, balance int) error
 	}
 	return nil
 }
+
+func (r *UserRepo) ExistsByUsername(ctx context.Context, username string) (bool, error) {
+	var exists int
+
+	err := r.db.Extract(ctx).QueryRowContext(ctx,
+		`SELECT EXISTS(SELECT 1 FROM user WHERE username = ?)`,
+		username,
+	).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check username existence: %w", err)
+	}
+
+	return exists == 1, nil
+}
+
+func (r *UserRepo) UpdateXPAndLevelByID(ctx context.Context, id, xp, level int) error {
+	_, err := r.db.Extract(ctx).ExecContext(ctx,
+		`UPDATE user SET xp = ?, level = ? WHERE id = ?`,
+		xp,
+		level,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("update xp and level by id: %w", err)
+	}
+	return nil
+}
+
+func (r *UserRepo) ListTopByXP(ctx context.Context, limit int) ([]domain.User, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+
+	rows, err := r.db.Extract(ctx).QueryContext(ctx,
+		`SELECT id, username, password, balance, xp, level FROM user ORDER BY xp DESC, level DESC, username ASC LIMIT ?`,
+		limit,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("list top users by xp: %w", err)
+	}
+	defer rows.Close()
+
+	users := make([]domain.User, 0, limit)
+	for rows.Next() {
+		var user domain.User
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Password,
+			&user.Balance,
+			&user.XP,
+			&user.Level,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan top users by xp: %w", err)
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate top users by xp: %w", err)
+	}
+
+	return users, nil
+}

@@ -4,6 +4,7 @@ import (
 	"chem-factory/internal/modules/user/adapter/http/dto"
 	"chem-factory/internal/modules/user/core/port"
 	"context"
+	"log"
 )
 
 type userUsecase struct {
@@ -12,6 +13,7 @@ type userUsecase struct {
 }
 
 func NewUserUsecase(userRepo port.UserRepository, transactor port.Transactor) *userUsecase{
+	log.Println("Initializing user usecase")
 	return &userUsecase{userRepo: userRepo, transactor: transactor}
 }
 
@@ -23,6 +25,7 @@ func (service *userUsecase) GetProfile(ctx context.Context, userID int) (dto.Pro
 	}
 
 	return dto.ProfileResponse{
+		ID:       user.ID,
 		Username: user.Username,
 		Balance:  user.Balance,
 		XP:       user.XP,

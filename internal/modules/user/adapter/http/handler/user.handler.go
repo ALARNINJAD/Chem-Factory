@@ -17,7 +17,7 @@ func NewUserHandler(service port.UserService) *UserHandler {
 
 func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
-	id := ctx.GetInt("id")
+	id := ctx.GetInt("user_id")
 
 	response, err := h.service.GetProfile(ctx.Request.Context(), id)
 	if err != nil {
