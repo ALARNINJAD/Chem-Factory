@@ -1,7 +1,0 @@
-PATCH http://localhost:8090/mixer
-Content-Type: application/json
-Authorization: jwt_token
-
-{
-    "id": 0
-}

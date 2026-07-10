@@ -1,5 +1,0 @@
-/.vscode
-/test.go
-*.env
-*.db
-/api-test
