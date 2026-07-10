@@ -1,0 +1,2 @@
+GET http://localhost:8090/api/inventory/export
+Authorization: jwt_token

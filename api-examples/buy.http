@@ -1,0 +1,10 @@
+POST http://localhost:8090/api/market/buy
+Content-Type: application/json
+Authorization: jwt_token
+
+{
+    "seller_id": 0,
+    "material_id": 0,
+    "number": 0,
+    "price": 0
+}

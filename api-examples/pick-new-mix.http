@@ -1,0 +1,10 @@
+PATCH http://localhost:8090/api/mixer/new
+Content-Type: application/json
+Authorization: jwt_token
+
+{
+    "id": 0,
+    "name" : "name",
+    "price": 0,
+    "mix_time": 0
+}

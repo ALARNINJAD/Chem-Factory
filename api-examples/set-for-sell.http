@@ -1,0 +1,9 @@
+POST http://localhost:8090/api/market/set-for-sell
+Content-Type: application/json
+Authorization: jwt_token
+
+{
+    "material_id": 0,
+    "amount": 0,
+    "price": 0
+}

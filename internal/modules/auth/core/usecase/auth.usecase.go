@@ -1,0 +1,60 @@
+package usecase
+
+import (
+	"chem-factory/internal/modules/auth/adapter/http/dto"
+	"chem-factory/internal/modules/auth/core/port"
+	"chem-factory/internal/domain"
+	"chem-factory/utils/hash"
+	"context"
+	"errors"
+)
+
+type AuthUsecase struct {
+	userRepo   port.UserRepository
+	transactor port.Transactor
+}
+
+func NewAuthUsecase(userRepo port.UserRepository, transactor port.Transactor) *AuthUsecase {
+	return &AuthUsecase{userRepo: userRepo, transactor: transactor}
+}
+
+func (service *AuthUsecase) Register(ctx context.Context, request dto.RegisterRequest) error {
+
+	id, err := service.userRepo.FindIDByUsername(ctx, request.Username)
+	if err == nil || id != 0 {
+		return errors.New("user already exists")
+	}
+
+	request.Password, err = hash.New(10).HashPassword(request.Password) // cost of hash must be in config
+	if err != nil {
+		return err
+	}
+
+	user := domain.User{}
+	if user, err = user.New(request.Username, request.Password); err != nil {
+		return err
+	}
+
+	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
+		return service.userRepo.Add(ctx, user)
+	})
+}
+
+func (service *AuthUsecase) Login(ctx context.Context, request dto.LoginRequest) (int, error) {
+
+	id, err := service.userRepo.FindIDByUsername(ctx, request.Username)
+	if err != nil {
+		return 0, err
+	}
+
+	password, err := service.userRepo.FindPasswordByID(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := hash.New(10).CheckPassword(request.Password, password); err != nil { // cost of hash must be in config
+		return 0, err
+	}
+
+	return id, nil
+}
