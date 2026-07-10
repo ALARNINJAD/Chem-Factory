@@ -4,10 +4,12 @@ import (
 	"chem-factory/internal/database/sqlite"
 	authBootstrap "chem-factory/internal/modules/auth/bootstrap"
 	inventoryBootstrap "chem-factory/internal/modules/inventory/bootstrap"
-	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	marketBootstrap "chem-factory/internal/modules/market/bootstrap"
+	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	routesHTTP "chem-factory/internal/routes/http"
+	"chem-factory/pkg/constants"
 	jwtManager "chem-factory/utils/jwt"
+	"fmt"
 	"log"
 	"os"
 
@@ -21,7 +23,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	buildServer().Start("127.0.0.1:8090")
+	port := os.Getenv("PORT")
+	if port == "" {
+		panic("PORT environment variable is not set")
+	}
+
+	serverAddress := fmt.Sprintf("%s:%s", constants.LocalHost, port)
+
+	buildServer().Start(serverAddress)
 }
 
 func buildServer() *routesHTTP.Server {
