@@ -4,6 +4,7 @@ import (
 	authBootstrap "chem-factory/internal/modules/auth/bootstrap"
 	inventoryBootstrap "chem-factory/internal/modules/inventory/bootstrap"
 	userBootstrap "chem-factory/internal/modules/user/bootstrap"
+	marketBootstrap "chem-factory/internal/modules/market/bootstrap"
 	"chem-factory/internal/routes/http/middleware"
 	"log"
 
@@ -19,6 +20,7 @@ func NewServer(
 	userModule userBootstrap.Module,
 	authModule authBootstrap.Module,
 	inventoryModule inventoryBootstrap.Module,
+	marketModule marketBootstrap.Module,
 ) *Server {
 	log.Println("Grouping routes")
 
@@ -47,6 +49,15 @@ func NewServer(
 		inventory.Use(middleware.Auth(jwt))
 		{
 			inventory.GET("/export", inventoryModule.InventoryHandler.Export)
+		}
+	}
+	{
+		market := api.Group("/market")
+		market.Use(middleware.Auth(jwt))
+		{
+			market.GET("/export", marketModule.MarketHandler.Export)
+			market.POST("/buy", marketModule.MarketHandler.Buy)
+			market.POST("/set-for-sell", marketModule.MarketHandler.SetForSell)
 		}
 	}
 
