@@ -12,7 +12,7 @@ type JWT struct{ secretKey string }
 
 func NewJWT(secretKey string) *JWT { return &JWT{secretKey: secretKey} }
 
-func (j JWT) Generate(username string, userID int) (string, error) {
+func (j JWT) Generate(username string, userID uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": username,
 		"user_id":  userID,
@@ -25,7 +25,7 @@ func (j JWT) Generate(username string, userID int) (string, error) {
 	return t, nil
 }
 
-func (j JWT) Verify(token string) (string, int, error) {
+func (j JWT) Verify(token string) (string, uint, error) {
 
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -56,5 +56,5 @@ func (j JWT) Verify(token string) (string, int, error) {
 		return "", 0, errors.New("Auth jwt, verify jwt: username claim is not a string")
 	}
 
-	return username, int(idFloat), nil
+	return username, uint(idFloat), nil
 }
