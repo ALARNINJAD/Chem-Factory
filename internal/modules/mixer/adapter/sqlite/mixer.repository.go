@@ -1,17 +1,17 @@
 package sqlite
 
 import (
-	"chem-factory/internal/database/sqlite"
+	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
 	"context"
 	"fmt"
 )
 
-type MixerRepo struct{ db *sqlite.Database }
+type MixerRepo struct{ db *database.Database }
 
-func NewMixerRepo(db *sqlite.Database) *MixerRepo { return &MixerRepo{db: db} }
+func NewMixerRepo(db *database.Database) *MixerRepo { return &MixerRepo{db: db} }
 
-func (r *MixerRepo) FindByID(ctx context.Context, id int) (domain.Mixer, error) {
+func (r *MixerRepo) FindByID(ctx context.Context, id uint) (domain.Mixer, error) {
 	var mixer domain.Mixer
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
@@ -49,8 +49,8 @@ func (r *MixerRepo) Add(ctx context.Context, mixer domain.Mixer) error {
 	return nil
 }
 
-func (r *MixerRepo) FindIDByUserIDIngrID(ctx context.Context, userID, firstID, secID int) (int, error) {
-	var id int
+func (r *MixerRepo) FindIDByUserIDIngrID(ctx context.Context, userID, firstID, secID uint) (uint, error) {
+	var id uint
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id FROM mixer WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
@@ -65,7 +65,7 @@ func (r *MixerRepo) FindIDByUserIDIngrID(ctx context.Context, userID, firstID, s
 	return id, nil
 }
 
-func (r *MixerRepo) DeleteByID(ctx context.Context, id int) error {
+func (r *MixerRepo) DeleteByID(ctx context.Context, id uint) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`DELETE FROM mixer WHERE id = ?`,
 		id,
