@@ -36,7 +36,7 @@ func (h *MarketHandler) Buy(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.Buy(ctx, request, ctx.GetInt("user_id"))
+	err := h.service.Buy(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not complete purchase"})
 		return
@@ -54,7 +54,7 @@ func (h *MarketHandler) SetForSell(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.SetForSell(ctx, request, ctx.GetInt("user_id"))
+	err := h.service.SetForSell(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not set item for sale"})
 		return

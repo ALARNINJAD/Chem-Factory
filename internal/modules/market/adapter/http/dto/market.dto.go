@@ -2,10 +2,10 @@ package dto
 
 import "time"
 
-type Market struct {
-	ID           int       `json:"id"`
-	UserID       int       `json:"user_id"`
-	MaterialID   int       `json:"material_id"`
+type MarketResponse struct {
+	ID           uint      `json:"id"`
+	UserID       uint      `json:"user_id,omitempty"`
+	MaterialID   uint      `json:"material_id"`
 	Username     string    `json:"username"`
 	MaterialName string    `json:"material_name"`
 	Amount       int       `json:"amount"`
@@ -14,16 +14,16 @@ type Market struct {
 }
 
 type MarketListResponse struct {
-	MarketList []Market `json:"market_list"`
+	MarketList []MarketResponse `json:"market_list"`
 }
 
 type SetForSellRequest struct {
-	MaterialID  int `json:"material_id"`
-	Amount      int `json:"amount"`
-	Price       int `json:"price"`
+	MaterialID uint `json:"material_id"`
+	Amount     int  `json:"amount"`
+	Price      int  `json:"price"`
 }
 
 type BuyRequest struct {
-	MarketID   int `json:"market_id"`
-	Amount     int `json:"amount"`
+	MarketID uint `json:"market_id"`
+	Amount   int  `json:"amount"`
 }

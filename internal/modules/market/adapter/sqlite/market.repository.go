@@ -3,7 +3,10 @@ package sqlite
 import (
 	"chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/utils/convert"
+
 	"context"
+	"database/sql"
 	"fmt"
 )
 
@@ -21,12 +24,14 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 	defer rows.Close()
 
 	var list []domain.Market
-
 	for rows.Next() {
-		var market domain.Market
+		var (
+			market domain.Market
+			userID sql.NullInt64
+		)
 		if err := rows.Scan(
 			&market.ID,
-			&market.UserID,
+			&userID,
 			&market.MaterialID,
 			&market.Amount,
 			&market.Price,
@@ -34,6 +39,7 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 		); err != nil {
 			return nil, fmt.Errorf("export market rows scan: %w", err)
 		}
+		market.UserID = convert.SQLiteNullInt64ToUint(userID)
 		list = append(list, market)
 	}
 
@@ -43,8 +49,8 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 	return list, nil
 }
 
-func (r *MarketRepo) FindIDByPriceUserIDMatID(ctx context.Context, price, userID, materialID int) (int, error) {
-	var id int
+func (r *MarketRepo) FindIDByPriceUserIDMatID(ctx context.Context, price int, userID, materialID uint) (uint, error) {
+	var id uint
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id FROM market WHERE price = ? AND user_id = ? AND material_id = ?`,
 		price, userID, materialID,
@@ -54,15 +60,18 @@ func (r *MarketRepo) FindIDByPriceUserIDMatID(ctx context.Context, price, userID
 	return id, nil
 }
 
-func (r *MarketRepo) FindByPriceUserIDMatID(ctx context.Context, price, userID, materialID int) (domain.Market, error) {
-	var market domain.Market
+func (r *MarketRepo) FindByPriceUserIDMatID(ctx context.Context, price int, userID, materialID uint) (domain.Market, error) {
+	var (
+		market domain.Market
+		usrID  sql.NullInt64
+	)
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id, user_id, material_id, amount, price, date_time
 		FROM market WHERE price = ? AND user_id = ? AND material_id = ?`,
 		price, userID, materialID,
 	).Scan(
 		&market.ID,
-		&market.UserID,
+		&usrID,
 		&market.MaterialID,
 		&market.Amount,
 		&market.Price,
@@ -70,18 +79,22 @@ func (r *MarketRepo) FindByPriceUserIDMatID(ctx context.Context, price, userID, 
 	); err != nil {
 		return domain.Market{}, fmt.Errorf("find market by price, user id and material id: %w", err)
 	}
+	market.UserID = convert.SQLiteNullInt64ToUint(usrID)
 	return market, nil
 }
 
-func (r *MarketRepo) FindByID(ctx context.Context, id int) (domain.Market, error) {
-	var market domain.Market
+func (r *MarketRepo) FindByID(ctx context.Context, id uint) (domain.Market, error) {
+	var (
+		market domain.Market
+		userID sql.NullInt64
+	)
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id, user_id, material_id, amount, price, date_time
 		FROM market WHERE id = ?`,
 		id,
 	).Scan(
 		&market.ID,
-		&market.UserID,
+		&userID,
 		&market.MaterialID,
 		&market.Amount,
 		&market.Price,
@@ -89,10 +102,11 @@ func (r *MarketRepo) FindByID(ctx context.Context, id int) (domain.Market, error
 	); err != nil {
 		return domain.Market{}, fmt.Errorf("find market by id: %w", err)
 	}
+	market.UserID = convert.SQLiteNullInt64ToUint(userID)
 	return market, nil
 }
 
-func (r *MarketRepo) ReduceAmountByID(ctx context.Context, id, amount int) error {
+func (r *MarketRepo) ReduceAmountByID(ctx context.Context, id uint, amount int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`UPDATE market SET amount = amount - ? WHERE id = ?`,
 		amount,
@@ -104,7 +118,7 @@ func (r *MarketRepo) ReduceAmountByID(ctx context.Context, id, amount int) error
 	return nil
 }
 
-func (r *MarketRepo) IncreaseAmountByID(ctx context.Context, id, amount int) error {
+func (r *MarketRepo) IncreaseAmountByID(ctx context.Context, id uint, amount int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`UPDATE market SET amount = amount + ? WHERE id = ?`,
 		amount,
@@ -120,7 +134,7 @@ func (r *MarketRepo) Add(ctx context.Context, market domain.Market) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`INSERT INTO market(user_id, material_id, amount, price, date_time)
 		VALUES (?, ?, ?, ?, ?)`,
-		market.UserID,
+		convert.UintToNullInt64(market.UserID),
 		market.MaterialID,
 		market.Amount,
 		market.Price,
@@ -132,7 +146,7 @@ func (r *MarketRepo) Add(ctx context.Context, market domain.Market) error {
 	return nil
 }
 
-func (r *MarketRepo) DeleteByID(ctx context.Context, id int) error {
+func (r *MarketRepo) DeleteByID(ctx context.Context, id uint) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`DELETE FROM market WHERE id = ?`,
 		id,
@@ -143,19 +157,19 @@ func (r *MarketRepo) DeleteByID(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *MarketRepo) FindUserIDByID(ctx context.Context, id int) (int, error) {
-	var userID int
+func (r *MarketRepo) FindUserIDByID(ctx context.Context, id uint) (uint, error) {
+	var userID sql.NullInt64
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT user_id FROM market WHERE id = ?`,
 		id,
 	).Scan(&userID); err != nil {
 		return 0, fmt.Errorf("find user id by market id: %w", err)
 	}
-	return userID, nil
+	return convert.SQLiteNullInt64ToUint(userID), nil
 }
 
-func (r *MarketRepo) FindMatIDByID(ctx context.Context, id int) (int, error) {
-	var materialID int
+func (r *MarketRepo) FindMatIDByID(ctx context.Context, id uint) (uint, error) {
+	var materialID uint
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT material_id FROM market WHERE id = ?`,
 		id,

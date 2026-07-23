@@ -41,15 +41,22 @@ func (service *marketUsecase) Export(ctx context.Context) (dto.MarketListRespons
 	var response dto.MarketListResponse
 
 	for _, market := range marketList {
-		username, err := service.userRepo.FindUsernameByID(ctx, market.UserID)
-		if err != nil {
-			return dto.MarketListResponse{}, err
+
+		var username string
+		if market.UserID == 0 {
+			username = "ADMIN HASTAM"
+		} else {
+			username, err = service.userRepo.FindUsernameByID(ctx, market.UserID)
+			if err != nil {
+				return dto.MarketListResponse{}, err
+			}
 		}
+
 		materialName, err := service.materialRepo.FindNameByID(ctx, market.MaterialID)
 		if err != nil {
 			return dto.MarketListResponse{}, err
 		}
-		response.MarketList = append(response.MarketList, dto.Market{
+		response.MarketList = append(response.MarketList, dto.MarketResponse{
 			ID:           market.ID,
 			UserID:       market.UserID,
 			MaterialID:   market.MaterialID,
@@ -64,7 +71,7 @@ func (service *marketUsecase) Export(ctx context.Context) (dto.MarketListRespons
 	return response, nil
 }
 
-func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, userID int) error {
+func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, userID uint) error {
 
 	market, err := service.marketRepo.FindByID(ctx, request.MarketID)
 	if err != nil {
@@ -73,17 +80,18 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 
 	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
 
-		err = service.marketRepo.ReduceAmountByID(ctx, market.ID, request.Amount)
-		if err != nil {
-			return err
+		if market.UserID != 0 {
+			err = service.marketRepo.ReduceAmountByID(ctx, market.ID, request.Amount)
+			if err != nil {
+				return err
+			}
+			err = service.userRepo.IncreaseBalanceByID(ctx, market.UserID, request.Amount*market.Price)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = service.userRepo.ReduceBalanceByID(ctx, userID, request.Amount*market.Price)
-		if err != nil {
-			return err
-		}
-
-		err = service.userRepo.IncreaseBalanceByID(ctx, market.UserID, request.Amount*market.Price)
 		if err != nil {
 			return err
 		}
@@ -109,7 +117,7 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 	})
 }
 
-func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetForSellRequest, userID int) error {
+func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetForSellRequest, userID uint) error {
 
 	_, err := service.materialRepo.FindNameByID(ctx, request.MaterialID)
 	if err == nil {
@@ -122,7 +130,7 @@ func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetFor
 	}
 
 	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
-		
+
 		err = service.inventoryRepo.ReduceByID(ctx, inventoryID, request.Amount)
 		if err != nil {
 			return err
