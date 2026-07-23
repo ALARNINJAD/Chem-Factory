@@ -1,18 +1,18 @@
 package sqlite
 
 import (
-	"chem-factory/internal/database/sqlite"
+	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
 	"context"
 	"database/sql"
 	"fmt"
 )
 
-type InventoryRepo struct{ db *sqlite.Database }
+type InventoryRepo struct{ db *database.Database }
 
-func NewInventoryRepo(db *sqlite.Database) *InventoryRepo { return &InventoryRepo{db: db} }
+func NewInventoryRepo(db *database.Database) *InventoryRepo { return &InventoryRepo{db: db} }
 
-func (r *InventoryRepo) FindByID(ctx context.Context, id int) (domain.Inventory, error) {
+func (r *InventoryRepo) FindByID(ctx context.Context, id uint) (domain.Inventory, error) {
 	var inventory domain.Inventory
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
@@ -32,7 +32,7 @@ func (r *InventoryRepo) FindByID(ctx context.Context, id int) (domain.Inventory,
 	return inventory, nil
 }
 
-func (r *InventoryRepo) FindByUserID(ctx context.Context, userID int) ([]domain.Inventory, error) {
+func (r *InventoryRepo) FindByUserID(ctx context.Context, userID uint) ([]domain.Inventory, error) {
 	rows, err := r.db.Extract(ctx).QueryContext(ctx,
 		`SELECT id, user_id, material_id, amount, date_time FROM inventory WHERE user_id = ?`,
 		userID,
@@ -65,8 +65,8 @@ func (r *InventoryRepo) FindByUserID(ctx context.Context, userID int) ([]domain.
 	return list, nil
 }
 
-func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materialID int) (int, error) {
-	var id int
+func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materialID uint) (uint, error) {
+	var id uint
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id FROM inventory WHERE user_id = ? AND material_id = ?`,
 		userID, materialID,
@@ -76,7 +76,7 @@ func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materia
 	return id, nil
 }
 
-func (r *InventoryRepo) HasByUserIDMaterialID(ctx context.Context, userID, materialID int) (bool, error) {
+func (r *InventoryRepo) HasByUserIDMaterialID(ctx context.Context, userID, materialID uint) (bool, error) {
 	var exists int
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT 1 FROM inventory WHERE user_id = ? AND material_id = ? LIMIT 1`,
@@ -90,7 +90,7 @@ func (r *InventoryRepo) HasByUserIDMaterialID(ctx context.Context, userID, mater
 	return true, nil
 }
 
-func (r *InventoryRepo) IncreaseByID(ctx context.Context, id, amount int) error {
+func (r *InventoryRepo) IncreaseByID(ctx context.Context, id uint, amount int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`UPDATE inventory SET amount = amount + ? WHERE id = ?`,
 		amount,
@@ -102,7 +102,7 @@ func (r *InventoryRepo) IncreaseByID(ctx context.Context, id, amount int) error 
 	return nil
 }
 
-func (r *InventoryRepo) ReduceByID(ctx context.Context, id, amount int) error {
+func (r *InventoryRepo) ReduceByID(ctx context.Context, id uint, amount int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`UPDATE inventory SET amount = amount - ? WHERE id = ?`,
 		amount,
@@ -129,7 +129,7 @@ func (r *InventoryRepo) Add(ctx context.Context, inventory domain.Inventory) err
 	return nil
 }
 
-func (r *InventoryRepo) DeleteByID(ctx context.Context, id int) error {
+func (r *InventoryRepo) DeleteByID(ctx context.Context, id uint) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
 		`DELETE FROM inventory WHERE id = ?`,
 		id,

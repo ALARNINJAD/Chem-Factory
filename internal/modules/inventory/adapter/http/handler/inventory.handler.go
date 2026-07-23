@@ -17,7 +17,7 @@ func NewInventoryHandler(service port.InventoryService) *InventoryHandler {
 
 func (h *InventoryHandler) Export(ctx *gin.Context) {
 
-	userID := ctx.GetInt("user_id")
+	userID := ctx.GetUint("user_id")
 
 	response, err := h.service.Export(ctx.Request.Context(), userID)
 	if err != nil {
