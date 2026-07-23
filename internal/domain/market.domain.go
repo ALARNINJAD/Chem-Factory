@@ -6,9 +6,9 @@ import (
 )
 
 type Market struct {
-	ID         int       `json:"id"`
-	UserID     int       `json:"user_id"`
-	MaterialID int       `json:"material_id"`
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	MaterialID uint      `json:"material_id"`
 	Amount     int       `json:"amount"`
 	Price      int       `json:"price"`
 	DateTime   time.Time `json:"date_time"`
@@ -32,3 +32,5 @@ func (market *Market) ReduceAmount(amount int) error {
 	market.Amount -= amount
 	return nil
 }
+
+func (market *Market) IsAdmin() bool { return market.UserID == 0 }

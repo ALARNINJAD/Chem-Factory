@@ -3,7 +3,7 @@ package domain
 import "errors"
 
 type User struct {
-	ID       int    `json:"id,omitempty"`
+	ID       uint   `json:"id,omitempty"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Balance  int    `json:"balance"`
@@ -19,12 +19,12 @@ func (user User) New(username, password string) (User, error) {
 		return User{}, errors.New("password is invalid")
 	}
 	return User{
-		ID: 0,
+		ID:       0,
 		Username: username,
 		Password: password,
-		Balance: 500,
-		XP: 0,
-		Level: 0,
+		Balance:  500,
+		XP:       0,
+		Level:    0,
 	}, nil
 }
 

@@ -6,9 +6,9 @@ import (
 )
 
 type Inventory struct {
-	ID         int       `json:"id"`
-	UserID     int       `json:"user_id"`
-	MaterialID int       `json:"material_id"`
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	MaterialID uint      `json:"material_id"`
 	Amount     int       `json:"amount"`
 	DateTime   time.Time `json:"date_time"`
 }
