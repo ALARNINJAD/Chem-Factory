@@ -1,21 +1,21 @@
 package sqlite
 
 import (
+	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
-	"chem-factory/internal/database/sqlite"
 	"context"
 	"fmt"
 )
 
-type UserRepo struct{ db *sqlite.Database }
+type UserRepo struct{ db *database.Database }
 
-func NewUserRepo(db *sqlite.Database) *UserRepo { return &UserRepo{db: db} }
+func NewUserRepo(db *database.Database) *UserRepo { return &UserRepo{db: db} }
 
 func (r *UserRepo) FindByUsername(ctx context.Context, username string) (domain.User, error) {
 	var user domain.User
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id, username, password, balance, xp, level FROM user WHERE username = ?`,
+		`SELECT id, username, password, balance, xp, level FROM users WHERE username = ?`,
 		username,
 	).Scan(
 		&user.ID,
@@ -33,11 +33,11 @@ func (r *UserRepo) FindByUsername(ctx context.Context, username string) (domain.
 	return user, nil
 }
 
-func (r *UserRepo) FindByID(ctx context.Context, id int) (domain.User, error) {
+func (r *UserRepo) FindByID(ctx context.Context, id uint) (domain.User, error) {
 	var user domain.User
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id, username, password, balance, xp, level FROM user WHERE id = ?`,
+		`SELECT id, username, password, balance, xp, level FROM users WHERE id = ?`,
 		id,
 	).Scan(
 		&user.ID,
@@ -55,11 +55,11 @@ func (r *UserRepo) FindByID(ctx context.Context, id int) (domain.User, error) {
 	return user, nil
 }
 
-func (r *UserRepo) FindPasswordByID(ctx context.Context, id int) (string, error) {
+func (r *UserRepo) FindPasswordByID(ctx context.Context, id uint) (string, error) {
 	var password string
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT password FROM user WHERE id = ?`,
+		`SELECT password FROM users WHERE id = ?`,
 		id,
 	).Scan(&password)
 
@@ -74,7 +74,7 @@ func (r *UserRepo) FindPasswordByUsername(ctx context.Context, username string) 
 	var password string
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT password FROM user WHERE username = ?`,
+		`SELECT password FROM users WHERE username = ?`,
 		username,
 	).Scan(&password)
 
@@ -85,11 +85,11 @@ func (r *UserRepo) FindPasswordByUsername(ctx context.Context, username string) 
 	return password, nil
 }
 
-func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (int, error) {
-	var id int
+func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (uint, error) {
+	var id uint
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id FROM user WHERE username = ?`,
+		`SELECT id FROM users WHERE username = ?`,
 		username,
 	).Scan(&id)
 
@@ -100,11 +100,11 @@ func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (int, 
 	return id, nil
 }
 
-func (r *UserRepo) FindUsernameByID(ctx context.Context, id int) (string, error) {
+func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error) {
 	var username string
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT username FROM user WHERE id = ?`,
+		`SELECT username FROM users WHERE id = ?`,
 		id,
 	).Scan(&username)
 
@@ -117,7 +117,7 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id int) (string, error)
 
 func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`INSERT INTO user(username, password) VALUES (?, ?)`,
+		`INSERT INTO users(username, password) VALUES (?, ?)`,
 		user.Username,
 		user.Password,
 	)
@@ -129,9 +129,9 @@ func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	return nil
 }
 
-func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id, amount int) error {
+func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id uint, amount int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`UPDATE user SET balance = balance + ? WHERE id = ?`,
+		`UPDATE users SET balance = balance + ? WHERE id = ?`,
 		amount,
 		id,
 	)
@@ -141,9 +141,9 @@ func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id, amount int) erro
 	return nil
 }
 
-func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id, amount int) error {
+func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id uint, amount int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`UPDATE user SET balance = balance - ? WHERE id = ?`,
+		`UPDATE users SET balance = balance - ? WHERE id = ?`,
 		amount,
 		id,
 	)
@@ -153,10 +153,10 @@ func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id, amount int) error 
 	return nil
 }
 
-func (r *UserRepo) FindBalanceByID(ctx context.Context, id int) (int, error) {
+func (r *UserRepo) FindBalanceByID(ctx context.Context, id uint) (int, error) {
 	var balance int
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT balance FROM user WHERE id = ?`,
+		`SELECT balance FROM users WHERE id = ?`,
 		id,
 	).Scan(&balance)
 	if err != nil {
@@ -165,9 +165,9 @@ func (r *UserRepo) FindBalanceByID(ctx context.Context, id int) (int, error) {
 	return balance, nil
 }
 
-func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id, balance int) error {
+func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id uint, balance int) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`UPDATE user SET balance = ? WHERE id = ?`,
+		`UPDATE users SET balance = ? WHERE id = ?`,
 		balance,
 		id,
 	)
@@ -175,69 +175,4 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id, balance int) error
 		return fmt.Errorf("update balance by id: %w", err)
 	}
 	return nil
-}
-
-func (r *UserRepo) ExistsByUsername(ctx context.Context, username string) (bool, error) {
-	var exists int
-
-	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT EXISTS(SELECT 1 FROM user WHERE username = ?)`,
-		username,
-	).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("check username existence: %w", err)
-	}
-
-	return exists == 1, nil
-}
-
-func (r *UserRepo) UpdateXPAndLevelByID(ctx context.Context, id, xp, level int) error {
-	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`UPDATE user SET xp = ?, level = ? WHERE id = ?`,
-		xp,
-		level,
-		id,
-	)
-	if err != nil {
-		return fmt.Errorf("update xp and level by id: %w", err)
-	}
-	return nil
-}
-
-func (r *UserRepo) ListTopByXP(ctx context.Context, limit int) ([]domain.User, error) {
-	if limit <= 0 {
-		limit = 10
-	}
-
-	rows, err := r.db.Extract(ctx).QueryContext(ctx,
-		`SELECT id, username, password, balance, xp, level FROM user ORDER BY xp DESC, level DESC, username ASC LIMIT ?`,
-		limit,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("list top users by xp: %w", err)
-	}
-	defer rows.Close()
-
-	users := make([]domain.User, 0, limit)
-	for rows.Next() {
-		var user domain.User
-		err := rows.Scan(
-			&user.ID,
-			&user.Username,
-			&user.Password,
-			&user.Balance,
-			&user.XP,
-			&user.Level,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("scan top users by xp: %w", err)
-		}
-		users = append(users, user)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate top users by xp: %w", err)
-	}
-
-	return users, nil
 }

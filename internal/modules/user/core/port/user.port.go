@@ -7,13 +7,9 @@ import (
 )
 
 type UserRepository interface {
-	FindByID(ctx context.Context, id int) (domain.User, error)
-}
-
-type Transactor interface {
-	WithTx(ctx context.Context, fn func(ctx context.Context) error) error
+	FindByID(ctx context.Context, id uint) (domain.User, error)
 }
 
 type UserService interface {
-	GetProfile(ctx context.Context, userID int) (dto.ProfileResponse, error)
+	GetProfile(ctx context.Context, userID uint) (dto.ProfileResponse, error)
 }

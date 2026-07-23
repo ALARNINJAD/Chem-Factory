@@ -17,7 +17,7 @@ func NewModule(db *database.Database) Module {
 
 	userRepo := sqlite.NewUserRepo(db)
 
-	userUsecase := usecase.NewUserUsecase(userRepo, db)
+	userUsecase := usecase.NewUserUsecase(userRepo)
 
 	userHandler := handler.NewUserHandler(userUsecase)
 

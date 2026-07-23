@@ -17,9 +17,9 @@ func NewUserHandler(service port.UserService) *UserHandler {
 
 func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
-	id := ctx.GetInt("user_id")
+	userID := ctx.GetUint("user_id")
 
-	response, err := h.service.GetProfile(ctx.Request.Context(), id)
+	response, err := h.service.GetProfile(ctx.Request.Context(), userID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch user profile"})
 		return

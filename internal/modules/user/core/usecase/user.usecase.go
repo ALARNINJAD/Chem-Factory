@@ -8,16 +8,15 @@ import (
 )
 
 type userUsecase struct {
-	userRepo   port.UserRepository
-	transactor port.Transactor
+	userRepo port.UserRepository
 }
 
-func NewUserUsecase(userRepo port.UserRepository, transactor port.Transactor) *userUsecase{
+func NewUserUsecase(userRepo port.UserRepository) *userUsecase {
 	log.Println("Initializing user usecase")
-	return &userUsecase{userRepo: userRepo, transactor: transactor}
+	return &userUsecase{userRepo: userRepo}
 }
 
-func (service *userUsecase) GetProfile(ctx context.Context, userID int) (dto.ProfileResponse, error) {
+func (service *userUsecase) GetProfile(ctx context.Context, userID uint) (dto.ProfileResponse, error) {
 
 	user, err := service.userRepo.FindByID(ctx, userID)
 	if err != nil {

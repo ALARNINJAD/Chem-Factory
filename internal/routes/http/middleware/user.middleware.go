@@ -7,8 +7,8 @@ import (
 )
 
 type JWTManager interface {
-	Generate(username string, id int) (string, error)
-	Verify(token string) (string, int, error)
+	Generate(username string, userID uint) (string, error)
+	Verify(token string) (string, uint, error)
 }
 
 func Auth(jwt JWTManager) gin.HandlerFunc {
