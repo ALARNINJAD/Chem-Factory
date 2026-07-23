@@ -1,9 +1,9 @@
 package usecase
 
 import (
+	"chem-factory/internal/domain"
 	"chem-factory/internal/modules/auth/adapter/http/dto"
 	"chem-factory/internal/modules/auth/core/port"
-	"chem-factory/internal/domain"
 	"chem-factory/utils/hash"
 	"context"
 	"errors"
@@ -40,14 +40,14 @@ func (service *AuthUsecase) Register(ctx context.Context, request dto.RegisterRe
 	})
 }
 
-func (service *AuthUsecase) Login(ctx context.Context, request dto.LoginRequest) (int, error) {
+func (service *AuthUsecase) Login(ctx context.Context, request dto.LoginRequest) (uint, error) {
 
-	id, err := service.userRepo.FindIDByUsername(ctx, request.Username)
+	userID, err := service.userRepo.FindIDByUsername(ctx, request.Username)
 	if err != nil {
 		return 0, err
 	}
 
-	password, err := service.userRepo.FindPasswordByID(ctx, id)
+	password, err := service.userRepo.FindPasswordByID(ctx, userID)
 	if err != nil {
 		return 0, err
 	}
@@ -56,5 +56,5 @@ func (service *AuthUsecase) Login(ctx context.Context, request dto.LoginRequest)
 		return 0, err
 	}
 
-	return id, nil
+	return userID, nil
 }
