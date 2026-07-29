@@ -6,8 +6,8 @@ import (
 )
 
 type MixerRepository interface {
-	FindByID(ctx context.Context, id int) (domain.Mixer, error)
-	Add(ctx context.Context, mixer domain.Mixer) error
+	FindByID(ctx context.Context, id int) (domain.Mix, error)
+	Add(ctx context.Context, mixer domain.Mix) error
 	FindIDByUserIDIngrID(ctx context.Context, userID, firstID, secID int) (int, error)
 	DeleteByID(ctx context.Context, id int) error
 }

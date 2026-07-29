@@ -2,7 +2,7 @@ package domain
 
 import "time"
 
-type Mixer struct {
+type Mix struct {
 	ID                 uint      `json:"id"`
 	UserID             uint      `json:"user_id"`
 	FirstIngredientID  uint      `json:"first_ingredient_id"`
@@ -11,7 +11,7 @@ type Mixer struct {
 	DateTime           time.Time `json:"date_time"`
 }
 
-func (mixer Mixer) RemainingSeconds(mixTime int) int {
+func (mixer Mix) RemainingSeconds(mixTime int) int {
 	elapsed := int(time.Since(mixer.DateTime).Seconds())
 	remaining := mixTime - elapsed
 	if remaining < 0 {

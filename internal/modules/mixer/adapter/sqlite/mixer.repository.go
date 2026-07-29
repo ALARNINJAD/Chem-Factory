@@ -7,71 +7,71 @@ import (
 	"fmt"
 )
 
-type MixerRepo struct{ db *database.Database }
+type MixRepo struct{ db *database.Database }
 
-func NewMixerRepo(db *database.Database) *MixerRepo { return &MixerRepo{db: db} }
+func NewMixRepo(db *database.Database) *MixRepo { return &MixRepo{db: db} }
 
-func (r *MixerRepo) FindByID(ctx context.Context, id uint) (domain.Mixer, error) {
-	var mixer domain.Mixer
+func (r *MixRepo) FindByID(ctx context.Context, id uint) (domain.Mix, error) {
+	var mix domain.Mix
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id, user_id, first_ingredient_id, second_ingredient_id, amount, date_time FROM mixer WHERE id = ?`,
+		`SELECT id, user_id, first_ingredient_id, second_ingredient_id, amount, date_time FROM mixes WHERE id = ?`,
 		id,
 	).Scan(
-		&mixer.ID,
-		&mixer.UserID,
-		&mixer.FirstIngredientID,
-		&mixer.SecondIngredientID,
-		&mixer.Amount,
-		&mixer.DateTime,
+		&mix.ID,
+		&mix.UserID,
+		&mix.FirstIngredientID,
+		&mix.SecondIngredientID,
+		&mix.Amount,
+		&mix.DateTime,
 	)
 	if err != nil {
-		return domain.Mixer{}, fmt.Errorf("find mixer by id: %w", err)
+		return domain.Mix{}, fmt.Errorf("find mix by id: %w", err)
 	}
 
-	return mixer, nil
+	return mix, nil
 }
 
-func (r *MixerRepo) Add(ctx context.Context, mixer domain.Mixer) error {
+func (r *MixRepo) Add(ctx context.Context, mix domain.Mix) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`INSERT INTO mixer(user_id, first_ingredient_id, second_ingredient_id, amount, date_time)
+		`INSERT INTO mixes(user_id, first_ingredient_id, second_ingredient_id, amount, date_time)
 		VALUES (?, ?, ?, ?, ?)`,
-		mixer.UserID,
-		mixer.FirstIngredientID,
-		mixer.SecondIngredientID,
-		mixer.Amount,
-		mixer.DateTime,
+		mix.UserID,
+		mix.FirstIngredientID,
+		mix.SecondIngredientID,
+		mix.Amount,
+		mix.DateTime,
 	)
 	if err != nil {
-		return fmt.Errorf("add mixer: %w", err)
+		return fmt.Errorf("add mix: %w", err)
 	}
 
 	return nil
 }
 
-func (r *MixerRepo) FindIDByUserIDIngrID(ctx context.Context, userID, firstID, secID uint) (uint, error) {
+func (r *MixRepo) FindIDByUserIDIngrID(ctx context.Context, userID, firstID, secID uint) (uint, error) {
 	var id uint
 
 	err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id FROM mixer WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
+		`SELECT id FROM mixes WHERE user_id = ? AND first_ingredient_id = ? AND second_ingredient_id = ?`,
 		userID,
 		firstID,
 		secID,
 	).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("find mixer id by user id and ingredients id: %w", err)
+		return 0, fmt.Errorf("find mix id by user id and ingredients id: %w", err)
 	}
 
 	return id, nil
 }
 
-func (r *MixerRepo) DeleteByID(ctx context.Context, id uint) error {
+func (r *MixRepo) DeleteByID(ctx context.Context, id uint) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`DELETE FROM mixer WHERE id = ?`,
+		`DELETE FROM mixes WHERE id = ?`,
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("delete mixer by id: %w", err)
+		return fmt.Errorf("delete mix by id: %w", err)
 	}
 
 	return nil
