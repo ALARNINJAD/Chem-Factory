@@ -77,9 +77,8 @@ func createTables(ctx context.Context, db *sqlite.Database) {
 		user_id	INTEGER,
 		material_id	INTEGER NOT NULL,
 		amount INTEGER NOT NULL CHECK("amount" >= 1),
-		price INTEGER NOT NULL CHECK("price" >= 0),
 		date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		UNIQUE("user_id","material_id","price"),
+		UNIQUE("user_id","material_id"),
 		FOREIGN KEY("material_id") REFERENCES "materials"("id"),
 		FOREIGN KEY("user_id") REFERENCES "users"("id")
 	)`); err != nil {
@@ -166,7 +165,7 @@ func createMaterials(ctx context.Context, db *sqlite.Database) {
 
 func createShopMaterials(ctx context.Context, db *sqlite.Database) {
 	rows, err := db.Extract(ctx).QueryContext(ctx, `
-		SELECT id, first_ingredient_id, second_ingredient_id, name, price
+		SELECT id, first_ingredient_id, second_ingredient_id, name
 		FROM materials
 	`)
 	if err != nil {
@@ -175,9 +174,8 @@ func createShopMaterials(ctx context.Context, db *sqlite.Database) {
 	defer rows.Close()
 
 	var rawMaterials []struct {
-		ID    uint
-		Name  string
-		Price int
+		ID   uint
+		Name string
 	}
 
 	for rows.Next() {
@@ -186,19 +184,17 @@ func createShopMaterials(ctx context.Context, db *sqlite.Database) {
 			firstID  sql.NullInt64
 			secondID sql.NullInt64
 			name     string
-			price    int
 		)
-		if err := rows.Scan(&id, &firstID, &secondID, &name, &price); err != nil {
+		if err := rows.Scan(&id, &firstID, &secondID, &name); err != nil {
 			panic(fmt.Errorf("Migration, scan material for shop seed: %w", err))
 		}
 		if firstID.Valid || secondID.Valid {
 			continue
 		}
 		rawMaterials = append(rawMaterials, struct {
-			ID    uint
-			Name  string
-			Price int
-		}{ID: id, Name: name, Price: price})
+			ID   uint
+			Name string
+		}{ID: id, Name: name})
 	}
 
 	if err := rows.Err(); err != nil {
@@ -209,8 +205,8 @@ func createShopMaterials(ctx context.Context, db *sqlite.Database) {
 	for _, mat := range rawMaterials {
 		var count int
 		if err := db.Extract(ctx).QueryRowContext(ctx,
-			`SELECT COUNT(1) FROM market WHERE user_id IS NULL AND material_id = ? AND price = ?`,
-			mat.ID, mat.Price,
+			`SELECT COUNT(1) FROM market WHERE user_id IS NULL AND material_id = ?`,
+			mat.ID,
 		).Scan(&count); err != nil {
 			panic(fmt.Errorf("Migration, check shop material existence: %w", err))
 		}
@@ -221,7 +217,6 @@ func createShopMaterials(ctx context.Context, db *sqlite.Database) {
 			UserID:     0,
 			MaterialID: mat.ID,
 			Amount:     10,
-			Price:      mat.Price,
 			DateTime:   time.Now(),
 		}); err != nil {
 			log.Println("Could not add shop material:", mat.Name, "error:", err)

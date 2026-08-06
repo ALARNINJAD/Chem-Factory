@@ -6,7 +6,6 @@ import (
 	"chem-factory/internal/modules/market/core/port"
 	"context"
 	"errors"
-	"log"
 )
 
 type marketUsecase struct {
@@ -57,6 +56,10 @@ func (service *marketUsecase) Export(ctx context.Context) (dto.MarketListRespons
 		if err != nil {
 			return dto.MarketListResponse{}, err
 		}
+		materialPrice, err := service.materialRepo.FindPriceByID(ctx, market.MaterialID)
+		if err != nil {
+			return dto.MarketListResponse{}, err
+		}
 		response.MarketList = append(response.MarketList, dto.MarketResponse{
 			ID:           market.ID,
 			UserID:       market.UserID,
@@ -64,7 +67,7 @@ func (service *marketUsecase) Export(ctx context.Context) (dto.MarketListRespons
 			Username:     username,
 			MaterialName: materialName,
 			Amount:       market.Amount,
-			Price:        market.Price,
+			Price:        materialPrice,
 			DateTime:     market.DateTime,
 		})
 	}
@@ -76,12 +79,16 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 
 	market, err := service.marketRepo.FindByID(ctx, request.MarketID)
 	if err != nil {
-		log.Println("Error finding market by ID:", err)
 		return err
 	}
 
 	if market.Amount < request.Amount {
 		return errors.New("not enough items in the market")
+	}
+
+	materialPrice, err := service.materialRepo.FindPriceByID(ctx, market.MaterialID)
+	if err != nil {
+		return err
 	}
 
 	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
@@ -98,18 +105,14 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 					return err
 				}
 			}
-			err = service.userRepo.IncreaseBalanceByID(ctx, market.UserID, request.Amount*market.Price)
+			err = service.userRepo.IncreaseBalanceByID(ctx, market.UserID, request.Amount*materialPrice)
 			if err != nil {
-				log.Println("Error finding market by ID:", err)
-
 				return err
 			}
 		}
 
-		err = service.userRepo.ReduceBalanceByID(ctx, userID, request.Amount*market.Price)
+		err = service.userRepo.ReduceBalanceByID(ctx, userID, request.Amount*materialPrice)
 		if err != nil {
-			log.Println("Error finding market by ID:", err)
-
 			return err
 		}
 
@@ -121,15 +124,11 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 				Amount:     request.Amount,
 			})
 			if err != nil {
-				log.Println("Error finding market by ID:", err)
-
 				return err
 			}
 		} else {
 			err := service.inventoryRepo.IncreaseByID(ctx, inventoryID, request.Amount)
 			if err != nil {
-				log.Println("Error finding market by ID:", err)
-
 				return err
 			}
 		}
@@ -139,12 +138,11 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 }
 
 func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetForSellRequest, userID uint) error {
-	log.Println("1")
+
 	_, err := service.materialRepo.FindNameByID(ctx, request.MaterialID)
 	if err != nil {
 		return err
 	}
-	log.Println("2")
 
 	inventory, err := service.inventoryRepo.FindByUserIDmatID(ctx, userID, request.MaterialID)
 	if err != nil {
@@ -153,10 +151,8 @@ func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetFor
 	if inventory.Amount < request.Amount {
 		return errors.New("not enough items")
 	}
-	log.Println("3")
 
 	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
-		log.Println("4")
 
 		if inventory.Amount == request.Amount {
 			if err = service.inventoryRepo.DeleteByID(ctx, inventory.ID); err != nil {
@@ -168,15 +164,13 @@ func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetFor
 				return err
 			}
 		}
-		log.Println("5")
 
-		marketID, _ := service.marketRepo.FindIDByPriceUserIDMatID(ctx, request.Price, userID, request.MaterialID)
+		marketID, _ := service.marketRepo.FindIDByUserIDMatID(ctx, userID, request.MaterialID)
 		if marketID == 0 {
 			err = service.marketRepo.Add(ctx, domain.Market{
 				UserID:     userID,
 				MaterialID: request.MaterialID,
 				Amount:     request.Amount,
-				Price:      request.Price,
 			})
 			if err != nil {
 				return err
@@ -187,7 +181,6 @@ func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetFor
 				return err
 			}
 		}
-		log.Println("6")
 
 		return nil
 	})

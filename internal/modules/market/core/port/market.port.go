@@ -18,6 +18,7 @@ type Transactor interface {
 
 type MaterialRepository interface {
 	FindNameByID(ctx context.Context, id uint) (string, error)
+	FindPriceByID(ctx context.Context, id uint) (int, error)
 }
 
 type MarketService interface {
@@ -28,8 +29,7 @@ type MarketService interface {
 
 type MarketRepository interface {
 	Export(ctx context.Context) ([]domain.Market, error)
-	FindIDByPriceUserIDMatID(ctx context.Context, price int, userID, materialID uint) (uint, error)
-	FindByPriceUserIDMatID(ctx context.Context, price int, userID, materialID uint) (domain.Market, error)
+	FindIDByUserIDMatID(ctx context.Context, userID, materialID uint) (uint, error)
 	FindByID(ctx context.Context, id uint) (domain.Market, error)
 	FindMatIDByID(ctx context.Context, id uint) (uint, error)
 	ReduceAmountByID(ctx context.Context, id uint, amount int) error

@@ -16,7 +16,7 @@ func NewMarketRepo(db *sqlite.Database) *MarketRepo { return &MarketRepo{db: db}
 
 func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 	rows, err := r.db.Extract(ctx).QueryContext(ctx,
-		`SELECT id, user_id, material_id, amount, price, date_time FROM market`,
+		`SELECT id, user_id, material_id, amount, date_time FROM market`,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("export market select all query: %w", err)
@@ -34,7 +34,6 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 			&userID,
 			&market.MaterialID,
 			&market.Amount,
-			&market.Price,
 			&market.DateTime,
 		); err != nil {
 			return nil, fmt.Errorf("export market rows scan: %w", err)
@@ -49,38 +48,15 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 	return list, nil
 }
 
-func (r *MarketRepo) FindIDByPriceUserIDMatID(ctx context.Context, price int, userID, materialID uint) (uint, error) {
+func (r *MarketRepo) FindIDByUserIDMatID(ctx context.Context, userID, materialID uint) (uint, error) {
 	var id uint
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id FROM market WHERE price = ? AND user_id = ? AND material_id = ?`,
-		price, userID, materialID,
+		`SELECT id FROM market WHERE user_id = ? AND material_id = ?`,
+		userID, materialID,
 	).Scan(&id); err != nil {
-		return 0, fmt.Errorf("find market id by price, user id and material id: %w", err)
+		return 0, fmt.Errorf("find market id by user id and material id: %w", err)
 	}
 	return id, nil
-}
-
-func (r *MarketRepo) FindByPriceUserIDMatID(ctx context.Context, price int, userID, materialID uint) (domain.Market, error) {
-	var (
-		market domain.Market
-		usrID  sql.NullInt64
-	)
-	if err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id, user_id, material_id, amount, price, date_time
-		FROM market WHERE price = ? AND user_id = ? AND material_id = ?`,
-		price, userID, materialID,
-	).Scan(
-		&market.ID,
-		&usrID,
-		&market.MaterialID,
-		&market.Amount,
-		&market.Price,
-		&market.DateTime,
-	); err != nil {
-		return domain.Market{}, fmt.Errorf("find market by price, user id and material id: %w", err)
-	}
-	market.UserID = convert.SQLiteNullInt64ToUint(usrID)
-	return market, nil
 }
 
 func (r *MarketRepo) FindByID(ctx context.Context, id uint) (domain.Market, error) {
@@ -89,7 +65,7 @@ func (r *MarketRepo) FindByID(ctx context.Context, id uint) (domain.Market, erro
 		userID sql.NullInt64
 	)
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT id, user_id, material_id, amount, price, date_time
+		`SELECT id, user_id, material_id, amount, date_time
 		FROM market WHERE id = ?`,
 		id,
 	).Scan(
@@ -97,7 +73,6 @@ func (r *MarketRepo) FindByID(ctx context.Context, id uint) (domain.Market, erro
 		&userID,
 		&market.MaterialID,
 		&market.Amount,
-		&market.Price,
 		&market.DateTime,
 	); err != nil {
 		return domain.Market{}, fmt.Errorf("find market by id: %w", err)
@@ -132,12 +107,11 @@ func (r *MarketRepo) IncreaseAmountByID(ctx context.Context, id uint, amount int
 
 func (r *MarketRepo) Add(ctx context.Context, market domain.Market) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`INSERT INTO market(user_id, material_id, amount, price, date_time)
-		VALUES (?, ?, ?, ?, ?)`,
+		`INSERT INTO market(user_id, material_id, amount, date_time)
+		VALUES (?, ?, ?, ?)`,
 		convert.UintToNullInt64(market.UserID),
 		market.MaterialID,
 		market.Amount,
-		market.Price,
 		market.DateTime,
 	)
 	if err != nil {

@@ -2,12 +2,12 @@ package bootstrap
 
 import (
 	database "chem-factory/internal/database/sqlite"
+	inventoryRepository "chem-factory/internal/modules/inventory/adapter/sqlite"
 	"chem-factory/internal/modules/market/adapter/http/handler"
+	marketRepository "chem-factory/internal/modules/market/adapter/sqlite"
 	"chem-factory/internal/modules/market/core/usecase"
 	materialRepository "chem-factory/internal/modules/material/adapter/sqlite"
 	userRepository "chem-factory/internal/modules/user/adapter/sqlite"
-	marketRepository "chem-factory/internal/modules/market/adapter/sqlite"
-	inventoryRepository "chem-factory/internal/modules/inventory/adapter/sqlite"
 	"log"
 )
 

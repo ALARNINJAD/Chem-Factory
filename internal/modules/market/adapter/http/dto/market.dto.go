@@ -20,7 +20,6 @@ type MarketListResponse struct {
 type SetForSellRequest struct {
 	MaterialID uint `json:"material_id"`
 	Amount     int  `json:"amount"`
-	Price      int  `json:"price"`
 }
 
 type BuyRequest struct {

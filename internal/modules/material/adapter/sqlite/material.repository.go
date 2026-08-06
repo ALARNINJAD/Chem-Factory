@@ -163,3 +163,13 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 	}
 	return list, nil
 }
+
+func (r *MaterialRepo) FindPriceByID(ctx context.Context, id uint) (int, error) {
+	var price int
+	if err := r.db.Extract(ctx).QueryRowContext(ctx,
+		`SELECT price FROM materials WHERE id = ?`, id,
+	).Scan(&price); err != nil {
+		return 0, fmt.Errorf("find material name by id: %w", err)
+	}
+	return price, nil
+}

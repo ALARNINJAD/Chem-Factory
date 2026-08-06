@@ -10,7 +10,6 @@ type Market struct {
 	UserID     uint      `json:"user_id"`
 	MaterialID uint      `json:"material_id"`
 	Amount     int       `json:"amount"`
-	Price      int       `json:"price"`
 	DateTime   time.Time `json:"date_time"`
 }
 

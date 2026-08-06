@@ -4,6 +4,5 @@ Authorization: jwt_key
 
 {
     "material_id": 0,
-    "amount": 0,
-    "price": 0
+    "amount": 0
 }
