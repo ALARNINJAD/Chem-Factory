@@ -65,6 +65,26 @@ func (r *InventoryRepo) FindByUserID(ctx context.Context, userID uint) ([]domain
 	return list, nil
 }
 
+func (r *InventoryRepo) FindByUserIDmatID(ctx context.Context, userID, materialID uint) (domain.Inventory, error) {
+	var inventory domain.Inventory
+
+	err := r.db.Extract(ctx).QueryRowContext(ctx,
+		`SELECT id, user_id, material_id, amount, date_time FROM inventory WHERE user_id = ? AND material_id = ?`,
+		userID, materialID,
+	).Scan(
+		&inventory.ID,
+		&inventory.UserID,
+		&inventory.MaterialID,
+		&inventory.Amount,
+		&inventory.DateTime,
+	)
+	if err != nil {
+		return domain.Inventory{}, fmt.Errorf("find inventory by user id and material id: %w", err)
+	}
+
+	return inventory, nil
+}
+
 func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materialID uint) (uint, error) {
 	var id uint
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
