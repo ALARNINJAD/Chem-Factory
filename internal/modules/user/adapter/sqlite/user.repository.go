@@ -92,7 +92,6 @@ func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (uint,
 		`SELECT id FROM users WHERE username = ?`,
 		username,
 	).Scan(&id)
-
 	if err != nil {
 		return 0, fmt.Errorf("find id by username: %w", err)
 	}
@@ -117,9 +116,10 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error
 
 func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`INSERT INTO users(username, password) VALUES (?, ?)`,
+		`INSERT INTO users(username, password, balance) VALUES (?, ?, ?)`,
 		user.Username,
 		user.Password,
+		user.Balance,
 	)
 
 	if err != nil {
