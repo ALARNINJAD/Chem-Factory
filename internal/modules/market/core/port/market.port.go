@@ -44,4 +44,7 @@ type InventoryRepository interface {
 	IncreaseByID(ctx context.Context, id uint, amount int) error
 	ReduceByID(ctx context.Context, id uint, amount int) error
 	FindIDByUserIDmatID(ctx context.Context, userID, materialID uint) (uint, error)
+	FindByUserIDmatID(ctx context.Context, userID, materialID uint) (domain.Inventory, error)
+	DeleteByID(ctx context.Context, id uint) error
+	FindByID(ctx context.Context, id uint) (domain.Inventory, error)
 }
