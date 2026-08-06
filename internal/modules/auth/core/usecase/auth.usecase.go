@@ -7,6 +7,7 @@ import (
 	"chem-factory/utils/hash"
 	"context"
 	"errors"
+	"fmt"
 )
 
 type AuthUsecase struct {
@@ -31,13 +32,12 @@ func (service *AuthUsecase) Register(ctx context.Context, request dto.RegisterRe
 	}
 
 	user := domain.User{}
-	if user, err = user.New(request.Username, request.Password); err != nil {
+	if err = user.New(request.Username, request.Password); err != nil {
 		return err
 	}
-
-	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
-		return service.userRepo.Add(ctx, user)
-	})
+	user.IncreaseBalance(500) // for test
+	fmt.Println(user)
+	return service.userRepo.Add(ctx, user)
 }
 
 func (service *AuthUsecase) Login(ctx context.Context, request dto.LoginRequest) (uint, error) {
