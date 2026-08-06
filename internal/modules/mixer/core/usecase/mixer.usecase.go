@@ -89,6 +89,10 @@ func (service *mixerUsecase) Mixes(ctx context.Context, userID uint) (dto.MixesR
 
 func (service *mixerUsecase) Mix(ctx context.Context, request dto.MixRequest, userID uint) error {
 
+	if request.FirstIngredientID > request.SecondIngredientID {
+		request.FirstIngredientID, request.SecondIngredientID = request.SecondIngredientID, request.FirstIngredientID
+	}
+
 	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
 
 		inventory, err := service.inventoryRepo.FindByUserIDmatID(ctx, userID, request.FirstIngredientID)
