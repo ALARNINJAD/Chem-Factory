@@ -35,8 +35,8 @@ func (r *MaterialRepo) FindIDByIngrID(ctx context.Context, firstID uint, secondI
 }
 
 func (r *MaterialRepo) FindByIngrID(ctx context.Context, firstID uint, secondID uint) (domain.Material, error) {
-	var mat domain.Material
 	var (
+		mat                                        domain.Material
 		userID, firstIngrID, secondIngrID, mixTime sql.NullInt64
 	)
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
@@ -56,6 +56,17 @@ func (r *MaterialRepo) FindByIngrID(ctx context.Context, firstID uint, secondID 
 	mat.SecondIngredientID = convert.SQLiteNullInt64ToUint(secondIngrID)
 	mat.MixTime = convert.SQLiteNullInt64ToInt(mixTime)
 	return mat, nil
+}
+
+func (r *MaterialRepo) FindNameByIngrID(ctx context.Context, firstID uint, secondID uint) (string, error) {
+	var name string
+	if err := r.db.Extract(ctx).QueryRowContext(ctx,
+		`SELECT name FROM materials WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
+		firstID, secondID,
+	).Scan(&name); err != nil {
+		return "", fmt.Errorf("find material name by ingredient id: %w", err)
+	}
+	return name, nil
 }
 
 func (r *MaterialRepo) FindByID(ctx context.Context, id uint) (domain.Material, error) {
