@@ -1,7 +1,0 @@
-POST http://localhost:8090/api/mixer
-Content-Type: application/json
-Authorization: jwt_token
-
-{
-    "id": 0
-}
