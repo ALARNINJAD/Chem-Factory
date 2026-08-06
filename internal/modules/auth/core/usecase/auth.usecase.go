@@ -21,11 +21,12 @@ func NewAuthUsecase(userRepo port.UserRepository, transactor port.Transactor) *A
 
 func (service *AuthUsecase) Register(ctx context.Context, request dto.RegisterRequest) error {
 
-	id, err := service.userRepo.FindIDByUsername(ctx, request.Username)
-	if err == nil || id != 0 {
+	id, _ := service.userRepo.FindIDByUsername(ctx, request.Username)
+	if id != 0 {
 		return errors.New("user already exists")
 	}
 
+	var err error
 	request.Password, err = hash.New(10).HashPassword(request.Password) // cost of hash must be in config
 	if err != nil {
 		return err

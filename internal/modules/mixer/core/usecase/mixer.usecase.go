@@ -246,7 +246,7 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		return dto.MixResponse{}, err
 	}
 
-	service.transactor.WithTx(ctx, func(ctx context.Context) error {
+	err = service.transactor.WithTx(ctx, func(ctx context.Context) error {
 		err = service.materialRepo.Add(ctx, domain.Material{
 			UserID:             userID,
 			FirstIngredientID:  mix.FirstIngredientID,
@@ -265,6 +265,9 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		}
 		return nil
 	})
+	if err != nil {
+		return dto.MixResponse{}, err
+	}
 
 	response, err = service.mixResponse(ctx, mix, userID)
 	if err != nil {

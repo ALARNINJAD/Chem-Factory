@@ -109,6 +109,15 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 			if err != nil {
 				return err
 			}
+			user, err := service.userRepo.FindByID(ctx, market.UserID)
+			if err != nil {
+				return err
+			}
+			user.GetXP(request.Amount * (material.MixTime + material.Price))
+			err = service.userRepo.UpdateLevelXPByID(ctx, user)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = service.userRepo.ReduceBalanceByID(ctx, userID, request.Amount*material.Price)
@@ -131,16 +140,6 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 			if err != nil {
 				return err
 			}
-		}
-
-		user, err := service.userRepo.FindByID(ctx, market.UserID)
-		if err != nil {
-			return err
-		}
-		user.GetXP(request.Amount * (material.MixTime + material.Price))
-		err = service.userRepo.UpdateLevelXPByID(ctx, user)
-		if err != nil {
-			return err
 		}
 
 		return nil
