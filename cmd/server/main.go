@@ -5,6 +5,7 @@ import (
 	authBootstrap "chem-factory/internal/modules/auth/bootstrap"
 	inventoryBootstrap "chem-factory/internal/modules/inventory/bootstrap"
 	marketBootstrap "chem-factory/internal/modules/market/bootstrap"
+	mixerBootstrap "chem-factory/internal/modules/mixer/bootstrap"
 	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	routesHTTP "chem-factory/internal/routes/http"
 	"chem-factory/pkg/constants"
@@ -43,6 +44,13 @@ func buildServer() *routesHTTP.Server {
 	auth := authBootstrap.NewModule(db)
 	inventory := inventoryBootstrap.NewModule(db)
 	market := marketBootstrap.NewModule(db)
+	mixer := mixerBootstrap.NewModule(db)
 
-	return routesHTTP.NewServer(jwt, user, auth, inventory, market)
+	return routesHTTP.NewServer(jwt,
+		user,
+		auth,
+		inventory,
+		market,
+		mixer,
+	)
 }

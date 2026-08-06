@@ -3,8 +3,9 @@ package http
 import (
 	authBootstrap "chem-factory/internal/modules/auth/bootstrap"
 	inventoryBootstrap "chem-factory/internal/modules/inventory/bootstrap"
-	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	marketBootstrap "chem-factory/internal/modules/market/bootstrap"
+	mixerBootstrap "chem-factory/internal/modules/mixer/bootstrap"
+	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	"chem-factory/internal/routes/http/middleware"
 	"log"
 
@@ -21,6 +22,7 @@ func NewServer(
 	authModule authBootstrap.Module,
 	inventoryModule inventoryBootstrap.Module,
 	marketModule marketBootstrap.Module,
+	mixerModule mixerBootstrap.Module,
 ) *Server {
 	log.Println("Grouping routes")
 
@@ -58,6 +60,17 @@ func NewServer(
 			market.GET("/export", marketModule.MarketHandler.Export)
 			market.POST("/buy", marketModule.MarketHandler.Buy)
 			market.POST("/set-for-sell", marketModule.MarketHandler.SetForSell)
+		}
+	}
+	{
+		mixer := api.Group("/mixer")
+		mixer.Use(middleware.Auth(jwt))
+		{
+			mixer.POST("", mixerModule.MixerHandler.Mix)
+			mixer.POST("/check", mixerModule.MixerHandler.Check)
+			mixer.GET("", mixerModule.MixerHandler.Mixes)
+			mixer.PATCH("/new", mixerModule.MixerHandler.NewMaterial)
+			mixer.PATCH("", mixerModule.MixerHandler.Pick)
 		}
 	}
 
