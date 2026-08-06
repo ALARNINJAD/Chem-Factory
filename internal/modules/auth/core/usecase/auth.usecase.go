@@ -7,7 +7,6 @@ import (
 	"chem-factory/utils/hash"
 	"context"
 	"errors"
-	"fmt"
 )
 
 type AuthUsecase struct {
@@ -37,7 +36,6 @@ func (service *AuthUsecase) Register(ctx context.Context, request dto.RegisterRe
 		return err
 	}
 	user.IncreaseBalance(500) // for test
-	fmt.Println(user)
 	return service.userRepo.Add(ctx, user)
 }
 
