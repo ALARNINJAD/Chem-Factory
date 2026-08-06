@@ -20,6 +20,9 @@ func (user *User) New(username, password string) error {
 	}
 	user.Username = username
 	user.Password = password
+	user.Balance = 0
+	user.XP = 0
+	user.Level = 1
 	return nil
 }
 
@@ -39,5 +42,17 @@ func (user *User) ReduceBalance(amount int) error {
 		return errors.New("insufficient balance")
 	}
 	user.Balance -= amount
+	return nil
+}
+
+func (user *User) GetXP(xp int) error {
+	if xp < 0 {
+		return errors.New("increase amount must be positive")
+	}
+	user.XP += xp
+	for user.XP >= 1000 {
+		user.Level++
+		user.XP -= 1000
+	}
 	return nil
 }

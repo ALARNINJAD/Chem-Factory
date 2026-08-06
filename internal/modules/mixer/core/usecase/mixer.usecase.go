@@ -231,6 +231,7 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 
 	var (
 		mix      domain.Mix
+		user     domain.User
 		err      error
 		response dto.MixResponse
 	)
@@ -240,16 +241,30 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		return dto.MixResponse{}, err
 	}
 
-	err = service.materialRepo.Add(ctx, domain.Material{
-		UserID:             userID,
-		FirstIngredientID:  mix.FirstIngredientID,
-		SecondIngredientID: mix.SecondIngredientID,
-		Name:               request.Name,
-		Price:              request.Price,
-	})
+	user, err = service.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return dto.MixResponse{}, err
 	}
+
+	service.transactor.WithTx(ctx, func(ctx context.Context) error {
+		err = service.materialRepo.Add(ctx, domain.Material{
+			UserID:             userID,
+			FirstIngredientID:  mix.FirstIngredientID,
+			SecondIngredientID: mix.SecondIngredientID,
+			Name:               request.Name,
+			Price:              request.Price,
+			MixTime:            request.MixTime,
+		})
+		if err != nil {
+			return err
+		}
+		user.GetXP(10000)
+		err = service.userRepo.UpdateLevelXPByID(ctx, user)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
 	response, err = service.mixResponse(ctx, mix, userID)
 	if err != nil {

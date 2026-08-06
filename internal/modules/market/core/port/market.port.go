@@ -10,6 +10,8 @@ type UserRepository interface {
 	FindUsernameByID(ctx context.Context, id uint) (string, error)
 	ReduceBalanceByID(ctx context.Context, id uint, amount int) error
 	IncreaseBalanceByID(ctx context.Context, id uint, amount int) error
+	UpdateLevelXPByID(ctx context.Context, user domain.User) error
+	FindByID(ctx context.Context, id uint) (domain.User, error)
 }
 
 type Transactor interface {
@@ -19,6 +21,7 @@ type Transactor interface {
 type MaterialRepository interface {
 	FindNameByID(ctx context.Context, id uint) (string, error)
 	FindPriceByID(ctx context.Context, id uint) (int, error)
+	FindByID(ctx context.Context, id uint) (domain.Material, error)
 }
 
 type MarketService interface {

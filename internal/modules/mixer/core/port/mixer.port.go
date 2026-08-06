@@ -16,6 +16,8 @@ type MixerRepository interface {
 
 type UserRepository interface {
 	FindUsernameByID(ctx context.Context, id uint) (string, error)
+	UpdateLevelXPByID(ctx context.Context, user domain.User) error
+	FindByID(ctx context.Context, id uint) (domain.User, error)
 }
 
 type MaterialRepository interface {

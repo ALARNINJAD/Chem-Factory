@@ -176,3 +176,16 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id uint, balance int) 
 	}
 	return nil
 }
+
+func (r *UserRepo) UpdateLevelXPByID(ctx context.Context, user domain.User) error {
+	_, err := r.db.Extract(ctx).ExecContext(ctx,
+		`UPDATE users SET level = ?, xp = ? WHERE id = ?`,
+		user.Level,
+		user.XP,
+		user.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("update level and xp by id: %w", err)
+	}
+	return nil
+}
