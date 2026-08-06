@@ -11,21 +11,16 @@ type User struct {
 	Level    int    `json:"level"`
 }
 
-func (user User) New(username, password string) (User, error) {
+func (user *User) New(username, password string) error {
 	if username == "" {
-		return User{}, errors.New("username is invalid")
+		return errors.New("username is invalid")
 	}
 	if password == "" {
-		return User{}, errors.New("password is invalid")
+		return errors.New("password is invalid")
 	}
-	return User{
-		ID:       0,
-		Username: username,
-		Password: password,
-		Balance:  500,
-		XP:       0,
-		Level:    0,
-	}, nil
+	user.Username = username
+	user.Password = password
+	return nil
 }
 
 func (user *User) IncreaseBalance(amount int) error {
