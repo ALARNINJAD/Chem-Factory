@@ -58,17 +58,6 @@ func (r *MaterialRepo) FindByIngrID(ctx context.Context, firstID uint, secondID 
 	return mat, nil
 }
 
-func (r *MaterialRepo) FindNameByIngrID(ctx context.Context, firstID uint, secondID uint) (string, error) {
-	var name string
-	if err := r.db.Extract(ctx).QueryRowContext(ctx,
-		`SELECT name FROM materials WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
-		firstID, secondID,
-	).Scan(&name); err != nil {
-		return "", fmt.Errorf("find material name by ingredient id: %w", err)
-	}
-	return name, nil
-}
-
 func (r *MaterialRepo) FindByID(ctx context.Context, id uint) (domain.Material, error) {
 	var mat domain.Material
 	var (

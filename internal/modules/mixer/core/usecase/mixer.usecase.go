@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 )
 
 type mixerUsecase struct {
@@ -67,12 +68,8 @@ func (service *mixerUsecase) Mixes(ctx context.Context, userID uint) (dto.MixesR
 			return dto.MixesResponse{}, err
 		}
 
-		mixResponse.MaterialName, err = service.materialRepo.FindNameByIngrID(ctx, mixResponse.FirstIngredientID, mixResponse.SecondIngredientID)
-		if err != nil {
-			return dto.MixesResponse{}, err
-		}
-
 		material, _ := service.materialRepo.FindByIngrID(ctx, mix.FirstIngredientID, mix.SecondIngredientID)
+		mixResponse.MaterialName = material.Name
 		if material.ID == 0 {
 			mixResponse.IsNew = true
 			mixResponse.RemainingSeconds = mix.RemainingSeconds(30) // must be in config
@@ -136,6 +133,7 @@ func (service *mixerUsecase) Mix(ctx context.Context, request dto.MixRequest, us
 			FirstIngredientID:  request.FirstIngredientID,
 			SecondIngredientID: request.SecondIngredientID,
 			Amount:             request.Amount,
+			DateTime:           time.Now(),
 		})
 		if err != nil {
 			return err

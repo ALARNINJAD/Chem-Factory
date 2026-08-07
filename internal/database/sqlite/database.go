@@ -14,7 +14,7 @@ type Database struct{ database *sql.DB }
 func New() *Database {
 	log.Println("Initializing sqlite")
 
-	database, err := sql.Open("sqlite3", "sqlite.db")
+	database, err := sql.Open("sqlite3", "sqlite.db?parseTime=true")
 	if err != nil {
 		panic(fmt.Errorf("could not open sqlite database: %w", err))
 	}
