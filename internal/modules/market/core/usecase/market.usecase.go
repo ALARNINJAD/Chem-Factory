@@ -6,6 +6,7 @@ import (
 	"chem-factory/internal/modules/market/core/port"
 	"context"
 	"errors"
+	"time"
 )
 
 type marketUsecase struct {
@@ -131,6 +132,7 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 				UserID:     userID,
 				MaterialID: market.MaterialID,
 				Amount:     request.Amount,
+				DateTime:   time.Now(),
 			})
 			if err != nil {
 				return err
@@ -180,6 +182,7 @@ func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetFor
 				UserID:     userID,
 				MaterialID: request.MaterialID,
 				Amount:     request.Amount,
+				DateTime:   time.Now(),
 			})
 			if err != nil {
 				return err

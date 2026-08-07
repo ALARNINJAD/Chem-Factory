@@ -24,7 +24,6 @@ type MaterialRepository interface {
 	FindNameByID(ctx context.Context, id uint) (string, error)
 	FindByIngrID(ctx context.Context, firstID uint, secondID uint) (domain.Material, error)
 	Add(ctx context.Context, material domain.Material) error
-	FindNameByIngrID(ctx context.Context, firstID uint, secondID uint) (string, error)
 	FindIDByIngrID(ctx context.Context, firstID uint, secondID uint) (uint, error)
 }
 
