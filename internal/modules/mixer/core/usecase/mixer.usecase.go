@@ -215,6 +215,16 @@ func (service *mixerUsecase) Pick(ctx context.Context, request dto.PickRequest, 
 			}
 		}
 
+		user, err := service.userRepo.FindByID(ctx, userID)
+		if err != nil {
+			return err
+		}
+		user.GetXP(material.MixTime)
+		err = service.userRepo.UpdateLevelXPByID(ctx, user)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -233,6 +243,15 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		err      error
 		response dto.MixResponse
 	)
+	if request.Name == "" || len(request.Name) > 50 {
+		return dto.MixResponse{}, errors.New("material name is not valid")
+	}
+	if request.Price < 0 || request.Price > 1000000 {
+		return dto.MixResponse{}, errors.New("material price is not valid")
+	}
+	if request.MixTime <= 0 || request.MixTime > 3600 {
+		return dto.MixResponse{}, errors.New("material mix time is not valid")
+	}
 
 	mix, err = service.mixerRepo.FindByID(ctx, request.MixID)
 	if err != nil {
@@ -256,11 +275,13 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		if err != nil {
 			return err
 		}
-		user.GetXP(10000)
+
+		user.GetXP(request.MixTime * request.Price)
 		err = service.userRepo.UpdateLevelXPByID(ctx, user)
 		if err != nil {
 			return err
 		}
+
 		return nil
 	})
 	if err != nil {

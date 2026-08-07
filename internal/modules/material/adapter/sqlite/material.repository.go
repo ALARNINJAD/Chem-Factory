@@ -164,6 +164,43 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 	return list, nil
 }
 
+func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
+	rows, err := r.db.Extract(ctx).QueryContext(ctx,
+		`SELECT id, user_id, first_ingredient_id, second_ingredient_id,
+		name, price, mix_time
+		FROM materials`)
+	if err != nil {
+		return nil, fmt.Errorf("get materials select query: %w", err)
+	}
+	defer rows.Close()
+
+	var list []domain.Material
+
+	for rows.Next() {
+		var (
+			mat                                        domain.Material
+			userID, firstIngrID, secondIngrID, mixTime sql.NullInt64
+		)
+		if err := rows.Scan(
+			&mat.ID,
+			&userID, &firstIngrID, &secondIngrID,
+			&mat.Name, &mat.Price, &mixTime,
+		); err != nil {
+			return nil, fmt.Errorf("get materials rows scan: %w", err)
+		}
+		mat.UserID = convert.SQLiteNullInt64ToUint(userID)
+		mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
+		mat.SecondIngredientID = convert.SQLiteNullInt64ToUint(secondIngrID)
+		mat.MixTime = convert.SQLiteNullInt64ToInt(mixTime)
+		list = append(list, mat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("get materials rows error: %w", err)
+	}
+	return list, nil
+}
+
 func (r *MaterialRepo) FindPriceByID(ctx context.Context, id uint) (int, error) {
 	var price int
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,

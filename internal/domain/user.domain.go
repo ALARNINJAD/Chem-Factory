@@ -50,9 +50,9 @@ func (user *User) GetXP(xp int) error {
 		return errors.New("increase amount must be positive")
 	}
 	user.XP += xp
-	for user.XP >= 1000 {
+	for user.XP >= user.Level*1000 {
+		user.XP -= user.Level * 1000
 		user.Level++
-		user.XP -= 1000
 	}
 	return nil
 }
