@@ -9,7 +9,7 @@ import (
 	userBootstrap "chem-factory/internal/modules/user/bootstrap"
 	routesHTTP "chem-factory/internal/routes/http"
 	"chem-factory/pkg/constants"
-	jwtManager "chem-factory/utils/jwt"
+	jwtManager "chem-factory/pkg/jwt"
 	"fmt"
 	"log"
 	"os"

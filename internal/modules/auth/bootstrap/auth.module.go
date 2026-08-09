@@ -5,7 +5,7 @@ import (
 	"chem-factory/internal/modules/auth/adapter/http/handler"
 	"chem-factory/internal/modules/auth/core/usecase"
 	"chem-factory/internal/modules/user/adapter/sqlite"
-	"chem-factory/utils/jwt"
+	"chem-factory/pkg/jwt"
 	"log"
 	"os"
 )

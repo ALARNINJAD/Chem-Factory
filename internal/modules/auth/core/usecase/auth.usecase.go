@@ -4,7 +4,7 @@ import (
 	"chem-factory/internal/domain"
 	"chem-factory/internal/modules/auth/adapter/http/dto"
 	"chem-factory/internal/modules/auth/core/port"
-	"chem-factory/utils/hash"
+	"chem-factory/pkg/hash"
 	"context"
 	"errors"
 )
