@@ -3,8 +3,8 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/reedam"
 	"context"
-	"fmt"
 )
 
 type MixerRepo struct{ db *database.Database }
@@ -26,7 +26,7 @@ func (r *MixerRepo) FindByID(ctx context.Context, id uint) (domain.Mix, error) {
 		&mix.DateTime,
 	)
 	if err != nil {
-		return domain.Mix{}, fmt.Errorf("find mix by id: %w", err)
+		return domain.Mix{}, reedam.InternalError(err)
 	}
 
 	return mix, nil
@@ -43,7 +43,7 @@ func (r *MixerRepo) Add(ctx context.Context, mix domain.Mix) error {
 		mix.DateTime,
 	)
 	if err != nil {
-		return fmt.Errorf("add mix: %w", err)
+		return reedam.InternalError(err)
 	}
 
 	return nil
@@ -59,7 +59,7 @@ func (r *MixerRepo) FindIDByUserIDIngrID(ctx context.Context, userID, firstID, s
 		secID,
 	).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("find mix id by user id and ingredients id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 
 	return id, nil
@@ -73,7 +73,7 @@ func (r *MixerRepo) GetByUserID(ctx context.Context, userID uint) ([]domain.Mix,
 		userID,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("get mixes by user id: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	defer rows.Close()
 
@@ -87,13 +87,13 @@ func (r *MixerRepo) GetByUserID(ctx context.Context, userID uint) ([]domain.Mix,
 			&mix.Amount,
 			&mix.DateTime,
 		); err != nil {
-			return nil, fmt.Errorf("scan mix: %w", err)
+			return nil, reedam.InternalError(err)
 		}
 		mixes = append(mixes, mix)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("get mixes by user id: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 
 	return mixes, nil
@@ -114,7 +114,7 @@ func (r *MixerRepo) FindByUserIDIngrID(ctx context.Context, userID, firstID, sec
 		&mix.DateTime,
 	)
 	if err != nil {
-		return domain.Mix{}, fmt.Errorf("find mix by user id and ingredient ids: %w", err)
+		return domain.Mix{}, reedam.InternalError(err)
 	}
 
 	return mix, nil
@@ -127,7 +127,7 @@ func (r *MixerRepo) Get(ctx context.Context) ([]domain.Mix, error) {
 		`SELECT id, user_id, first_ingredient_id, second_ingredient_id, amount, date_time FROM mixes`,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("get mixes: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	defer rows.Close()
 
@@ -141,13 +141,13 @@ func (r *MixerRepo) Get(ctx context.Context) ([]domain.Mix, error) {
 			&mix.Amount,
 			&mix.DateTime,
 		); err != nil {
-			return nil, fmt.Errorf("scan mix: %w", err)
+			return nil, reedam.InternalError(err)
 		}
 		mixes = append(mixes, mix)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("get mixes: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 
 	return mixes, nil
@@ -159,7 +159,7 @@ func (r *MixerRepo) DeleteByID(ctx context.Context, id uint) error {
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("delete mix by id: %w", err)
+		return reedam.InternalError(err)
 	}
 
 	return nil

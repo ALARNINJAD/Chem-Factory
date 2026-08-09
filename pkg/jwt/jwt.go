@@ -1,8 +1,8 @@
 package jwt
 
 import (
+	"chem-factory/pkg/reedam"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -20,7 +20,7 @@ func (j JWT) Generate(username string, userID uint) (string, error) {
 	})
 	t, err := token.SignedString([]byte(j.secretKey))
 	if err != nil {
-		return "", fmt.Errorf("Auth jwt, generate jwt: %w", err)
+		return "", reedam.InternalError(err)
 	}
 	return t, nil
 }
@@ -34,26 +34,26 @@ func (j JWT) Verify(token string) (string, uint, error) {
 		return []byte(j.secretKey), nil
 	})
 	if err != nil {
-		return "", 0, fmt.Errorf("Auth jwt, verify jwt, jwt parse: %w", err)
+		return "", 0, reedam.InternalError(err)
 	}
 
 	if !parsedToken.Valid {
-		return "", 0, errors.New("Auth jwt, verify jwt, parse token validation: invalid token.")
+		return "", 0, reedam.InternalError(err)
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", 0, errors.New("Auth jwt, verify jwt, token claims: not ok.")
+		return "", 0, reedam.InternalError(err)
 	}
 
 	idFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		return "", 0, errors.New("Auth jwt, verify jwt: id claim is not a float64 number")
+		return "", 0, reedam.InternalError(err)
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", 0, errors.New("Auth jwt, verify jwt: username claim is not a string")
+		return "", 0, reedam.InternalError(err)
 	}
 
 	return username, uint(idFloat), nil

@@ -1,7 +1,7 @@
 package hash
 
 import (
-	"fmt"
+	"chem-factory/pkg/reedam"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -13,7 +13,7 @@ func New(costOfHash int) Hash { return Hash{costOfHash: costOfHash} }
 func (hash Hash) CheckPassword(password, hashedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
-		return fmt.Errorf("check password failed: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -21,7 +21,7 @@ func (hash Hash) CheckPassword(password, hashedPassword string) error {
 func (hash Hash) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), hash.costOfHash)
 	if err != nil {
-		return "", fmt.Errorf("could not hash password: %w", err)
+		return "", reedam.InternalError(err)
 	}
 	return string(hashedPassword), nil
 }

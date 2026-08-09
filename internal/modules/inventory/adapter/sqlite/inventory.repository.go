@@ -3,9 +3,9 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/reedam"
 	"context"
 	"database/sql"
-	"fmt"
 )
 
 type InventoryRepo struct{ db *database.Database }
@@ -26,7 +26,7 @@ func (r *InventoryRepo) FindByID(ctx context.Context, id uint) (domain.Inventory
 		&inventory.DateTime,
 	)
 	if err != nil {
-		return domain.Inventory{}, fmt.Errorf("find inventory by id: %w", err)
+		return domain.Inventory{}, reedam.InternalError(err)
 	}
 
 	return inventory, nil
@@ -38,7 +38,7 @@ func (r *InventoryRepo) FindByUserID(ctx context.Context, userID uint) ([]domain
 		userID,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("find inventory by user id select query: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	defer rows.Close()
 
@@ -53,13 +53,13 @@ func (r *InventoryRepo) FindByUserID(ctx context.Context, userID uint) ([]domain
 			&inventory.Amount,
 			&inventory.DateTime,
 		); err != nil {
-			return nil, fmt.Errorf("find inventory by user id rows scan: %w", err)
+			return nil, reedam.InternalError(err)
 		}
 		list = append(list, inventory)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("find inventory by user id rows error: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 
 	return list, nil
@@ -79,7 +79,7 @@ func (r *InventoryRepo) FindByUserIDmatID(ctx context.Context, userID, materialI
 		&inventory.DateTime,
 	)
 	if err != nil {
-		return domain.Inventory{}, fmt.Errorf("find inventory by user id and material id: %w", err)
+		return domain.Inventory{}, reedam.InternalError(err)
 	}
 
 	return inventory, nil
@@ -91,7 +91,7 @@ func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materia
 		`SELECT id FROM inventory WHERE user_id = ? AND material_id = ?`,
 		userID, materialID,
 	).Scan(&id); err != nil {
-		return 0, fmt.Errorf("find inventory id by user and material id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return id, nil
 }
@@ -105,7 +105,7 @@ func (r *InventoryRepo) HasByUserIDMaterialID(ctx context.Context, userID, mater
 		if err == sql.ErrNoRows {
 			return false, nil
 		}
-		return false, fmt.Errorf("check inventory exists by user and material id: %w", err)
+		return false, reedam.InternalError(err)
 	}
 	return true, nil
 }
@@ -117,7 +117,7 @@ func (r *InventoryRepo) IncreaseByID(ctx context.Context, id uint, amount int) e
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("increase inventory amount by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -129,7 +129,7 @@ func (r *InventoryRepo) ReduceByID(ctx context.Context, id uint, amount int) err
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("reduce inventory amount by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func (r *InventoryRepo) Add(ctx context.Context, inventory domain.Inventory) err
 		inventory.DateTime,
 	)
 	if err != nil {
-		return fmt.Errorf("add inventory: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -155,7 +155,7 @@ func (r *InventoryRepo) DeleteByID(ctx context.Context, id uint) error {
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("delete inventory by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }

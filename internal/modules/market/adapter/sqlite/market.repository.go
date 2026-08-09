@@ -1,25 +1,25 @@
 package sqlite
 
 import (
-	"chem-factory/internal/database/sqlite"
+	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/reedam"
 	"chem-factory/utils/convert"
 
 	"context"
 	"database/sql"
-	"fmt"
 )
 
-type MarketRepo struct{ db *sqlite.Database }
+type MarketRepo struct{ db *database.Database }
 
-func NewMarketRepo(db *sqlite.Database) *MarketRepo { return &MarketRepo{db: db} }
+func NewMarketRepo(db *database.Database) *MarketRepo { return &MarketRepo{db: db} }
 
 func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 	rows, err := r.db.Extract(ctx).QueryContext(ctx,
 		`SELECT id, user_id, material_id, amount, date_time FROM market`,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("export market select all query: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	defer rows.Close()
 
@@ -36,14 +36,14 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 			&market.Amount,
 			&market.DateTime,
 		); err != nil {
-			return nil, fmt.Errorf("export market rows scan: %w", err)
+			return nil, reedam.InternalError(err)
 		}
 		market.UserID = convert.SQLiteNullInt64ToUint(userID)
 		list = append(list, market)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("export market rows error: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	return list, nil
 }
@@ -54,7 +54,7 @@ func (r *MarketRepo) FindIDByUserIDMatID(ctx context.Context, userID, materialID
 		`SELECT id FROM market WHERE user_id = ? AND material_id = ?`,
 		userID, materialID,
 	).Scan(&id); err != nil {
-		return 0, fmt.Errorf("find market id by user id and material id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return id, nil
 }
@@ -75,7 +75,7 @@ func (r *MarketRepo) FindByID(ctx context.Context, id uint) (domain.Market, erro
 		&market.Amount,
 		&market.DateTime,
 	); err != nil {
-		return domain.Market{}, fmt.Errorf("find market by id: %w", err)
+		return domain.Market{}, reedam.InternalError(err)
 	}
 	market.UserID = convert.SQLiteNullInt64ToUint(userID)
 	return market, nil
@@ -88,7 +88,7 @@ func (r *MarketRepo) ReduceAmountByID(ctx context.Context, id uint, amount int) 
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("reduce market amount by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func (r *MarketRepo) IncreaseAmountByID(ctx context.Context, id uint, amount int
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("increase market amount by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -115,7 +115,7 @@ func (r *MarketRepo) Add(ctx context.Context, market domain.Market) error {
 		market.DateTime,
 	)
 	if err != nil {
-		return fmt.Errorf("add market: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -126,7 +126,7 @@ func (r *MarketRepo) DeleteByID(ctx context.Context, id uint) error {
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("delete market by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func (r *MarketRepo) FindUserIDByID(ctx context.Context, id uint) (uint, error) 
 		`SELECT user_id FROM market WHERE id = ?`,
 		id,
 	).Scan(&userID); err != nil {
-		return 0, fmt.Errorf("find user id by market id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return convert.SQLiteNullInt64ToUint(userID), nil
 }
@@ -148,7 +148,7 @@ func (r *MarketRepo) FindMatIDByID(ctx context.Context, id uint) (uint, error) {
 		`SELECT material_id FROM market WHERE id = ?`,
 		id,
 	).Scan(&materialID); err != nil {
-		return 0, fmt.Errorf("find material id by market id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return materialID, nil
 }

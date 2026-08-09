@@ -3,8 +3,8 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/reedam"
 	"context"
-	"fmt"
 )
 
 type UserRepo struct{ db *database.Database }
@@ -27,7 +27,7 @@ func (r *UserRepo) FindByUsername(ctx context.Context, username string) (domain.
 	)
 
 	if err != nil {
-		return domain.User{}, fmt.Errorf("find user by username: %w", err)
+		return domain.User{}, reedam.InternalError(err)
 	}
 
 	return user, nil
@@ -49,7 +49,7 @@ func (r *UserRepo) FindByID(ctx context.Context, id uint) (domain.User, error) {
 	)
 
 	if err != nil {
-		return domain.User{}, fmt.Errorf("find user by id: %w", err)
+		return domain.User{}, reedam.InternalError(err)
 	}
 
 	return user, nil
@@ -64,7 +64,7 @@ func (r *UserRepo) FindPasswordByID(ctx context.Context, id uint) (string, error
 	).Scan(&password)
 
 	if err != nil {
-		return "", fmt.Errorf("find password by id: %w", err)
+		return "", reedam.InternalError(err)
 	}
 
 	return password, nil
@@ -79,7 +79,7 @@ func (r *UserRepo) FindPasswordByUsername(ctx context.Context, username string) 
 	).Scan(&password)
 
 	if err != nil {
-		return "", fmt.Errorf("find password by username: %w", err)
+		return "", reedam.InternalError(err)
 	}
 
 	return password, nil
@@ -93,7 +93,7 @@ func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (uint,
 		username,
 	).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("find id by username: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 
 	return id, nil
@@ -108,7 +108,7 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error
 	).Scan(&username)
 
 	if err != nil {
-		return "", fmt.Errorf("find username by id: %w", err)
+		return "", reedam.InternalError(err)
 	}
 
 	return username, nil
@@ -123,7 +123,7 @@ func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("add user: %w", err)
+		return reedam.InternalError(err)
 	}
 
 	return nil
@@ -136,7 +136,7 @@ func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id uint, amount int)
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("increase balance by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -148,7 +148,7 @@ func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id uint, amount int) e
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("reduce balance by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -160,7 +160,7 @@ func (r *UserRepo) FindBalanceByID(ctx context.Context, id uint) (int, error) {
 		id,
 	).Scan(&balance)
 	if err != nil {
-		return 0, fmt.Errorf("find balance by id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return balance, nil
 }
@@ -172,7 +172,7 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id uint, balance int) 
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("update balance by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -185,7 +185,7 @@ func (r *UserRepo) UpdateLevelXPByID(ctx context.Context, user domain.User) erro
 		user.ID,
 	)
 	if err != nil {
-		return fmt.Errorf("update level and xp by id: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }

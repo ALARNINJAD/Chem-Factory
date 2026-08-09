@@ -3,10 +3,10 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/reedam"
 	"chem-factory/utils/convert"
 	"context"
 	"database/sql"
-	"fmt"
 )
 
 type MaterialRepo struct{ db *database.Database }
@@ -18,7 +18,7 @@ func (r *MaterialRepo) FindMixTimeByID(ctx context.Context, id uint) (int, error
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT mix_time FROM materials WHERE id = ?`, id,
 	).Scan(&mixTime); err != nil {
-		return 0, fmt.Errorf("find material mix time by id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return convert.SQLiteNullInt64ToInt(mixTime), nil
 }
@@ -29,7 +29,7 @@ func (r *MaterialRepo) FindIDByIngrID(ctx context.Context, firstID uint, secondI
 		`SELECT id FROM materials WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
 		firstID, secondID,
 	).Scan(&id); err != nil {
-		return 0, fmt.Errorf("find material id by ingredient id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return id, nil
 }
@@ -49,7 +49,7 @@ func (r *MaterialRepo) FindByIngrID(ctx context.Context, firstID uint, secondID 
 		&userID, &firstIngrID, &secondIngrID,
 		&mat.Name, &mat.Price, &mixTime,
 	); err != nil {
-		return domain.Material{}, fmt.Errorf("find material by ingredient id: %w", err)
+		return domain.Material{}, reedam.InternalError(err)
 	}
 	mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 	mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -64,7 +64,7 @@ func (r *MaterialRepo) FindNameByIngrID(ctx context.Context, firstID uint, secon
 		`SELECT name FROM materials WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
 		firstID, secondID,
 	).Scan(&name); err != nil {
-		return "", fmt.Errorf("find material name by ingredient id: %w", err)
+		return "", reedam.InternalError(err)
 	}
 	return name, nil
 }
@@ -84,7 +84,7 @@ func (r *MaterialRepo) FindByID(ctx context.Context, id uint) (domain.Material, 
 		&userID, &firstIngrID, &secondIngrID,
 		&mat.Name, &mat.Price, &mixTime,
 	); err != nil {
-		return domain.Material{}, fmt.Errorf("find material by id: %w", err)
+		return domain.Material{}, reedam.InternalError(err)
 	}
 	mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 	mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -98,7 +98,7 @@ func (r *MaterialRepo) FindIDByName(ctx context.Context, name string) (uint, err
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id FROM materials WHERE name = ?`, name,
 	).Scan(&id); err != nil {
-		return 0, fmt.Errorf("find id by material name: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return id, nil
 }
@@ -108,7 +108,7 @@ func (r *MaterialRepo) FindNameByID(ctx context.Context, id uint) (string, error
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT name FROM materials WHERE id = ?`, id,
 	).Scan(&name); err != nil {
-		return "", fmt.Errorf("find material name by id: %w", err)
+		return "", reedam.InternalError(err)
 	}
 	return name, nil
 }
@@ -122,7 +122,7 @@ func (r *MaterialRepo) Add(ctx context.Context, material domain.Material) error 
 		material.Name, material.Price, convert.IntToNullInt64(material.MixTime),
 	)
 	if err != nil {
-		return fmt.Errorf("save material: %w", err)
+		return reedam.InternalError(err)
 	}
 	return nil
 }
@@ -133,7 +133,7 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 		name, price, mix_time
 		FROM materials WHERE user_id = ?`, id)
 	if err != nil {
-		return nil, fmt.Errorf("find materials by user id select query: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	defer rows.Close()
 
@@ -149,7 +149,7 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 			&userID, &firstIngrID, &secondIngrID,
 			&mat.Name, &mat.Price, &mixTime,
 		); err != nil {
-			return nil, fmt.Errorf("find materials by user id rows scan: %w", err)
+			return nil, reedam.InternalError(err)
 		}
 		mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 		mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -159,7 +159,7 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("find materials by user id rows error: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	return list, nil
 }
@@ -170,7 +170,7 @@ func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
 		name, price, mix_time
 		FROM materials`)
 	if err != nil {
-		return nil, fmt.Errorf("get materials select query: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	defer rows.Close()
 
@@ -186,7 +186,7 @@ func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
 			&userID, &firstIngrID, &secondIngrID,
 			&mat.Name, &mat.Price, &mixTime,
 		); err != nil {
-			return nil, fmt.Errorf("get materials rows scan: %w", err)
+			return nil, reedam.InternalError(err)
 		}
 		mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 		mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -196,7 +196,7 @@ func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("get materials rows error: %w", err)
+		return nil, reedam.InternalError(err)
 	}
 	return list, nil
 }
@@ -206,7 +206,7 @@ func (r *MaterialRepo) FindPriceByID(ctx context.Context, id uint) (int, error) 
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT price FROM materials WHERE id = ?`, id,
 	).Scan(&price); err != nil {
-		return 0, fmt.Errorf("find material name by id: %w", err)
+		return 0, reedam.InternalError(err)
 	}
 	return price, nil
 }

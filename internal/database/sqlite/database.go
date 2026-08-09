@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"chem-factory/pkg/reedam"
 	"context"
 	"database/sql"
 	"fmt"
@@ -26,7 +27,7 @@ type txKey struct{}
 func (db *Database) WithTx(ctx context.Context, fn func(ctx context.Context) error) error {
 	tx, err := db.database.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin sqlite transaction: %w", err)
+		return reedam.InternalError(err)
 	}
 	if err := fn(context.WithValue(ctx, txKey{}, tx)); err != nil {
 		tx.Rollback()
