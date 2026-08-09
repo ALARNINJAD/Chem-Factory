@@ -83,6 +83,10 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 		return err
 	}
 
+	if userID == market.UserID {
+		return errors.New("you cannot buy your own item")
+	}
+
 	if market.Amount < request.Amount {
 		return errors.New("not enough items in the market")
 	}
