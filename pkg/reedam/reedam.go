@@ -51,6 +51,9 @@ func (r *Reedam) WithLog() *Reedam {
 }
 
 func (r *Reedam) Error() string {
+	if r.Err == nil {
+		return r.Message
+	}
 	return r.Err.Error()
 }
 

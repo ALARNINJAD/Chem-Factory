@@ -1,7 +1,2 @@
-/.vscode
 *.env
 *.db
-/api-test
-/tmp
-/docs/issues/
-/docs/test-scenarios/
