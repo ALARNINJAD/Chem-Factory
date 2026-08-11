@@ -1,8 +1,6 @@
 package reedam
 
 import (
-	"chem-factory/pkg/lang"
-
 	"fmt"
 	"log"
 	"path"
@@ -55,8 +53,4 @@ func (r *Reedam) Error() string {
 		return r.Message
 	}
 	return r.Err.Error()
-}
-
-func InternalError(err error) error {
-	return New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(StatusInternalServerError).WithLog()
 }

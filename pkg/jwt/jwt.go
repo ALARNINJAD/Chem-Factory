@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"errors"
 	"time"
@@ -20,7 +21,7 @@ func (j JWT) Generate(username string, userID uint) (string, error) {
 	})
 	t, err := token.SignedString([]byte(j.secretKey))
 	if err != nil {
-		return "", reedam.InternalError(err)
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return t, nil
 }
@@ -34,26 +35,26 @@ func (j JWT) Verify(token string) (string, uint, error) {
 		return []byte(j.secretKey), nil
 	})
 	if err != nil {
-		return "", 0, reedam.InternalError(err)
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	if !parsedToken.Valid {
-		return "", 0, reedam.InternalError(err)
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", 0, reedam.InternalError(err)
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	idFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		return "", 0, reedam.InternalError(err)
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", 0, reedam.InternalError(err)
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return username, uint(idFloat), nil

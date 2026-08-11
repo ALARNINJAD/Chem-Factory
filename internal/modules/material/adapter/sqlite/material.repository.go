@@ -3,6 +3,7 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"chem-factory/utils/convert"
 	"context"
@@ -18,7 +19,7 @@ func (r *MaterialRepo) FindMixTimeByID(ctx context.Context, id uint) (int, error
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT mix_time FROM materials WHERE id = ?`, id,
 	).Scan(&mixTime); err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return convert.SQLiteNullInt64ToInt(mixTime), nil
 }
@@ -29,7 +30,7 @@ func (r *MaterialRepo) FindIDByIngrID(ctx context.Context, firstID uint, secondI
 		`SELECT id FROM materials WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
 		firstID, secondID,
 	).Scan(&id); err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return id, nil
 }
@@ -49,7 +50,7 @@ func (r *MaterialRepo) FindByIngrID(ctx context.Context, firstID uint, secondID 
 		&userID, &firstIngrID, &secondIngrID,
 		&mat.Name, &mat.Price, &mixTime,
 	); err != nil {
-		return domain.Material{}, reedam.InternalError(err)
+		return domain.Material{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 	mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -64,7 +65,7 @@ func (r *MaterialRepo) FindNameByIngrID(ctx context.Context, firstID uint, secon
 		`SELECT name FROM materials WHERE first_ingredient_id = ? AND second_ingredient_id = ?`,
 		firstID, secondID,
 	).Scan(&name); err != nil {
-		return "", reedam.InternalError(err)
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return name, nil
 }
@@ -84,7 +85,7 @@ func (r *MaterialRepo) FindByID(ctx context.Context, id uint) (domain.Material, 
 		&userID, &firstIngrID, &secondIngrID,
 		&mat.Name, &mat.Price, &mixTime,
 	); err != nil {
-		return domain.Material{}, reedam.InternalError(err)
+		return domain.Material{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 	mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -98,7 +99,7 @@ func (r *MaterialRepo) FindIDByName(ctx context.Context, name string) (uint, err
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT id FROM materials WHERE name = ?`, name,
 	).Scan(&id); err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return id, nil
 }
@@ -108,7 +109,7 @@ func (r *MaterialRepo) FindNameByID(ctx context.Context, id uint) (string, error
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT name FROM materials WHERE id = ?`, id,
 	).Scan(&name); err != nil {
-		return "", reedam.InternalError(err)
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return name, nil
 }
@@ -122,7 +123,7 @@ func (r *MaterialRepo) Add(ctx context.Context, material domain.Material) error 
 		material.Name, material.Price, convert.IntToNullInt64(material.MixTime),
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -133,7 +134,7 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 		name, price, mix_time
 		FROM materials WHERE user_id = ?`, id)
 	if err != nil {
-		return nil, reedam.InternalError(err)
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	defer rows.Close()
 
@@ -149,7 +150,7 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 			&userID, &firstIngrID, &secondIngrID,
 			&mat.Name, &mat.Price, &mixTime,
 		); err != nil {
-			return nil, reedam.InternalError(err)
+			return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 		}
 		mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 		mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -159,7 +160,7 @@ func (r *MaterialRepo) FindByUserID(ctx context.Context, id uint) ([]domain.Mate
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, reedam.InternalError(err)
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return list, nil
 }
@@ -170,7 +171,7 @@ func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
 		name, price, mix_time
 		FROM materials`)
 	if err != nil {
-		return nil, reedam.InternalError(err)
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	defer rows.Close()
 
@@ -186,7 +187,7 @@ func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
 			&userID, &firstIngrID, &secondIngrID,
 			&mat.Name, &mat.Price, &mixTime,
 		); err != nil {
-			return nil, reedam.InternalError(err)
+			return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 		}
 		mat.UserID = convert.SQLiteNullInt64ToUint(userID)
 		mat.FirstIngredientID = convert.SQLiteNullInt64ToUint(firstIngrID)
@@ -196,7 +197,7 @@ func (r *MaterialRepo) Get(ctx context.Context) ([]domain.Material, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, reedam.InternalError(err)
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return list, nil
 }
@@ -206,7 +207,7 @@ func (r *MaterialRepo) FindPriceByID(ctx context.Context, id uint) (int, error) 
 	if err := r.db.Extract(ctx).QueryRowContext(ctx,
 		`SELECT price FROM materials WHERE id = ?`, id,
 	).Scan(&price); err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return price, nil
 }

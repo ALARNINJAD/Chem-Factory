@@ -3,6 +3,7 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"context"
 	"database/sql"
@@ -26,7 +27,7 @@ func (r *InventoryRepo) FindByID(ctx context.Context, id uint) (domain.Inventory
 		&inventory.DateTime,
 	)
 	if err != nil {
-		return domain.Inventory{}, reedam.InternalError(err)
+		return domain.Inventory{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return inventory, nil
@@ -38,7 +39,7 @@ func (r *InventoryRepo) FindByUserID(ctx context.Context, userID uint) ([]domain
 		userID,
 	)
 	if err != nil {
-		return nil, reedam.InternalError(err)
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	defer rows.Close()
 
@@ -53,13 +54,13 @@ func (r *InventoryRepo) FindByUserID(ctx context.Context, userID uint) ([]domain
 			&inventory.Amount,
 			&inventory.DateTime,
 		); err != nil {
-			return nil, reedam.InternalError(err)
+			return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 		}
 		list = append(list, inventory)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, reedam.InternalError(err)
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return list, nil
@@ -79,7 +80,7 @@ func (r *InventoryRepo) FindByUserIDmatID(ctx context.Context, userID, materialI
 		&inventory.DateTime,
 	)
 	if err != nil {
-		return domain.Inventory{}, reedam.InternalError(err)
+		return domain.Inventory{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return inventory, nil
@@ -91,7 +92,7 @@ func (r *InventoryRepo) FindIDByUserIDmatID(ctx context.Context, userID, materia
 		`SELECT id FROM inventory WHERE user_id = ? AND material_id = ?`,
 		userID, materialID,
 	).Scan(&id); err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return id, nil
 }
@@ -105,7 +106,7 @@ func (r *InventoryRepo) HasByUserIDMaterialID(ctx context.Context, userID, mater
 		if err == sql.ErrNoRows {
 			return false, nil
 		}
-		return false, reedam.InternalError(err)
+		return false, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return true, nil
 }
@@ -117,7 +118,7 @@ func (r *InventoryRepo) IncreaseByID(ctx context.Context, id uint, amount int) e
 		id,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -129,7 +130,7 @@ func (r *InventoryRepo) ReduceByID(ctx context.Context, id uint, amount int) err
 		id,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -144,7 +145,7 @@ func (r *InventoryRepo) Add(ctx context.Context, inventory domain.Inventory) err
 		inventory.DateTime,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -155,7 +156,7 @@ func (r *InventoryRepo) DeleteByID(ctx context.Context, id uint) error {
 		id,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"context"
 	"database/sql"
@@ -27,7 +28,7 @@ type txKey struct{}
 func (db *Database) WithTx(ctx context.Context, fn func(ctx context.Context) error) error {
 	tx, err := db.database.BeginTx(ctx, nil)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	if err := fn(context.WithValue(ctx, txKey{}, tx)); err != nil {
 		tx.Rollback()

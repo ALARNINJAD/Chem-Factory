@@ -3,6 +3,7 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"context"
 )
@@ -27,7 +28,7 @@ func (r *UserRepo) FindByUsername(ctx context.Context, username string) (domain.
 	)
 
 	if err != nil {
-		return domain.User{}, reedam.InternalError(err)
+		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return user, nil
@@ -49,7 +50,7 @@ func (r *UserRepo) FindByID(ctx context.Context, id uint) (domain.User, error) {
 	)
 
 	if err != nil {
-		return domain.User{}, reedam.InternalError(err)
+		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return user, nil
@@ -64,7 +65,7 @@ func (r *UserRepo) FindPasswordByID(ctx context.Context, id uint) (string, error
 	).Scan(&password)
 
 	if err != nil {
-		return "", reedam.InternalError(err)
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return password, nil
@@ -79,7 +80,7 @@ func (r *UserRepo) FindPasswordByUsername(ctx context.Context, username string) 
 	).Scan(&password)
 
 	if err != nil {
-		return "", reedam.InternalError(err)
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return password, nil
@@ -93,7 +94,7 @@ func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (uint,
 		username,
 	).Scan(&id)
 	if err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return id, nil
@@ -108,7 +109,7 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error
 	).Scan(&username)
 
 	if err != nil {
-		return "", reedam.InternalError(err)
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return username, nil
@@ -123,7 +124,7 @@ func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	)
 
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 
 	return nil
@@ -136,7 +137,7 @@ func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id uint, amount int)
 		id,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -148,7 +149,7 @@ func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id uint, amount int) e
 		id,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -160,7 +161,7 @@ func (r *UserRepo) FindBalanceByID(ctx context.Context, id uint) (int, error) {
 		id,
 	).Scan(&balance)
 	if err != nil {
-		return 0, reedam.InternalError(err)
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return balance, nil
 }
@@ -172,7 +173,7 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id uint, balance int) 
 		id,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
@@ -185,7 +186,7 @@ func (r *UserRepo) UpdateLevelXPByID(ctx context.Context, user domain.User) erro
 		user.ID,
 	)
 	if err != nil {
-		return reedam.InternalError(err)
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
 	}
 	return nil
 }
