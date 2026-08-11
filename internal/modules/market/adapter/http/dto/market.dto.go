@@ -4,7 +4,7 @@ import "time"
 
 type MarketResponse struct {
 	ID           uint      `json:"id"`
-	UserID       uint      `json:"user_id,omitempty"`
+	UserID       uint      `json:"user_id"`
 	MaterialID   uint      `json:"material_id"`
 	Username     string    `json:"username"`
 	MaterialName string    `json:"material_name"`

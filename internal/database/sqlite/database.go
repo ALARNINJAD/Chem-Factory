@@ -47,3 +47,8 @@ func (db *Database) Extract(ctx context.Context) interface {
 	}
 	return db.database
 }
+
+func IsTx(ctx context.Context) bool {
+	_, ok := ctx.Value(txKey{}).(*sql.Tx)
+	return ok
+}

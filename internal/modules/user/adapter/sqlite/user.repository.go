@@ -28,7 +28,7 @@ func (r *UserRepo) FindByUsername(ctx context.Context, username string) (domain.
 	)
 
 	if err != nil {
-		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, database.IsTx(ctx))
 	}
 
 	return user, nil
@@ -50,7 +50,7 @@ func (r *UserRepo) FindByID(ctx context.Context, id uint) (domain.User, error) {
 	)
 
 	if err != nil {
-		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 
 	return user, nil
@@ -65,7 +65,7 @@ func (r *UserRepo) FindPasswordByID(ctx context.Context, id uint) (string, error
 	).Scan(&password)
 
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 
 	return password, nil
@@ -80,7 +80,7 @@ func (r *UserRepo) FindPasswordByUsername(ctx context.Context, username string) 
 	).Scan(&password)
 
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, database.IsTx(ctx))
 	}
 
 	return password, nil
@@ -94,7 +94,7 @@ func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (uint,
 		username,
 	).Scan(&id)
 	if err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, database.IsTx(ctx))
 	}
 
 	return id, nil
@@ -109,7 +109,7 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error
 	).Scan(&username)
 
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 
 	return username, nil
@@ -124,7 +124,7 @@ func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	)
 
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(user, database.IsTx(ctx))
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id uint, amount int)
 		id,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, amount, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -149,7 +149,7 @@ func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id uint, amount int) e
 		id,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, amount, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (r *UserRepo) FindBalanceByID(ctx context.Context, id uint) (int, error) {
 		id,
 	).Scan(&balance)
 	if err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 	return balance, nil
 }
@@ -173,7 +173,7 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id uint, balance int) 
 		id,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, balance, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -186,7 +186,7 @@ func (r *UserRepo) UpdateLevelXPByID(ctx context.Context, user domain.User) erro
 		user.ID,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(user, database.IsTx(ctx))
 	}
 	return nil
 }

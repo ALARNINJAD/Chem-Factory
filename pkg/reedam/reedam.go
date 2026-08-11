@@ -32,7 +32,7 @@ func (r *Reedam) WithStatus(status int) *Reedam {
 	return r
 }
 
-func (r *Reedam) WithLog() *Reedam {
+func (r *Reedam) WithLog(data ...any) *Reedam {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
 		return r
@@ -43,6 +43,7 @@ func (r *Reedam) WithLog() *Reedam {
 	fmt.Println("-------------------------------------------------------------------------")
 	log.Println("/ERROR/", r.Err)
 	log.Println("/SOURCE/", fmt.Sprintf("file: %s, func: %s, line: %d", fileName, funcName, line))
+	log.Println("/DATA/", data)
 	fmt.Println("-------------------------------------------------------------------------")
 
 	return r

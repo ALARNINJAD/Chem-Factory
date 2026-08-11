@@ -20,7 +20,7 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 		`SELECT id, user_id, material_id, amount, date_time FROM market`,
 	)
 	if err != nil {
-		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(database.IsTx(ctx))
 	}
 	defer rows.Close()
 
@@ -37,14 +37,14 @@ func (r *MarketRepo) Export(ctx context.Context) ([]domain.Market, error) {
 			&market.Amount,
 			&market.DateTime,
 		); err != nil {
-			return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+			return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(database.IsTx(ctx))
 		}
 		market.UserID = convert.SQLiteNullInt64ToUint(userID)
 		list = append(list, market)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return nil, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(database.IsTx(ctx))
 	}
 	return list, nil
 }
@@ -55,7 +55,7 @@ func (r *MarketRepo) FindIDByUserIDMatID(ctx context.Context, userID, materialID
 		`SELECT id FROM market WHERE user_id = ? AND material_id = ?`,
 		userID, materialID,
 	).Scan(&id); err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(userID, materialID, database.IsTx(ctx))
 	}
 	return id, nil
 }
@@ -76,7 +76,7 @@ func (r *MarketRepo) FindByID(ctx context.Context, id uint) (domain.Market, erro
 		&market.Amount,
 		&market.DateTime,
 	); err != nil {
-		return domain.Market{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return domain.Market{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 	market.UserID = convert.SQLiteNullInt64ToUint(userID)
 	return market, nil
@@ -89,7 +89,7 @@ func (r *MarketRepo) ReduceAmountByID(ctx context.Context, id uint, amount int) 
 		id,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, amount, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -101,7 +101,7 @@ func (r *MarketRepo) IncreaseAmountByID(ctx context.Context, id uint, amount int
 		id,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, amount, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -116,7 +116,7 @@ func (r *MarketRepo) Add(ctx context.Context, market domain.Market) error {
 		market.DateTime,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(market, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -127,7 +127,7 @@ func (r *MarketRepo) DeleteByID(ctx context.Context, id uint) error {
 		id,
 	)
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 	return nil
 }
@@ -138,7 +138,7 @@ func (r *MarketRepo) FindUserIDByID(ctx context.Context, id uint) (uint, error) 
 		`SELECT user_id FROM market WHERE id = ?`,
 		id,
 	).Scan(&userID); err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 	return convert.SQLiteNullInt64ToUint(userID), nil
 }
@@ -149,7 +149,7 @@ func (r *MarketRepo) FindMatIDByID(ctx context.Context, id uint) (uint, error) {
 		`SELECT material_id FROM market WHERE id = ?`,
 		id,
 	).Scan(&materialID); err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
 	}
 	return materialID, nil
 }

@@ -44,9 +44,8 @@ func (service *marketUsecase) Export(ctx context.Context) (dto.MarketListRespons
 
 	for _, market := range marketList {
 		var username string
-		if market.UserID == 0 {
-			username = "ADMIN HASTAM"
-		} else {
+
+		if market.UserID != 0 {
 			username, err = service.userRepo.FindUsernameByID(ctx, market.UserID)
 			if err != nil {
 				return dto.MarketListResponse{}, err

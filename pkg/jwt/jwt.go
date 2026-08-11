@@ -21,7 +21,7 @@ func (j JWT) Generate(username string, userID uint) (string, error) {
 	})
 	t, err := token.SignedString([]byte(j.secretKey))
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, userID)
 	}
 	return t, nil
 }
@@ -35,26 +35,26 @@ func (j JWT) Verify(token string) (string, uint, error) {
 		return []byte(j.secretKey), nil
 	})
 	if err != nil {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
 	}
 
 	if !parsedToken.Valid {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
 	}
 
 	idFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog()
+		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
 	}
 
 	return username, uint(idFloat), nil
