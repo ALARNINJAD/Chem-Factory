@@ -19,7 +19,7 @@ func NewModule(db *database.Database) Module {
 
 	userRepo := sqlite.NewUserRepo(db)
 
-	authUsecase := usecase.NewAuthUsecase(userRepo, db)
+	authUsecase := usecase.NewAuthUsecase(userRepo)
 	jwtService := jwt.NewJWT(os.Getenv("SECRET_KEY"))
 
 	authHandler := handler.NewAuthHandler(authUsecase, jwtService)

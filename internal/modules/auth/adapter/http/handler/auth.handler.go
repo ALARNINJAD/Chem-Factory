@@ -4,6 +4,7 @@ import (
 	"chem-factory/internal/modules/auth/adapter/http/dto"
 	"chem-factory/internal/modules/auth/core/port"
 	"chem-factory/internal/routes/http/middleware"
+	"chem-factory/pkg/reedam"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,19 +26,19 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	userID, err := h.service.Login(ctx.Request.Context(), request)
-	if err != nil || userID == 0 {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-		return
-	}
-
-	token, err := h.jwt.Generate(request.Username, userID)
+	response, err := h.service.Login(ctx.Request.Context(), request)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.LoginResponse{Token: token})
+	response.Token, err = h.jwt.Generate(request.Username, response.UserID)
+	if err != nil {
+		reedam.ErrorMessageHTTP(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (h *AuthHandler) Register(ctx *gin.Context) {
@@ -48,10 +49,11 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.service.Register(ctx.Request.Context(), request); err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+	response, err := h.service.Register(ctx.Request.Context(), request)
+	if err != nil {
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Done."})
+	ctx.JSON(http.StatusCreated, response)
 }
