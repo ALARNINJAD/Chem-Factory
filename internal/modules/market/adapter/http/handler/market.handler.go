@@ -3,6 +3,7 @@ package handler
 import (
 	"chem-factory/internal/modules/market/adapter/http/dto"
 	"chem-factory/internal/modules/market/core/port"
+	"chem-factory/pkg/reedam"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,7 @@ func (h *MarketHandler) Export(ctx *gin.Context) {
 
 	response, err := h.service.Export(ctx.Request.Context())
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch market list"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
@@ -36,13 +37,13 @@ func (h *MarketHandler) Buy(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.Buy(ctx, request, ctx.GetUint("user_id"))
+	response, err := h.service.Buy(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not complete purchase"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "purchase completed successfully"})
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (h *MarketHandler) SetForSell(ctx *gin.Context) {
@@ -54,11 +55,11 @@ func (h *MarketHandler) SetForSell(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.SetForSell(ctx, request, ctx.GetUint("user_id"))
+	response, err := h.service.SetForSell(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not set item for sale"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "item set for sale successfully"})
+	ctx.JSON(http.StatusOK, response)
 }

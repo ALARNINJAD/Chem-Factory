@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"chem-factory/pkg/dto"
+	"time"
+)
 
 type MarketResponse struct {
 	ID           uint      `json:"id"`
@@ -21,8 +24,14 @@ type SetForSellRequest struct {
 	MaterialID uint `json:"material_id"`
 	Amount     int  `json:"amount"`
 }
+type SetForSellResponse struct {
+	dto.MessageResponse
+}
 
 type BuyRequest struct {
 	MarketID uint `json:"market_id"`
 	Amount   int  `json:"amount"`
+}
+type BuyResponse struct {
+	dto.MessageResponse
 }

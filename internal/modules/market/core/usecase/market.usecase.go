@@ -4,8 +4,12 @@ import (
 	"chem-factory/internal/domain"
 	"chem-factory/internal/modules/market/adapter/http/dto"
 	"chem-factory/internal/modules/market/core/port"
+	o "chem-factory/pkg/dto"
+	"chem-factory/pkg/lang"
+	"chem-factory/pkg/reedam"
 	"context"
 	"errors"
+	"net/http"
 	"time"
 )
 
@@ -75,27 +79,27 @@ func (service *marketUsecase) Export(ctx context.Context) (dto.MarketListRespons
 	return response, nil
 }
 
-func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, userID uint) error {
+func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, userID uint) (dto.BuyResponse, error) {
 
 	market, err := service.marketRepo.FindByID(ctx, request.MarketID)
 	if err != nil {
-		return err
+		return dto.BuyResponse{}, err
 	}
 
 	if userID == market.UserID {
-		return errors.New("you cannot buy your own item")
+		return dto.BuyResponse{}, reedam.New().WithError(errors.New("same user")).WithMessage("you cannot buy your own item").WithStatus(http.StatusConflict)
 	}
 
 	if market.Amount < request.Amount {
-		return errors.New("not enough items in the market")
+		return dto.BuyResponse{}, reedam.New().WithError(errors.New("not enough items")).WithMessage("not enough items in the market").WithStatus(http.StatusConflict)
 	}
 
 	material, err := service.materialRepo.FindByID(ctx, market.MaterialID)
 	if err != nil {
-		return err
+		return dto.BuyResponse{}, err
 	}
 
-	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
+	err = service.transactor.WithTx(ctx, func(ctx context.Context) error {
 
 		if market.UserID != 0 {
 			if market.Amount == request.Amount {
@@ -160,24 +164,29 @@ func (service *marketUsecase) Buy(ctx context.Context, request dto.BuyRequest, u
 
 		return nil
 	})
+	if err != nil {
+		return dto.BuyResponse{}, err
+	}
+
+	return dto.BuyResponse{MessageResponse: o.MessageResponse{Message: lang.MessageBuySuccessfully}}, nil
 }
 
-func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetForSellRequest, userID uint) error {
+func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetForSellRequest, userID uint) (dto.SetForSellResponse, error) {
 
 	_, err := service.materialRepo.FindNameByID(ctx, request.MaterialID)
 	if err != nil {
-		return err
+		return dto.SetForSellResponse{}, err
 	}
 
 	inventory, err := service.inventoryRepo.FindByUserIDmatID(ctx, userID, request.MaterialID)
 	if err != nil {
-		return err
+		return dto.SetForSellResponse{}, err
 	}
 	if inventory.Amount < request.Amount {
-		return errors.New("not enough items")
+		return dto.SetForSellResponse{}, reedam.New().WithError(errors.New("not enough items")).WithMessage("not enough items in").WithStatus(http.StatusConflict)
 	}
 
-	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
+	err = service.transactor.WithTx(ctx, func(ctx context.Context) error {
 
 		if inventory.Amount == request.Amount {
 			if err = service.inventoryRepo.DeleteByID(ctx, inventory.ID); err != nil {
@@ -210,5 +219,10 @@ func (service *marketUsecase) SetForSell(ctx context.Context, request dto.SetFor
 
 		return nil
 	})
+	if err != nil {
+		return dto.SetForSellResponse{}, err
+	}
+
+	return dto.SetForSellResponse{MessageResponse: o.MessageResponse{Message: lang.MessageSetForSellSuccessfully}}, nil
 
 }

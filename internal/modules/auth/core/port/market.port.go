@@ -13,10 +13,6 @@ type UserRepository interface {
 }
 
 type AuthService interface {
-	Register(ctx context.Context, request dto.RegisterRequest) error
-	Login(ctx context.Context, request dto.LoginRequest) (uint, error)
-}
-
-type Transactor interface {
-	WithTx(ctx context.Context, fn func(ctx context.Context) error) error
+	Register(ctx context.Context, request dto.RegisterRequest) (dto.RegisterResponse, error)
+	Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResponse, error)
 }

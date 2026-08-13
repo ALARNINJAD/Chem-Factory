@@ -26,20 +26,18 @@ type MaterialRepository interface {
 
 type MarketService interface {
 	Export(ctx context.Context) (dto.MarketListResponse, error)
-	Buy(ctx context.Context, request dto.BuyRequest, userID uint) error
-	SetForSell(ctx context.Context, request dto.SetForSellRequest, userID uint) error
+	Buy(ctx context.Context, request dto.BuyRequest, userID uint) (dto.BuyResponse, error)
+	SetForSell(ctx context.Context, request dto.SetForSellRequest, userID uint) (dto.SetForSellResponse, error)
 }
 
 type MarketRepository interface {
 	Export(ctx context.Context) ([]domain.Market, error)
 	FindIDByUserIDMatID(ctx context.Context, userID, materialID uint) (uint, error)
 	FindByID(ctx context.Context, id uint) (domain.Market, error)
-	FindMatIDByID(ctx context.Context, id uint) (uint, error)
 	ReduceAmountByID(ctx context.Context, id uint, amount int) error
 	IncreaseAmountByID(ctx context.Context, id uint, amount int) error
 	Add(ctx context.Context, market domain.Market) error
 	DeleteByID(ctx context.Context, id uint) error
-	FindUserIDByID(ctx context.Context, id uint) (uint, error)
 }
 
 type InventoryRepository interface {
@@ -49,5 +47,4 @@ type InventoryRepository interface {
 	FindIDByUserIDmatID(ctx context.Context, userID, materialID uint) (uint, error)
 	FindByUserIDmatID(ctx context.Context, userID, materialID uint) (domain.Inventory, error)
 	DeleteByID(ctx context.Context, id uint) error
-	FindByID(ctx context.Context, id uint) (domain.Inventory, error)
 }
