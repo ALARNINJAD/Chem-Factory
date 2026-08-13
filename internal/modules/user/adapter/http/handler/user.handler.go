@@ -2,6 +2,7 @@ package handler
 
 import (
 	"chem-factory/internal/modules/user/core/port"
+	"chem-factory/pkg/reedam"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,8 +22,7 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
 	response, err := h.service.GetProfile(ctx.Request.Context(), userID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch user profile"})
-		return
+		reedam.ErrorMessageHTTP(ctx, err)
 	}
 
 	ctx.JSON(http.StatusOK, response)

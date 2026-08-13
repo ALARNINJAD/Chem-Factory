@@ -1,6 +1,11 @@
 package domain
 
-import "errors"
+import (
+	"chem-factory/pkg/lang"
+	"chem-factory/pkg/reedam"
+	"errors"
+	"net/http"
+)
 
 type User struct {
 	ID       uint   `json:"id,omitempty"`
@@ -13,41 +18,22 @@ type User struct {
 
 func (user *User) New(username, password string) error {
 	if username == "" {
-		return errors.New("username is invalid")
+		return reedam.New().WithError(errors.New("username is empty")).WithErrName(lang.ErrorInvalidUsername).WithMessage(lang.MessageInvalidUsername).WithStatus(http.StatusBadRequest)
 	}
 	if password == "" {
-		return errors.New("password is invalid")
+		return reedam.New().WithError(errors.New("password is empty")).WithErrName(lang.ErrorInvalidPassword).WithMessage(lang.MessageInvalidPassword).WithStatus(http.StatusBadRequest)
 	}
 	user.Username = username
 	user.Password = password
-	user.Balance = 0
+	user.Balance = 500 // for test . must be inside config
 	user.XP = 0
 	user.Level = 1
 	return nil
 }
 
-func (user *User) IncreaseBalance(amount int) error {
-	if amount < 0 {
-		return errors.New("increase amount must be positive")
-	}
-	user.Balance += amount
-	return nil
-}
-
-func (user *User) ReduceBalance(amount int) error {
-	if amount < 0 {
-		return errors.New("reduce amount must be positive")
-	}
-	if user.Balance < amount {
-		return errors.New("insufficient balance")
-	}
-	user.Balance -= amount
-	return nil
-}
-
 func (user *User) GetXP(xp int) error {
 	if xp < 0 {
-		return errors.New("increase amount must be positive")
+		return reedam.Unexpected(errors.New("xp is negative")).WithLog(xp)
 	}
 	user.XP += xp
 	for user.XP >= user.Level*1000 {
