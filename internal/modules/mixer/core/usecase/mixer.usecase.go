@@ -4,9 +4,12 @@ import (
 	"chem-factory/internal/domain"
 	"chem-factory/internal/modules/mixer/adapter/http/dto"
 	"chem-factory/internal/modules/mixer/core/port"
+	"chem-factory/pkg/lang"
+	"chem-factory/pkg/reedam"
 	"context"
 	"errors"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -84,20 +87,20 @@ func (service *mixerUsecase) Mixes(ctx context.Context, userID uint) (dto.MixesR
 	return response, nil
 }
 
-func (service *mixerUsecase) Mix(ctx context.Context, request dto.MixRequest, userID uint) error {
+func (service *mixerUsecase) Mix(ctx context.Context, request dto.MixRequest, userID uint) (dto.MixResponse, error) {
 
 	if request.FirstIngredientID > request.SecondIngredientID {
 		request.FirstIngredientID, request.SecondIngredientID = request.SecondIngredientID, request.FirstIngredientID
 	}
 
-	return service.transactor.WithTx(ctx, func(ctx context.Context) error {
+	err := service.transactor.WithTx(ctx, func(ctx context.Context) error {
 
 		inventory, err := service.inventoryRepo.FindByUserIDmatID(ctx, userID, request.FirstIngredientID)
 		if err != nil {
 			return err
 		}
 		if inventory.Amount < request.Amount {
-			return errors.New("not enough items")
+			return reedam.New().WithError(errors.New("not enough items")).WithMessage("not enough items in").WithStatus(http.StatusConflict)
 		}
 
 		if inventory.Amount == request.Amount {
@@ -115,7 +118,7 @@ func (service *mixerUsecase) Mix(ctx context.Context, request dto.MixRequest, us
 			return err
 		}
 		if inventory.Amount < request.Amount {
-			return errors.New("not enough items")
+			return reedam.New().WithError(errors.New("not enough items")).WithMessage("not enough items in").WithStatus(http.StatusConflict)
 		}
 
 		if inventory.Amount == request.Amount {
@@ -141,6 +144,24 @@ func (service *mixerUsecase) Mix(ctx context.Context, request dto.MixRequest, us
 
 		return nil
 	})
+	if err != nil {
+		return dto.MixResponse{}, err
+	}
+
+	var mix domain.Mix
+	mix, err = service.mixerRepo.FindByUserIDIngrID(ctx, userID, request.FirstIngredientID, request.SecondIngredientID)
+	if err != nil {
+		return dto.MixResponse{}, reedam.Unexpected(err).WithLog(mix)
+	}
+
+	var response dto.MixResponse
+	response, err = service.mixResponse(ctx, mix, userID)
+	if err != nil {
+		return dto.MixResponse{}, reedam.Unexpected(err).WithLog(response)
+	}
+
+	response.Message = lang.MessageMixSuccessfully
+	return response, nil
 }
 
 func (service *mixerUsecase) Check(ctx context.Context, request dto.CheckRequest, userID uint) (dto.MixResponse, error) {
@@ -182,6 +203,7 @@ func (service *mixerUsecase) Pick(ctx context.Context, request dto.PickRequest, 
 	material, _ = service.materialRepo.FindByIngrID(ctx, mix.FirstIngredientID, mix.SecondIngredientID)
 	if material.ID == 0 {
 		response.IsNew = true
+		response.Message = lang.MessagePickNewMaterial
 		return response, nil
 	} else {
 		response.IsNew = false
@@ -189,6 +211,7 @@ func (service *mixerUsecase) Pick(ctx context.Context, request dto.PickRequest, 
 
 	response.RemainingSeconds = mix.RemainingSeconds(material.MixTime)
 	if response.RemainingSeconds > 0 {
+		response.Message = lang.MessagePickButRemaining
 		return response, nil
 	}
 
@@ -232,6 +255,7 @@ func (service *mixerUsecase) Pick(ctx context.Context, request dto.PickRequest, 
 	}
 
 	response.IsPicked = true
+	response.Message = lang.MessagePickSuccessfully
 	return response, nil
 }
 
@@ -243,14 +267,14 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		err      error
 		response dto.MixResponse
 	)
-	if request.Name == "" || len(request.Name) > 50 {
-		return dto.MixResponse{}, errors.New("material name is not valid")
+	if request.Name == "" || len(request.Name) > 50 { // these are must be inside config
+		return dto.MixResponse{}, reedam.New().WithError(errors.New("invalid material name")).WithMessage("material name is not valid").WithStatus(http.StatusBadRequest)
 	}
 	if request.Price < 0 || request.Price > 1000000 {
-		return dto.MixResponse{}, errors.New("material price is not valid")
+		return dto.MixResponse{}, reedam.New().WithError(errors.New("invalid material price")).WithMessage("material price is not valid").WithStatus(http.StatusBadRequest)
 	}
 	if request.MixTime <= 0 || request.MixTime > 3600 {
-		return dto.MixResponse{}, errors.New("material mix time is not valid")
+		return dto.MixResponse{}, reedam.New().WithError(errors.New("invalid material mix time")).WithMessage("material mix time is not valid").WithStatus(http.StatusBadRequest)
 	}
 
 	mix, err = service.mixerRepo.FindByID(ctx, request.MixID)
@@ -293,13 +317,14 @@ func (service *mixerUsecase) NewMaterial(ctx context.Context, request dto.NewMat
 		return dto.MixResponse{}, err
 	}
 
+	response.Message = lang.MessageMaterialNamedSuccessfully
 	return response, nil
 }
 
 func (service *mixerUsecase) mixResponse(ctx context.Context, mix domain.Mix, userID uint) (dto.MixResponse, error) {
 
 	if mix.UserID != userID {
-		return dto.MixResponse{}, errors.New("user is not owner of the mix")
+		return dto.MixResponse{}, reedam.Unexpected(errors.New("you don't have this mix")).WithLog(userID, mix.UserID)
 	}
 
 	var err error

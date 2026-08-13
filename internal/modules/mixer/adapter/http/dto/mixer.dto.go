@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"chem-factory/pkg/dto"
+	"time"
+)
 
 type MixesResponse struct {
 	Mixes []MixResponse `json:"mixes"`
@@ -24,6 +27,7 @@ type MixResponse struct {
 	DateTime             time.Time `json:"date_time"`
 	RemainingSeconds     int       `json:"remaining_seconds"`
 	IsNew                bool      `json:"is_new"`
+	dto.MessageResponse
 }
 
 // response is mix response
@@ -38,6 +42,7 @@ type PickResponse struct {
 	IsPicked         bool `json:"is_picked"`
 	IsNew            bool `json:"is_new"`
 	RemainingSeconds int  `json:"remaining_seconds"`
+	dto.MessageResponse
 }
 
 // response is mix response

@@ -3,6 +3,7 @@ package handler
 import (
 	"chem-factory/internal/modules/mixer/adapter/http/dto"
 	"chem-factory/internal/modules/mixer/core/port"
+	"chem-factory/pkg/reedam"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func (h *MixerHandler) Mixes(ctx *gin.Context) {
 
 	response, err := h.service.Mixes(ctx.Request.Context(), userID)
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "could not fetch mixes"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
@@ -38,13 +39,13 @@ func (h *MixerHandler) Mix(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.Mix(ctx, request, ctx.GetUint("user_id"))
+	response, err := h.service.Mix(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "could not create mix"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "mix created successfully"})
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (h *MixerHandler) Check(ctx *gin.Context) {
@@ -58,7 +59,7 @@ func (h *MixerHandler) Check(ctx *gin.Context) {
 
 	response, err := h.service.Check(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "could not check mix"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
@@ -76,7 +77,7 @@ func (h *MixerHandler) Pick(ctx *gin.Context) {
 
 	response, err := h.service.Pick(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "could not pick mix"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
@@ -94,7 +95,7 @@ func (h *MixerHandler) NewMaterial(ctx *gin.Context) {
 
 	response, err := h.service.NewMaterial(ctx, request, ctx.GetUint("user_id"))
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "could not create new material"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
