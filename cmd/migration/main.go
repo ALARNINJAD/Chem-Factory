@@ -3,12 +3,13 @@ package main
 import (
 	"chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
+	"chem-factory/pkg/reedam"
+	"chem-factory/pkg/lang"
 	marketsqlite "chem-factory/internal/modules/market/adapter/sqlite"
 	materialsqlite "chem-factory/internal/modules/material/adapter/sqlite"
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -35,7 +36,7 @@ func createTables(ctx context.Context, db *sqlite.Database) {
 		password TEXT NOT NULL,
 		balance INTEGER DEFAULT 0 CHECK("balance" >= 0),
 		xp INTEGER DEFAULT 0 CHECK("xp" >= 0),
-		level INTEGER DEFAULT 0 CHECK("level" >= 0)
+		level INTEGER DEFAULT 1 CHECK("level" >= 1)
 	)`); err != nil {
 		panic(fmt.Errorf("Migration, create user table: %w", err))
 	}
@@ -125,7 +126,7 @@ func createMaterials(ctx context.Context, db *sqlite.Database) {
 	for _, m := range materials {
 		if _, err := repo.FindIDByName(ctx, m.Name); err == nil {
 			continue
-		} else if !errors.Is(err, sql.ErrNoRows) {
+		} else if r := reedam.As(err); r == nil || r.ErrName != lang.ErrorMaterialNotFound {
 			panic(fmt.Errorf("Migration, check material existence: %w", err))
 		}
 
