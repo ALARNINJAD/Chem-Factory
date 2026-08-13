@@ -1,6 +1,7 @@
 package reedam
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path"
@@ -9,6 +10,7 @@ import (
 
 type Reedam struct {
 	Err     error
+	ErrName string
 	Message string
 	Status  int
 }
@@ -19,6 +21,11 @@ func New() *Reedam {
 
 func (r *Reedam) WithError(err error) *Reedam {
 	r.Err = err
+	return r
+}
+
+func (r *Reedam) WithErrName(errName string) *Reedam {
+	r.ErrName = errName
 	return r
 }
 
@@ -51,7 +58,30 @@ func (r *Reedam) WithLog(data ...any) *Reedam {
 
 func (r *Reedam) Error() string {
 	if r.Err == nil {
-		return r.Message
+		return ""
 	}
 	return r.Err.Error()
+}
+
+func (r *Reedam) GetError() error {
+	return r.Err
+}
+
+func (r *Reedam) GetMessage() string {
+	return r.Message
+}
+
+func (r *Reedam) GetStatus() int {
+	return r.Status
+}
+
+func As(err error) *Reedam {
+	if err == nil {
+		return nil
+	}
+	var r *Reedam
+	if errors.As(err, &r) {
+		return r
+	}
+	return nil
 }
