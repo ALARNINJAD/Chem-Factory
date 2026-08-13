@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"errors"
 	"time"
@@ -21,7 +20,7 @@ func (j JWT) Generate(username string, userID uint) (string, error) {
 	})
 	t, err := token.SignedString([]byte(j.secretKey))
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, userID)
+		return "", reedam.Unexpected(err).WithLog(username, userID)
 	}
 	return t, nil
 }
@@ -30,31 +29,31 @@ func (j JWT) Verify(token string) (string, uint, error) {
 
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("Auth jwt, verify jwt, token method: func.")
+			return nil, reedam.InvalidToken(errors.New("token method is not *jwt.SigningMethodHMAC"))
 		}
 		return []byte(j.secretKey), nil
 	})
 	if err != nil {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
+		return "", 0, reedam.InvalidToken(err)
 	}
 
 	if !parsedToken.Valid {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
+		return "", 0, reedam.InvalidToken(errors.New("parsed token is not valid"))
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
+		return "", 0, reedam.InvalidToken(errors.New("parsed token claims is not jwt.MapClaims"))
 	}
 
 	idFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
+		return "", 0, reedam.InvalidToken(errors.New("claims user_id is not float64"))
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(token)
+		return "", 0, reedam.InvalidToken(errors.New("claims username is not string"))
 	}
 
 	return username, uint(idFloat), nil
