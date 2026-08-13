@@ -3,9 +3,10 @@ package sqlite
 import (
 	database "chem-factory/internal/database/sqlite"
 	"chem-factory/internal/domain"
-	"chem-factory/pkg/lang"
 	"chem-factory/pkg/reedam"
 	"context"
+	"database/sql"
+	"errors"
 )
 
 type UserRepo struct{ db *database.Database }
@@ -28,7 +29,10 @@ func (r *UserRepo) FindByUsername(ctx context.Context, username string) (domain.
 	)
 
 	if err != nil {
-		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.User{}, reedam.UserNotFound(err)
+		}
+		return domain.User{}, reedam.Unexpected(err).WithLog(username, database.IsTx(ctx))
 	}
 
 	return user, nil
@@ -50,7 +54,10 @@ func (r *UserRepo) FindByID(ctx context.Context, id uint) (domain.User, error) {
 	)
 
 	if err != nil {
-		return domain.User{}, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.User{}, reedam.UserNotFound(err)
+		}
+		return domain.User{}, reedam.Unexpected(err).WithLog(id, database.IsTx(ctx))
 	}
 
 	return user, nil
@@ -65,7 +72,10 @@ func (r *UserRepo) FindPasswordByID(ctx context.Context, id uint) (string, error
 	).Scan(&password)
 
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", reedam.UserNotFound(err)
+		}
+		return "", reedam.Unexpected(err).WithLog(id, database.IsTx(ctx))
 	}
 
 	return password, nil
@@ -80,7 +90,10 @@ func (r *UserRepo) FindPasswordByUsername(ctx context.Context, username string) 
 	).Scan(&password)
 
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", reedam.UserNotFound(err)
+		}
+		return "", reedam.Unexpected(err).WithLog(username, database.IsTx(ctx))
 	}
 
 	return password, nil
@@ -93,8 +106,12 @@ func (r *UserRepo) FindIDByUsername(ctx context.Context, username string) (uint,
 		`SELECT id FROM users WHERE username = ?`,
 		username,
 	).Scan(&id)
+
 	if err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(username, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, reedam.UserNotFound(err)
+		}
+		return 0, reedam.Unexpected(err).WithLog(username, database.IsTx(ctx))
 	}
 
 	return id, nil
@@ -109,7 +126,10 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error
 	).Scan(&username)
 
 	if err != nil {
-		return "", reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", reedam.UserNotFound(err)
+		}
+		return "", reedam.Unexpected(err).WithLog(id, database.IsTx(ctx))
 	}
 
 	return username, nil
@@ -117,14 +137,16 @@ func (r *UserRepo) FindUsernameByID(ctx context.Context, id uint) (string, error
 
 func (r *UserRepo) Add(ctx context.Context, user domain.User) error {
 	_, err := r.db.Extract(ctx).ExecContext(ctx,
-		`INSERT INTO users(username, password, balance) VALUES (?, ?, ?)`,
+		`INSERT INTO users(username, password, balance, xp, level) VALUES (?, ?, ?, ? ,?)`,
 		user.Username,
 		user.Password,
 		user.Balance,
+		user.XP,
+		user.Level,
 	)
 
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(user, database.IsTx(ctx))
+		return reedam.Unexpected(err).WithLog(user, database.IsTx(ctx))
 	}
 
 	return nil
@@ -136,9 +158,14 @@ func (r *UserRepo) IncreaseBalanceByID(ctx context.Context, id uint, amount int)
 		amount,
 		id,
 	)
+
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, amount, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return reedam.UserNotFound(err)
+		}
+		return reedam.Unexpected(err).WithLog(id, amount, database.IsTx(ctx))
 	}
+
 	return nil
 }
 
@@ -148,9 +175,14 @@ func (r *UserRepo) ReduceBalanceByID(ctx context.Context, id uint, amount int) e
 		amount,
 		id,
 	)
+
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, amount, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return reedam.UserNotFound(err)
+		}
+		return reedam.Unexpected(err).WithLog(id, amount, database.IsTx(ctx))
 	}
+
 	return nil
 }
 
@@ -160,9 +192,14 @@ func (r *UserRepo) FindBalanceByID(ctx context.Context, id uint) (int, error) {
 		`SELECT balance FROM users WHERE id = ?`,
 		id,
 	).Scan(&balance)
+
 	if err != nil {
-		return 0, reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, reedam.UserNotFound(err)
+		}
+		return 0, reedam.Unexpected(err).WithLog(id, database.IsTx(ctx))
 	}
+
 	return balance, nil
 }
 
@@ -172,9 +209,14 @@ func (r *UserRepo) UpdateBalanceByID(ctx context.Context, id uint, balance int) 
 		balance,
 		id,
 	)
+
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(id, balance, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return reedam.UserNotFound(err)
+		}
+		return reedam.Unexpected(err).WithLog(id, balance, database.IsTx(ctx))
 	}
+
 	return nil
 }
 
@@ -185,8 +227,13 @@ func (r *UserRepo) UpdateLevelXPByID(ctx context.Context, user domain.User) erro
 		user.XP,
 		user.ID,
 	)
+
 	if err != nil {
-		return reedam.New().WithError(err).WithMessage(lang.ErrorUnexpected).WithStatus(reedam.StatusInternalServerError).WithLog(user, database.IsTx(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return reedam.UserNotFound(err)
+		}
+		return reedam.Unexpected(err).WithLog(user, database.IsTx(ctx))
 	}
+
 	return nil
 }
