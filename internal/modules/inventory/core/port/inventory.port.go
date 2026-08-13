@@ -7,14 +7,7 @@ import (
 )
 
 type InventoryRepository interface {
-	FindByID(ctx context.Context, id uint) (domain.Inventory, error)
 	FindByUserID(ctx context.Context, userID uint) ([]domain.Inventory, error)
-	FindIDByUserIDmatID(ctx context.Context, userID, materialID uint) (uint, error)
-	HasByUserIDMaterialID(ctx context.Context, userID, materialID uint) (bool, error)
-	IncreaseByID(ctx context.Context, id uint, amount int) error
-	ReduceByID(ctx context.Context, id uint, amount int) error
-	Add(ctx context.Context, inventory domain.Inventory) error
-	DeleteByID(ctx context.Context, id uint) error
 }
 
 type MaterialRepository interface {
@@ -23,8 +16,4 @@ type MaterialRepository interface {
 
 type InventoryService interface {
 	Export(ctx context.Context, userID uint) (dto.ExportResponse, error)
-}
-
-type Transactor interface {
-	WithTx(ctx context.Context, fn func(ctx context.Context) error) error
 }

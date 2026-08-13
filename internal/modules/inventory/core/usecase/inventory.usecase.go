@@ -9,18 +9,15 @@ import (
 type inventoryUsecase struct {
 	inventoryRepo port.InventoryRepository
 	materialRepo  port.MaterialRepository
-	transactor    port.Transactor
 }
 
 func NewInventoryUsecase(
 	inventoryRepo port.InventoryRepository,
 	materialRepo port.MaterialRepository,
-	transactor port.Transactor,
 ) *inventoryUsecase {
 	return &inventoryUsecase{
 		inventoryRepo: inventoryRepo,
 		materialRepo:  materialRepo,
-		transactor:    transactor,
 	}
 }
 

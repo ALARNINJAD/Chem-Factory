@@ -19,7 +19,7 @@ func NewModule(db *database.Database) Module {
 	inventoryRepo := sqlite.NewInventoryRepo(db)
 	materialRepo := materialRepository.NewMaterialRepo(db)
 
-	inventoryUsecase := usecase.NewInventoryUsecase(inventoryRepo, materialRepo, db)
+	inventoryUsecase := usecase.NewInventoryUsecase(inventoryRepo, materialRepo)
 
 	inventoryHandler := handler.NewInventoryHandler(inventoryUsecase)
 

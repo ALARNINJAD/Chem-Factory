@@ -2,6 +2,7 @@ package handler
 
 import (
 	"chem-factory/internal/modules/inventory/core/port"
+	"chem-factory/pkg/reedam"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +22,7 @@ func (h *InventoryHandler) Export(ctx *gin.Context) {
 
 	response, err := h.service.Export(ctx.Request.Context(), userID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not export inventory"})
+		reedam.ErrorMessageHTTP(ctx, err)
 		return
 	}
 
