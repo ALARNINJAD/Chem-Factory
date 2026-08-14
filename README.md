@@ -10,7 +10,7 @@ A Go-based REST API for a chemical factory simulation game. Build your chemical 
 - **Inventory Management** - Track owned materials and quantities
 - **Marketplace** - Buy and sell materials with other players
 - **Material System** - Pre-defined materials with recipes and mix times
-- **SQLite Database** - Lightweight, file-based storage with migrations
+- **GORM & SQLite** - Robust ORM-backed SQLite storage with separate migration and seeding commands
 
 ## Tech Stack
 
@@ -18,7 +18,8 @@ A Go-based REST API for a chemical factory simulation game. Build your chemical 
 |----------|------------|
 | Language | Go 1.25+ |
 | Framework | Gin (HTTP) |
-| Database | SQLite (mattn/go-sqlite3) |
+| ORM | GORM (gorm.io/gorm) |
+| Database | SQLite (gorm.io/driver/sqlite) |
 | Auth | JWT (golang-jwt/jwt/v4) |
 | Config | godotenv |
 | Security | bcrypt (golang.org/x/crypto) |
@@ -29,11 +30,12 @@ A Go-based REST API for a chemical factory simulation game. Build your chemical 
 chem-factory/
 ├── cmd/
 │   ├── server/main.go      # HTTP server entry point
-│   └── migration/main.go   # Database migration entry point
+│   ├── migration/main.go   # Database migration entry point
+│   └── seed/main.go        # Database seeding entry point
 ├── internal/
-│   ├── database/sqlite/    # SQLite connection & setup
-│   ├── domain/             # Domain models & interfaces
-│   ├── modules/            # Feature modules (clean architecture)
+│   ├── database/sqlite/    # SQLite connection & GORM setup
+│   ├── domain/             # Global domain models & interfaces
+│   ├── modules/            # Feature modules (clean architecture with GORM private domains)
 │   │   ├── auth/           # Authentication module
 │   │   ├── user/           # User management
 │   │   ├── inventory/      # Inventory management
@@ -48,7 +50,7 @@ chem-factory/
 ├── api-test/               # API test files (.http)
 ├── api-examples/           # API usage examples
 ├── docs/                   # Documentation & test scenarios
-└── main.go                 # Main entry point (serve/migrate)
+└── main.go                 # Main entry point (serve/migrate/seed)
 ```
 
 ## Getting Started
@@ -56,7 +58,7 @@ chem-factory/
 ### Prerequisites
 
 - Go 1.25 or higher
-- SQLite3 (usually included with Go toolchain)
+- SQLite3
 
 ### Installation
 
@@ -86,6 +88,11 @@ SECRET_KEY=your-super-secret-jwt-key-change-in-production
 **Run database migrations (required first run):**
 ```bash
 go run . migrate
+```
+
+**Seed initial materials and shop data:**
+```bash
+go run . seed
 ```
 
 **Start the HTTP server:**
@@ -129,31 +136,7 @@ The server will start on `http://localhost:8090` (or your configured PORT).
 | POST | `/market/buy` | Buy material from market |
 | POST | `/market/set-for-sell` | List material for sale |
 
-## API Usage Examples
-
-See [api-examples/](api-examples/) for ready-to-use HTTP request examples compatible with VS Code REST Client or similar tools.
-
-Example login request:
-```http
-POST http://localhost:8090/auth/login
-Content-Type: application/json
-
-{
-  "username": "player1",
-  "password": "password123"
-}
-```
-
 ## Development
-
-### Running with Hot Reload
-```bash
-# Install air (if not installed)
-go install github.com/air-verse/air@latest
-
-# Run with hot reload
-air
-```
 
 ### Running Tests
 ```bash
@@ -168,7 +151,7 @@ go build -o chem-factory .
 
 ## Database Schema
 
-The migration creates the following tables:
+Tables created via GORM auto-migration matching exact SQL constraints:
 - **users** - User accounts with balance, XP, level
 - **materials** - Material definitions with recipes
 - **inventory** - User-owned materials
@@ -177,19 +160,7 @@ The migration creates the following tables:
 
 ## Default Materials
 
-Pre-defined materials are loaded from `pkg/material/default_materials.json` during migration. Base materials (no ingredients) are automatically seeded to the market shop.
-
-## Project Status
-
-This project is under active development. See [docs/todo/improvments.md](docs/todo/improvments.md) for planned improvements and [docs/issues/api-problems.md](docs/issues/api-problems.md) for known issues.
-
-## Frontend
-
-A React-based frontend for this project is available at:
-
-**[Chem-Factory-Frontend](https://github.com/KiyarashFarahani/Chem-Factory-Frontend)** - Developed by [Kiyarash Farahani](https://github.com/KiyarashFarahani)
-
-The frontend provides a web interface to interact with this API, including user authentication, material mixing, inventory management, and marketplace trading.
+Pre-defined materials are loaded from `pkg/material/default_materials.json` during the `seed` command. Base materials (no ingredients) are automatically seeded to the market shop.
 
 ## License
 
